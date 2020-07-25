@@ -80,7 +80,7 @@ Summary: The Linux kernel
 # For non-released -rc kernels, this will be appended after the rcX and
 # gitX tags, so a 3 here would become part of release "0.rcX.gitX.3"
 #
-%global baserelease 201
+%global baserelease 202
 %global fedora_build %{baserelease}
 
 # base_sublevel is the kernel version we're starting with and patching
@@ -92,7 +92,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 9
+%define stable_update 10
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -852,8 +852,6 @@ Patch95: 0001-kms-nv50-Probe-SOR-and-PIOR-caps-for-DP-interlacing-.patch
 Patch96: 0001-kms-gv100-Add-support-for-interlaced-modes.patch
 Patch97: 0001-kms-nv50-Move-8BPC-limit-for-MST-into-nv50_mstc_get_.patch
 Patch98: 0001-kms-nv50-Share-DP-SST-mode_valid-handling-with-MST.patch
-Patch99: 0001-virt-vbox-Fix-VBGL_IOCTL_VMMDEV_REQUEST_BIG-and-_LOG.patch
-Patch100: 0001-virt-vbox-Fix-guest-capabilities-mask-check.patch
 Patch101: 0001-virt-vbox-Rename-guest_caps-struct-members-to-set_gu.patch
 Patch102: 0001-virt-vbox-Add-vbg_set_host_capabilities-helper-funct.patch
 Patch103: 0001-virt-vbox-Add-support-for-the-new-VBG_IOCTL_ACQUIRE_.patch
@@ -2995,8 +2993,14 @@ fi
 #
 #
 %changelog
-* Tue Jul 21 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.7.9-fsync.201
-- Linux v5.7.9 zen fsync
+* Sat Jul 25 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.7.10-202.fsync
+- Linux v5.7.10 zen fsync
+
+* Wed Jul 22 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.7.10-201
+- Linux v5.7.10
+
+* Mon Jul 20 2020 Justin M. Forbes <jforbes@fedoraproject.org>
+- Fix GDB regression (rhbz 1858645)
 
 * Fri Jul 17 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.7.9-100
 - Linux v5.7.9
