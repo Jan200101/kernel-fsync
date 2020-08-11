@@ -80,7 +80,7 @@ Summary: The Linux kernel
 # For non-released -rc kernels, this will be appended after the rcX and
 # gitX tags, so a 3 here would become part of release "0.rcX.gitX.3"
 #
-%global baserelease 203
+%global baserelease 201
 %global fedora_build %{baserelease}
 
 # base_sublevel is the kernel version we're starting with and patching
@@ -92,7 +92,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 11
+%define stable_update 14
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -883,8 +883,8 @@ Patch123: 0001-usb-fusb302-Convert-to-use-GPIO-descriptors.patch
 # Tegra194 ACPI PCI quirk - http://patchwork.ozlabs.org/patch/1221384/
 Patch124: 0001-PCI-Add-MCFG-quirks-for-Tegra194-host-controllers.patch
 
-# rhbz 1857101
-Patch125: 0001-ALSA-hda-Workaround-for-spurious-wakeups-on-some-Int.patch
+# Work around a bug in gcc https://gcc.gnu.org/bugzilla/show_bug.cgi?id=96377
+Patch126: 0001-Work-around-for-gcc-bug-https-gcc.gnu.org-bugzilla-s.patch
 
 # Linux-tkg patches - https://github.com/Frogging-Family/linux-tkg/blob/master/linux57-tkg
 Patch202: 0003-glitched-base.patch
@@ -2993,8 +2993,18 @@ fi
 #
 #
 %changelog
-* Sun Aug 02 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.7.11-203.fsync
-- Linux v5.7.11 zen fsync
+* Tue Aug 11 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.7.14-201.fsync
+- Linux v5.7.14 zen fsync
+
+* Fri Aug 07 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.7.14-200
+- Linux v5.7.14
+
+* Wed Aug 05 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.7.13-200
+- Linux v5.7.13
+- Fix CVE-2020-16166 (rhbz 1865751 1865752)
+
+* Sat Aug 01 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.7.12-200
+- Linux v5.7.12
 
 * Wed Jul 29 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.7.11-200
 - Linux v5.7.11
