@@ -80,7 +80,7 @@ Summary: The Linux kernel
 # For non-released -rc kernels, this will be appended after the rcX and
 # gitX tags, so a 3 here would become part of release "0.rcX.gitX.3"
 #
-%global baserelease 202
+%global baserelease 201
 %global fedora_build %{baserelease}
 
 # base_sublevel is the kernel version we're starting with and patching
@@ -92,7 +92,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 6
+%define stable_update 7
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -869,6 +869,11 @@ Patch107: 0001-drivers-perf-xgene_pmu-Fix-uninitialized-resource-st.patch
 
 # CVE-2020-14385 rhbz 1874800 1874811
 Patch108: 0001-xfs-fix-boundary-test-in-xfs_attr_shortform_verify.patch
+
+# CVE-2020-14386 rhbz 1875699 1876349
+Patch109: net-packet-fix-overflow-in-tpacket_rcv.patch
+
+Patch110: memory-tegra-Remove-GPU-from-DRM-IOMMU-group.patch
 
 # Linux-tkg patches - https://github.com/Frogging-Family/linux-tkg/blob/master/linux57-tkg
 Patch200: 0007-v5.8-fsync.patch
@@ -2977,8 +2982,12 @@ fi
 #
 #
 %changelog
-* Tue Sep 08 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.8.6-202.fsync
-- Linux v5.8.6 fsync
+* Fri Sep 11 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.8.7-201.fsync
+- Linux v5.8.7 fsync
+
+* Mon Sep 07 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.7-200
+- Linux v5.8.7
+- Fix CVE-2020-14386 (rhbz 1875699 1876349)
 
 * Thu Sep 03 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.6-201
 - Linux v5.8.6
