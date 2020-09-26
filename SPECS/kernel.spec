@@ -92,7 +92,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 9
+%define stable_update 11
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -872,8 +872,11 @@ Patch110: memory-tegra-Remove-GPU-from-DRM-IOMMU-group.patch
 # CVE-2020-25211 rhbz 1877571 1877572
 Patch111: netfilter-ctnetlink-add-range-check-for-l3-l4-protonum.patch
 
-# rhbz 1878858
-Patch112: block-restore-a-specific-error-code-in-bdev_del_part.patch
+# rhbz 1873720
+Patch112: v2-nfs-Fix-security-label-length-not-being-reset.patch
+
+# rhbz 1875339 1875828 1876997
+Patch113: pdx86-SW_TABLET_MODE-fixes.patch
 
 # Linux-tkg patches - https://github.com/Frogging-Family/linux-tkg/blob/master/linux57-tkg
 Patch200: 0007-v5.8-fsync.patch
@@ -1975,6 +1978,15 @@ BuildKernel() {
     cp -a scripts $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
     rm -rf $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/scripts/tracing
     rm -f $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/scripts/spdxcheck.py
+
+    # Files for 'make scripts' to succeed with kernel-devel.
+    mkdir -p $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/security/selinux/include
+    cp -a --parents security/selinux/include/classmap.h $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
+    cp -a --parents security/selinux/include/initial_sid_to_string.h $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
+    mkdir -p $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/tools/include/tools
+    cp -a --parents tools/include/tools/be_byteshift.h $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
+    cp -a --parents tools/include/tools/le_byteshift.h $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
+
     if [ -f tools/objtool/objtool ]; then
       cp -a tools/objtool/objtool $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/tools/objtool/ || :
     fi
@@ -2982,8 +2994,16 @@ fi
 #
 #
 %changelog
-* Thu Sep 17 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.8.9-201.fsync
-- Linux v5.8.9 fsync
+* Sat Sep 26 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.8.11-201.fsync
+- Linux v5.8.11 fsync
+
+* Wed Sep 23 06:59:07 CDT 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.11-200
+- Linux v5.8.11
+- Fix (rhbz 1821946)
+
+* Thu Sep 17 08:48:27 CDT 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.10-200
+- Linux v5.8.10
+- Fix (rhbz 1873720 1876997)
 
 * Mon Sep 14 08:51:46 CDT 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.9-200
 - Linux v5.8.9
