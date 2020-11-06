@@ -92,7 +92,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 17
+%define stable_update 18
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -905,8 +905,9 @@ Patch131: arm64-dts-allwinner-h6-Pine-H64-Fix-ethernet-node.patch
 # CVE-2020-27675 rhbz 1891114 1891115
 Patch132: 0001-xen-events-avoid-removing-an-event-channel-while-han.patch
 
-# Linux-tkg patches - https://github.com/Frogging-Family/linux-tkg/blob/master/linux57-tkg
-Patch200: 0007-v5.8-fsync.patch
+# Linux-tkg patches - https://github.com/Frogging-Family/linux-tkg/tree/master/linux-tkg-patches/5.8
+Patch200: zen.patch
+Patch201: fsync.patch
 
 # END OF PATCH DEFINITIONS
 
@@ -3021,8 +3022,11 @@ fi
 #
 #
 %changelog
-* Tue Nov  3 17:17:46 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.8.17-301.fsync
-- Linux v5.8.17 fsync
+* Fri Nov  6 18:29:14 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.8.18-301.fsync
+- Linux v5.8.18 fsync zen
+
+* Mon Nov  2 10:50:39 CST 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.18-300
+- Linux v5.8.18
 
 * Thu Oct 29 07:55:15 CDT 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.17-300
 - Linux v5.8.17
@@ -3044,12 +3048,12 @@ fi
 - Linux v5.8.15
 - Fix CVE-2020-16119 (rhbz 1886374 1888083)
 
+* Wed Oct  7 07:21:34 CDT 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.14-300
+- Linux v5.8.14
+
 * Wed Oct  7 2020 Peter Robinson <pbrobinson@fedoraproject.org>
 - Fix aarch64 boot crash on BTI capable systems
 - Fix boot crash on aarch64 Ampere eMAG systems (rhbz #1874117)
-
-* Wed Oct  7 07:21:34 CDT 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.14-300
-- Linux v5.8.14
 
 * Thu Oct  1 12:09:16 CDT 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.8.13-300
 - Linux v5.8.13

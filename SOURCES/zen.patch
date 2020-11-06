@@ -1,0 +1,308 @@
+From f85ed068b4d0e6c31edce8574a95757a60e58b87 Mon Sep 17 00:00:00 2001
+From: Etienne Juvigny <Ti3noU@gmail.com>
+Date: Mon, 3 Sep 2018 17:36:25 +0200
+Subject: [PATCH 07/17] Zenify & stuff
+
+---
+ init/Kconfig           | 32 ++++++++++++++++++++++++++++++++
+ kernel/sched/fair.c    | 25 +++++++++++++++++++++++++
+ mm/page-writeback.c    |  8 ++++++++
+ 3 files changed, 65 insertions(+)
+
+diff --git a/init/Kconfig b/init/Kconfig
+index 3ae8678e1145..da708eed0f1e 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -92,6 +92,38 @@ config THREAD_INFO_IN_TASK
+ 
+ menu "General setup"
+ 
++config ZENIFY
++	bool "A selection of patches from Zen/Liquorix kernel and additional tweaks for a better gaming experience"
++	default y
++	help
++	  Tunes the kernel for responsiveness at the cost of throughput and power usage.
++
++	  --- Virtual Memory Subsystem ---------------------------
++
++	    Mem dirty before bg writeback..:  10 %  ->  20 %
++	    Mem dirty before sync writeback:  20 %  ->  50 %
++
++	  --- Block Layer ----------------------------------------
++
++	    Queue depth...............:      128    -> 512
++	    Default MQ scheduler......: mq-deadline -> bfq
++
++	  --- CFS CPU Scheduler ----------------------------------
++
++	    Scheduling latency.............:   6    ->   3    ms
++	    Minimal granularity............:   0.75 ->   0.3  ms
++	    Wakeup granularity.............:   1    ->   0.5  ms
++	    CPU migration cost.............:   0.5  ->   0.25 ms
++	    Bandwidth slice size...........:   5    ->   3    ms
++	    Ondemand fine upscaling limit..:  95 %  ->  85 %
++
++	  --- MuQSS CPU Scheduler --------------------------------
++
++	    Scheduling interval............:   6    ->   3    ms
++	    ISO task max realtime use......:  70 %  ->  25 %
++	    Ondemand coarse upscaling limit:  80 %  ->  45 %
++	    Ondemand fine upscaling limit..:  95 %  ->  45 %
++
+ config BROKEN
+ 	bool
+ 
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 6b3b59cc51d6..2a0072192c3d 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -37,8 +37,13 @@
+  *
+  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
+  */
++#ifdef CONFIG_ZENIFY
++unsigned int sysctl_sched_latency			= 3000000ULL;
++static unsigned int normalized_sysctl_sched_latency	= 3000000ULL;
++#else
+ unsigned int sysctl_sched_latency			= 6000000ULL;
+ static unsigned int normalized_sysctl_sched_latency	= 6000000ULL;
++#endif
+ 
+ /*
+  * The initial- and re-scaling of tunables is configurable
+@@ -58,13 +63,22 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
+  *
+  * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
+  */
++#ifdef CONFIG_ZENIFY
++unsigned int sysctl_sched_min_granularity			= 300000ULL;
++static unsigned int normalized_sysctl_sched_min_granularity	= 300000ULL;
++#else
+ unsigned int sysctl_sched_min_granularity			= 750000ULL;
+ static unsigned int normalized_sysctl_sched_min_granularity	= 750000ULL;
++#endif
+ 
+ /*
+  * This value is kept at sysctl_sched_latency/sysctl_sched_min_granularity
+  */
++#ifdef CONFIG_ZENIFY
++static unsigned int sched_nr_latency = 10;
++#else
+ static unsigned int sched_nr_latency = 8;
++#endif
+ 
+ /*
+  * After fork, child runs first. If set to 0 (default) then
+@@ -81,10 +95,17 @@ unsigned int sysctl_sched_child_runs_first __read_mostly;
+  *
+  * (default: 1 msec * (1 + ilog(ncpus)), units: nanoseconds)
+  */
++#ifdef CONFIG_ZENIFY
++unsigned int sysctl_sched_wakeup_granularity			= 500000UL;
++static unsigned int normalized_sysctl_sched_wakeup_granularity	= 500000UL;
++
++const_debug unsigned int sysctl_sched_migration_cost	= 50000UL;
++#else
+ unsigned int sysctl_sched_wakeup_granularity			= 1000000UL;
+ static unsigned int normalized_sysctl_sched_wakeup_granularity	= 1000000UL;
+ 
+ const_debug unsigned int sysctl_sched_migration_cost	= 500000UL;
++#endif
+ 
+ int sched_thermal_decay_shift;
+ static int __init setup_sched_thermal_decay_shift(char *str)
+@@ -128,8 +149,12 @@ int __weak arch_asym_cpu_priority(int cpu)
+  *
+  * (default: 5 msec, units: microseconds)
+  */
++#ifdef CONFIG_ZENIFY
++unsigned int sysctl_sched_cfs_bandwidth_slice		= 3000UL;
++#else
+ unsigned int sysctl_sched_cfs_bandwidth_slice		= 5000UL;
+ #endif
++#endif
+ 
+ static inline void update_load_add(struct load_weight *lw, unsigned long inc)
+ {
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 28b3e7a67565..01a1aef2b9b1 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -71,7 +71,11 @@ static long ratelimit_pages = 32;
+ /*
+  * Start background writeback (via writeback threads) at this percentage
+  */
++#ifdef CONFIG_ZENIFY
++int dirty_background_ratio = 20;
++#else
+ int dirty_background_ratio = 10;
++#endif
+ 
+ /*
+  * dirty_background_bytes starts at 0 (disabled) so that it is a function of
+@@ -88,7 +92,11 @@ int vm_highmem_is_dirtyable;
+ /*
+  * The generator of dirty data starts writeback at this percentage
+  */
++#ifdef CONFIG_ZENIFY
++int vm_dirty_ratio = 50;
++#else
+ int vm_dirty_ratio = 20;
++#endif
+ 
+ /*
+  * vm_dirty_bytes starts at 0 (disabled) so that it is a function of
+-- 
+2.28.0
+
+
+From e92e67143385cf285851e12aa8b7f083dd38dd24 Mon Sep 17 00:00:00 2001
+From: Steven Barrett <damentz@liquorix.net>
+Date: Sun, 16 Jan 2011 18:57:32 -0600
+Subject: [PATCH 08/17] ZEN: Allow TCP YeAH as default congestion control
+
+4.4: In my tests YeAH dramatically slowed down transfers over a WLAN,
+     reducing throughput from ~65Mbps (CUBIC) to ~7MBps (YeAH) over 10
+     seconds (netperf TCP_STREAM) including long stalls.
+
+     Be careful when choosing this. ~heftig
+---
+ net/ipv4/Kconfig | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/net/ipv4/Kconfig b/net/ipv4/Kconfig
+index e64e59b536d3..bfb55ef7ebbe 100644
+--- a/net/ipv4/Kconfig
++++ b/net/ipv4/Kconfig
+@@ -691,6 +691,9 @@ choice
+ 	config DEFAULT_VEGAS
+ 		bool "Vegas" if TCP_CONG_VEGAS=y
+ 
++	config DEFAULT_YEAH
++		bool "YeAH" if TCP_CONG_YEAH=y
++
+ 	config DEFAULT_VENO
+ 		bool "Veno" if TCP_CONG_VENO=y
+ 
+@@ -724,6 +727,7 @@ config DEFAULT_TCP_CONG
+ 	default "htcp" if DEFAULT_HTCP
+ 	default "hybla" if DEFAULT_HYBLA
+ 	default "vegas" if DEFAULT_VEGAS
++	default "yeah" if DEFAULT_YEAH
+ 	default "westwood" if DEFAULT_WESTWOOD
+ 	default "veno" if DEFAULT_VENO
+ 	default "reno" if DEFAULT_RENO
+-- 
+2.28.0
+
+
+From 76dbe7477bfde1b5e8bf29a71b5af7ab2be9b98e Mon Sep 17 00:00:00 2001
+From: Steven Barrett <steven@liquorix.net>
+Date: Wed, 28 Nov 2018 19:01:27 -0600
+Subject: [PATCH 09/17] zen: Use [defer+madvise] as default khugepaged defrag
+ strategy
+
+For some reason, the default strategy to respond to THP fault fallbacks
+is still just madvise, meaning stall if the program wants transparent
+hugepages, but don't trigger a background reclaim / compaction if THP
+begins to fail allocations.  This creates a snowball affect where we
+still use the THP code paths, but we almost always fail once a system
+has been active and busy for a while.
+
+The option "defer" was created for interactive systems where THP can
+still improve performance.  If we have to fallback to a regular page due
+to an allocation failure or anything else, we will trigger a background
+reclaim and compaction so future THP attempts succeed and previous
+attempts eventually have their smaller pages combined without stalling
+running applications.
+
+We still want madvise to stall applications that explicitely want THP,
+so defer+madvise _does_ make a ton of sense.  Make it the default for
+interactive systems, especially if the kernel maintainer left
+transparent hugepages on "always".
+
+Reasoning and details in the original patch: https://lwn.net/Articles/711248/
+---
+ mm/huge_memory.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 74300e337c3c..9277f22c10a7 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -53,7 +53,11 @@ unsigned long transparent_hugepage_flags __read_mostly =
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE_MADVISE
+ 	(1<<TRANSPARENT_HUGEPAGE_REQ_MADV_FLAG)|
+ #endif
++#ifdef CONFIG_ZENIFY
++	(1<<TRANSPARENT_HUGEPAGE_DEFRAG_KSWAPD_OR_MADV_FLAG)|
++#else
+ 	(1<<TRANSPARENT_HUGEPAGE_DEFRAG_REQ_MADV_FLAG)|
++#endif
+ 	(1<<TRANSPARENT_HUGEPAGE_DEFRAG_KHUGEPAGED_FLAG)|
+ 	(1<<TRANSPARENT_HUGEPAGE_USE_ZERO_PAGE_FLAG);
+ 
+-- 
+2.28.0
+
+
+From 716f41cf6631f3a85834dcb67b4ce99185b6387f Mon Sep 17 00:00:00 2001
+From: Steven Barrett <steven@liquorix.net>
+Date: Wed, 15 Jan 2020 20:43:56 -0600
+Subject: [PATCH 17/17] ZEN: intel-pstate: Implement "enable" parameter
+
+If intel-pstate is compiled into the kernel, it will preempt the loading
+of acpi-cpufreq so you can take advantage of hardware p-states without
+any friction.
+
+However, intel-pstate is not completely superior to cpufreq's ondemand
+for one reason.  There's no concept of an up_threshold property.
+
+In ondemand, up_threshold essentially reduces the maximum utilization to
+compare against, allowing you to hit max frequencies and turbo boost
+from a much lower core utilization.
+
+With intel-pstate, you have the concept of minimum and maximum
+performance, but no tunable that lets you define, maximum frequency
+means 50% core utilization.  For just this oversight, there's reasons
+you may want ondemand.
+
+Lets support setting "enable" in kernel boot parameters.  This lets
+kernel maintainers include "intel_pstate=disable" statically in the
+static boot parameters, but let users of the kernel override this
+selection.
+---
+ Documentation/admin-guide/kernel-parameters.txt | 3 +++
+ drivers/cpufreq/intel_pstate.c                  | 2 ++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index fb95fad81c79..3e92fee81e33 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -1857,6 +1857,9 @@
+ 			disable
+ 			  Do not enable intel_pstate as the default
+ 			  scaling driver for the supported processors
++			enable
++			  Enable intel_pstate in-case "disable" was passed
++			  previously in the kernel boot parameters
+ 			passive
+ 			  Use intel_pstate as a scaling driver, but configure it
+ 			  to work with generic cpufreq governors (instead of
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 36a469150ff9..aee891c9b78a 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2845,6 +2845,8 @@ static int __init intel_pstate_setup(char *str)
+ 		pr_info("HWP disabled\n");
+ 		no_hwp = 1;
+ 	}
++	if (!strcmp(str, "enable"))
++		no_load = 0;
+ 	if (!strcmp(str, "force"))
+ 		force_load = 1;
+ 	if (!strcmp(str, "hwp_only"))
+-- 
+2.28.0
+
