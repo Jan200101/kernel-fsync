@@ -94,7 +94,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 10
+%define stable_update 11
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -852,30 +852,15 @@ Patch108: iommu-tegra-smmu-Fix-TLB-line-for-Tegra210.patch
 
 # A patch to fix some undocumented things broke a bunch of Allwinner networks due to wrong assumptions
 Patch124: 0001-update-phy-on-pine64-a64-devices.patch
-# https://patchwork.kernel.org/project/linux-arm-kernel/patch/20201024162515.30032-2-wens@kernel.org/
-Patch125: arm-sun8i-realtek-phy-fixes.patch
 # https://patchwork.kernel.org/project/linux-arm-kernel/patch/20201025140144.28693-1-ats@offog.org/
 Patch126: ARM-dts-sun7i-pcduino3-nano-enable-RGMII-RX-TX-delay-on-PHY.patch
-# https://patchwork.kernel.org/project/linux-arm-kernel/patch/20201025081949.783443-1-jernej.skrabec@siol.net/
-Patch127: ARM-dts-sun8i-r40-bananapi-m2-ultra-Fix-ethernet-node.patch 
-# https://patchwork.kernel.org/project/linux-arm-kernel/patch/20201022185839.2779245-1-jernej.skrabec@siol.net/
-Patch128: arm64-dts-allwinner-a64-OrangePi-Win-Fix-ethernet-node.patch
-# https://patchwork.kernel.org/project/linux-arm-kernel/patch/20201028115817.68113-1-nperic@gmail.com/
-Patch129: arm64-dts-allwinner-h5-OrangePi-Prime-Fix-ethernet-node.patch
-# https://patchwork.kernel.org/project/linux-arm-kernel/patch/20201023184858.3272918-1-jernej.skrabec@siol.net/
-Patch130: arm64-dts-allwinner-h5-OrangePi-PC2-Fix-ethernet-node.patch
-# https://patchwork.kernel.org/project/linux-arm-kernel/patch/20201023194902.368239-1-jernej.skrabec@siol.net/
-Patch131: arm64-dts-allwinner-h6-Pine-H64-Fix-ethernet-node.patch
 
 # rhbz 1897038
 Patch132: bluetooth-fix-LL-privacy-BLE-device-fails-to-connect.patch
 
-# CVE-2020-28941 rhbz 1899985 1899986
-Patch133: speakup-do-not-let-the-line-discipline-be-used-several-times.patch
-
 # Linux-tkg patches - https://github.com/Frogging-Family/linux-tkg/tree/master/linux-tkg-patches/5.8
 Patch200: zen.patch
-Patch201: fsync.patch
+Patch201: futex2.patch
 
 # END OF PATCH DEFINITIONS
 
@@ -2990,8 +2975,11 @@ fi
 #
 #
 %changelog
-* Wed Nov 25 19:20:00 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.10-201.fsync
-- Linux v5.9.10 fsync zen
+* Sat Nov 28 20:09:49 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.11-201.fsync
+- Linux v5.9.11 futex2 zen
+
+* Tue Nov 24 11:22:38 CST 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.9.11-200
+- Linux v5.9.11
 
 * Mon Nov 23 09:58:15 CST 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.9.10-200
 - Linux v5.9.10
