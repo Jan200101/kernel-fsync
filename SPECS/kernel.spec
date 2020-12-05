@@ -94,7 +94,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 11
+%define stable_update 12
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -206,7 +206,7 @@ Summary: The Linux kernel
 
 %if 0%{?fedora}
 # Kernel headers are being split out into a separate package
-%define with_headers 0
+%define with_headers 1
 %define with_cross_headers 0
 # no selftests for now
 %define with_selftests 0
@@ -2975,8 +2975,11 @@ fi
 #
 #
 %changelog
-* Sat Nov 28 20:09:49 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.11-201.fsync
-- Linux v5.9.11 futex2 zen
+* Sat Dec  5 19:28:22 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.12-201.fsync
+- Linux v5.9.12 futex2 zen
+
+* Wed Dec  2 07:55:34 CST 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.9.12-200
+- Linux v5.9.12
 
 * Tue Nov 24 11:22:38 CST 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.9.11-200
 - Linux v5.9.11
