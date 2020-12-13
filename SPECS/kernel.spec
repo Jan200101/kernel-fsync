@@ -94,7 +94,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 13
+%define stable_update 14
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -2975,8 +2975,13 @@ fi
 #
 #
 %changelog
-* Wed Dec  9 18:12:08 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.13-201.fsync
-- Linux v5.9.13 futex2 zen
+* Sun Dec 13 20:19:44 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.14-201.fsync
+- Linux v5.9.14 futex2 zen
+
+* Fri Dec 11 07:14:10 CST 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.9.14-200
+- Linux v5.9.14
+- Fixes CVE-2020-29660 (rhbz 1906522 1906523)
+- Fixes CVE-2020-29661 (rhbz 1906525 1906526)
 
 * Tue Dec  8 08:04:29 CST 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.9.13-200
 - Linux v5.9.13
