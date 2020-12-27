@@ -94,7 +94,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 15
+%define stable_update 16
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -2975,8 +2975,11 @@ fi
 #
 #
 %changelog
-* Tue Dec 22 21:49:17 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.15-201.fsync
-- Linux v5.9.15 futex2 zen
+* Sun Dec 27 22:03:29 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.16-201.fsync
+- Linux v5.9.16 futex2 zen
+
+* Mon Dec 21 07:41:08 CST 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.9.16-200
+- Linux v5.9.16
 
 * Wed Dec 16 08:06:21 CST 2020 Justin M. Forbes <jforbes@fedoraproject.org> - 5.9.15-200
 - Linux v5.9.15
