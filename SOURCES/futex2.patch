@@ -160,7 +160,7 @@ index 2a5df1cf838c..440f21f5c3d8 100644
 +config FUTEX2
 +	bool "Enable futex2 support" if EXPERT
 +	depends on FUTEX
-+	default n
++	default y
 +	help
 +	  Experimental support for futex2 interface.
 +

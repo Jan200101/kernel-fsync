@@ -82,7 +82,7 @@ Summary: The Linux kernel
 # For non-released -rc kernels, this will be appended after the rcX and
 # gitX tags, so a 3 here would become part of release "0.rcX.gitX.3"
 #
-%global baserelease 201
+%global baserelease 202
 %global fedora_build %{baserelease}
 
 # base_sublevel is the kernel version we're starting with and patching
@@ -2975,6 +2975,9 @@ fi
 #
 #
 %changelog
+* Sun Jan  3 03:24:01 CET 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.16-202.fsync
+- force futex2
+
 * Sun Dec 27 22:03:29 CET 2020 Jan Drögehoff <sentrycraft123@gmail.com> - 5.9.16-201.fsync
 - Linux v5.9.16 futex2 zen
 
