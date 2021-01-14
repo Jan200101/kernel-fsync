@@ -38,10 +38,10 @@ Signed-off-by: Alexandre Frade <admfrade@gmail.com>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index b1e0da5..1b43411 100644
+index 77aa0e7..224ee14 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -63,7 +63,7 @@ const_debug unsigned int sysctl_sched_features =
+@@ -64,7 +64,7 @@ const_debug unsigned int sysctl_sched_features =
   * Number of tasks to iterate in a single balance run.
   * Limited because this is done with IRQs disabled.
   */
@@ -50,19 +50,19 @@ index b1e0da5..1b43411 100644
  
  /*
   * period over which we measure -rt task CPU usage in us.
-@@ -75,9 +75,9 @@ __read_mostly int scheduler_running;
+@@ -76,9 +76,9 @@ __read_mostly int scheduler_running;
  
  /*
   * part of the period that we allow rt tasks to run in us.
 - * default: 0.95s
-+ * default: 0.98s
++ * XanMod default: 0.98s
   */
 -int sysctl_sched_rt_runtime = 950000;
 +int sysctl_sched_rt_runtime = 980000;
  
  
  /*
--- 
+
 2.28.0
 
 
@@ -78,14 +78,14 @@ Subject: [PATCH 07/17] Zenify & stuff
  3 files changed, 65 insertions(+)
 
 diff --git a/init/Kconfig b/init/Kconfig
-index 3ae8678e1145..da708eed0f1e 100644
+index 0872a5a..48dc4bd 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
-@@ -92,6 +92,38 @@ config THREAD_INFO_IN_TASK
+@@ -96,6 +96,39 @@ config THREAD_INFO_IN_TASK
  
  menu "General setup"
  
-+config ZENIFY
++	config ZENIFY
 +	bool "A selection of patches from Zen/Liquorix kernel and additional tweaks for a better gaming experience"
 +	default y
 +	help
@@ -117,14 +117,15 @@ index 3ae8678e1145..da708eed0f1e 100644
 +	    Ondemand coarse upscaling limit:  80 %  ->  45 %
 +	    Ondemand fine upscaling limit..:  95 %  ->  45 %
 +
++
  config BROKEN
  	bool
  
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 6b3b59cc51d6..2a0072192c3d 100644
+index ae7ceba..52826af 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -37,8 +37,13 @@
+@@ -35,8 +35,13 @@
   *
   * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
   */
@@ -138,7 +139,7 @@ index 6b3b59cc51d6..2a0072192c3d 100644
  
  /*
   * The initial- and re-scaling of tunables is configurable
-@@ -58,13 +63,22 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
+@@ -56,13 +61,22 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
   *
   * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
   */
@@ -161,7 +162,7 @@ index 6b3b59cc51d6..2a0072192c3d 100644
  
  /*
   * After fork, child runs first. If set to 0 (default) then
-@@ -81,10 +95,17 @@ unsigned int sysctl_sched_child_runs_first __read_mostly;
+@@ -79,10 +93,17 @@ unsigned int sysctl_sched_child_runs_first __read_mostly;
   *
   * (default: 1 msec * (1 + ilog(ncpus)), units: nanoseconds)
   */
@@ -179,11 +180,11 @@ index 6b3b59cc51d6..2a0072192c3d 100644
  
  int sched_thermal_decay_shift;
  static int __init setup_sched_thermal_decay_shift(char *str)
-@@ -128,8 +149,12 @@ int __weak arch_asym_cpu_priority(int cpu)
+@@ -126,8 +147,12 @@ int __weak arch_asym_cpu_priority(int cpu)
   *
   * (default: 5 msec, units: microseconds)
   */
-+#ifdef CONFIG_ZENIFY
++#ifdef CONFIG_TENIFY
 +unsigned int sysctl_sched_cfs_bandwidth_slice		= 3000UL;
 +#else
  unsigned int sysctl_sched_cfs_bandwidth_slice		= 5000UL;
@@ -193,7 +194,7 @@ index 6b3b59cc51d6..2a0072192c3d 100644
  static inline void update_load_add(struct load_weight *lw, unsigned long inc)
  {
 diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 28b3e7a67565..01a1aef2b9b1 100644
+index 5860424..5da2d15 100644
 --- a/mm/page-writeback.c
 +++ b/mm/page-writeback.c
 @@ -71,7 +71,11 @@ static long ratelimit_pages = 32;
@@ -220,6 +221,7 @@ index 28b3e7a67565..01a1aef2b9b1 100644
  
  /*
   * vm_dirty_bytes starts at 0 (disabled) so that it is a function of
+
 -- 
 2.28.0
 
@@ -393,7 +395,7 @@ affects some windows games running in wine, such as Star Citizen).
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 8615504..2e10042 100644
+index cd5c313..1a36d12 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
 @@ -197,8 +197,7 @@ static inline void __mm_zero_struct_page(struct page *page)
@@ -422,7 +424,7 @@ lower values.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 2e10042..84b708a 100644
+index 1a36d12..58c10e2 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
 @@ -197,7 +197,7 @@ static inline void __mm_zero_struct_page(struct page *page)
@@ -449,10 +451,10 @@ Signed-off-by: Alexandre Frade <admfrade@gmail.com>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/block/elevator.c b/block/elevator.c
-index 90ed7a2..067482e 100644
+index 293c5c8..71111fa 100644
 --- a/block/elevator.c
 +++ b/block/elevator.c
-@@ -623,15 +623,15 @@ static inline bool elv_support_iosched(struct request_queue *q)
+@@ -616,15 +616,15 @@ static inline bool elv_support_iosched(struct request_queue *q)
  }
  
  /*
@@ -474,36 +476,6 @@ index 90ed7a2..067482e 100644
 -- 
 2.28.0
 
-
-From e2111bc5989131c675659d40e0cc4f214df2f990 Mon Sep 17 00:00:00 2001
-From: Alexandre Frade <admfrade@gmail.com>
-Date: Fri, 10 May 2019 16:45:59 -0300
-Subject: [PATCH 15/17] block: set rq_affinity = 2 for full multithreading I/O
- requests
-
-Signed-off-by: Alexandre Frade <admfrade@gmail.com>
----
- include/linux/blkdev.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 868e11f..47e5dc6 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -619,7 +619,8 @@ struct request_queue {
- #define QUEUE_FLAG_RQ_ALLOC_TIME 27	/* record rq->alloc_time_ns */
- 
- #define QUEUE_FLAG_MQ_DEFAULT	((1 << QUEUE_FLAG_IO_STAT) |		\
--				 (1 << QUEUE_FLAG_SAME_COMP))
-+				 (1 << QUEUE_FLAG_SAME_COMP) | \
-+				 (1 << QUEUE_FLAG_SAME_FORCE))
- 
- void blk_queue_flag_set(unsigned int flag, struct request_queue *q);
- void blk_queue_flag_clear(unsigned int flag, struct request_queue *q);
--- 
-2.28.0
-
-
 From 3c229f434aca65c4ca61772bc03c3e0370817b92 Mon Sep 17 00:00:00 2001
 From: Alexandre Frade <kernel@xanmod.org>
 Date: Mon, 3 Aug 2020 17:05:04 +0000
@@ -516,18 +488,18 @@ Signed-off-by: Alexandre Frade <kernel@xanmod.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index 434c9c3..10c7117 100644
+index d5570de..48a8660 100644
 --- a/include/linux/pagemap.h
 +++ b/include/linux/pagemap.h
-@@ -699,7 +699,7 @@ int replace_page_cache_page(struct page *old, struct page *new, gfp_t gfp_mask);
- void delete_from_page_cache_batch(struct address_space *mapping,
- 				  struct pagevec *pvec);
+@@ -808,7 +808,7 @@ struct readahead_control {
+ 		._index = i,						\
+ 	}
  
 -#define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
 +#define VM_READAHEAD_PAGES	(SZ_2M / PAGE_SIZE)
  
- void page_cache_sync_readahead(struct address_space *, struct file_ra_state *,
- 		struct file *, pgoff_t index, unsigned long req_count);
+ void page_cache_ra_unbounded(struct readahead_control *,
+ 		unsigned long nr_to_read, unsigned long lookahead_count);
 -- 
 2.28.0
 
@@ -563,10 +535,10 @@ selection.
  2 files changed, 5 insertions(+)
 
 diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index dca917a..dfc5f85 100644
+index f6a1513..d671f17 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1880,6 +1880,9 @@
+@@ -1897,6 +1897,9 @@
  			disable
  			  Do not enable intel_pstate as the default
  			  scaling driver for the supported processors
@@ -577,10 +549,10 @@ index dca917a..dfc5f85 100644
  			  Use intel_pstate as a scaling driver, but configure it
  			  to work with generic cpufreq governors (instead of
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index ef15ec4..3a0d083 100644
+index cb95da6..a422e3f 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -3097,6 +3097,8 @@ static int __init intel_pstate_setup(char *str)
+@@ -3129,6 +3129,8 @@ static int __init intel_pstate_setup(char *str)
  		pr_info("HWP disabled\n");
  		no_hwp = 1;
  	}
@@ -591,3 +563,4 @@ index ef15ec4..3a0d083 100644
  	if (!strcmp(str, "hwp_only"))
 -- 
 2.28.0
+
