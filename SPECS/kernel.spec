@@ -94,7 +94,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 16
+%define stable_update 17
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -2977,8 +2977,11 @@ fi
 #
 #
 %changelog
-* Mon Feb 15 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.10.16-201.fsync
-- Linux v5.10.16 futex2 zen
+* Sun Feb 21 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.10.17-201.fsync
+- Linux v5.10.17 futex2 zen
+
+* Wed Feb 17 2021 Justin M. Forbes <jforbes@fedoraproject.org> - 5.10.17-200
+- Linux v5.10.17
 
 * Sat Feb 13 2021 Justin M. Forbes <jforbes@fedoraproject.org> - 5.10.16-200
 - Linux v5.10.16
