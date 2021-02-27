@@ -94,7 +94,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 17
+%define stable_update 18
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -206,7 +206,7 @@ Summary: The Linux kernel
 
 %if 0%{?fedora}
 # Kernel headers are being split out into a separate package
-%define with_headers 1
+%define with_headers 0
 %define with_cross_headers 0
 # no selftests for now
 %define with_selftests 0
@@ -855,10 +855,10 @@ Patch105: arm-dts-rpi-4-disable-wifi-frequencies.patch
 # Nouveau mDP detection fix
 Patch107: 0001-drm-nouveau-kms-handle-mDP-connectors.patch
 
-# rhbz 1918778
-Patch108: media-pwc-fix-the-urb-buffer-allocation.patch
-
 Patch109: 0001-Revert-drm-amd-display-Update-NV1x-SR-latency-values.patch
+
+# rhbz 1916104 (patch from bluetooth-next)
+Patch110: bluetooth-btusb-qca-fix.patch
 
 # linux-fsync patches
 Patch200: zen.patch
@@ -2977,8 +2977,14 @@ fi
 #
 #
 %changelog
-* Sun Feb 21 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.10.17-201.fsync
-- Linux v5.10.17 futex2 zen
+* Sat Feb 27 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.10.18-201.fsync
+- Linux v5.10.18 futex2 zen
+
+* Tue Feb 23 2021 Justin M. Forbes <jforbes@fedoraproject.org> - 5.10.18-200
+- Linux v5.10.18
+
+* Thu Feb 18 2021 Hans de Goede <hdegoede@redhat.com>
+- Fix various QCA bluetooth devices no longer working (rhbz#1916104)
 
 * Wed Feb 17 2021 Justin M. Forbes <jforbes@fedoraproject.org> - 5.10.17-200
 - Linux v5.10.17
