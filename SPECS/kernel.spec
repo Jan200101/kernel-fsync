@@ -94,7 +94,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 19
+%define stable_update 20
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -851,14 +851,6 @@ Patch104: 0001-brcm-rpi4-fix-usb-numeration.patch
 
 # RPi-4 and wifi issues
 Patch105: arm-dts-rpi-4-disable-wifi-frequencies.patch
-
-# Nouveau mDP detection fix
-Patch107: 0001-drm-nouveau-kms-handle-mDP-connectors.patch
-
-Patch109: 0001-Revert-drm-amd-display-Update-NV1x-SR-latency-values.patch
-
-# rhbz 1925346
-Patch111: i915-fixes.patch
 
 # linux-fsync patches
 Patch200: zen.patch
@@ -2977,8 +2969,11 @@ fi
 #
 #
 %changelog
-* Mon Mar 01 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.10.19-201
-- Linux v5.10.19 futex2 zen
+* Sat Mar 06 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.10.20-201
+- Linux v5.10.20 futex2 zen
+
+* Thu Mar 04 2021 Justin M. Forbes <jforbes@fedoraproject.org> - 5.10.20-200
+- Linux v5.10.20
 
 * Fri Feb 26 2021 Justin M. Forbes <jforbes@fedoraproject.org> - 5.10.19-200
 - Linux v5.10.19
