@@ -94,7 +94,7 @@ Summary: The Linux kernel
 %if 0%{?released_kernel}
 
 # Do we have a -stable update to apply?
-%define stable_update 20
+%define stable_update 21
 # Set rpm version accordingly
 %if 0%{?stable_update}
 %define stablerev %{stable_update}
@@ -206,7 +206,7 @@ Summary: The Linux kernel
 
 %if 0%{?fedora}
 # Kernel headers are being split out into a separate package
-%define with_headers 0
+%define with_headers 1
 %define with_cross_headers 0
 # no selftests for now
 %define with_selftests 0
@@ -2969,8 +2969,14 @@ fi
 #
 #
 %changelog
-* Sat Mar 06 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.10.20-201
-- Linux v5.10.20 futex2 zen
+* Tue Mar 09 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.10.21-201.fsync
+- Linux v5.10.21 futex2 zen
+
+* Sun Mar 07 2021 Justin M. Forbes <jforbes@fedoraproject.org> - 5.10.21-200
+- Linux v5.10.21
+
+* Thu Mar 04 2021 Hans de Goede <hdegoede@redhat.com>
+- Fix broadwell-rt286 sound (rhbz#1933229)
 
 * Thu Mar 04 2021 Justin M. Forbes <jforbes@fedoraproject.org> - 5.10.20-200
 - Linux v5.10.20
