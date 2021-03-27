@@ -104,7 +104,7 @@ Summary: The Linux kernel
 %define primary_target rhel
 %endif
 
-%define rpmversion 5.11.9
+%define rpmversion 5.11.10
 %define stableversion 5.11
 %define pkgrelease 201
 
@@ -603,7 +603,7 @@ BuildRequires: asciidoc
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.11.9.tar.xz
+Source0: linux-5.11.10.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1255,8 +1255,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.11.9 -c
-mv linux-5.11.9 linux-%{KVERREL}
+%setup -q -n kernel-5.11.10 -c
+mv linux-5.11.10 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2773,8 +2773,14 @@ fi
 #
 #
 %changelog
-* Sat Mar 27 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.9-201.fsync
-- Linux v5.11.9 futex2 zen
+* Sat Mar 27 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.10-201.fsync
+- Linux v5.11.10 futex2 zen
+
+* Thu Mar 25 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.10-12]
+- drm/i915/tgl/psr: Disable PSR on Tigerlake for now (Lyude Paul)
+- Fedora: Turn off the SND_INTEL_BYT_PREFER_SOF option (Hans de Goede)
+- ASoC: intel: atom: Stop advertising non working S24LE support (Hans de Goede)
+- fix up RHEL config (Justin M. Forbes)
 
 * Wed Mar 24 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.9-11]
 - KVM: PPC: Book3S HV: Save and restore FSCR in the P9 path (Fabiano Rosas)
