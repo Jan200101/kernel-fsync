@@ -104,7 +104,7 @@ Summary: The Linux kernel
 %define primary_target rhel
 %endif
 
-%define rpmversion 5.11.12
+%define rpmversion 5.11.13
 %define stableversion 5.11
 %define pkgrelease 201
 
@@ -603,7 +603,7 @@ BuildRequires: asciidoc
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.11.12.tar.xz
+Source0: linux-5.11.13.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1255,8 +1255,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.11.12 -c
-mv linux-5.11.12 linux-%{KVERREL}
+%setup -q -n kernel-5.11.13 -c
+mv linux-5.11.13 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2773,8 +2773,18 @@ fi
 #
 #
 %changelog
-* Mon Apr 12 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.12-200
-- Linux v5.11.12 futex2 zen
+* Mon Apr 12 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.13-201.fsync
+- Linux v5.11.13 futex2 zen
+
+* Sat Apr 10 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.13-200]
+- Add CONFIG_NVIDIA_CARMEL_CNP_ERRATUM to RHEL configs too (Justin M. Forbes)
+- Add config for CONFIG_NVIDIA_CARMEL_CNP_ERRATUM (Justin M. Forbes)
+
+* Sat Apr 10 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.13-15]
+- Re-enable PSR2 on Tigerlake with new workarounds from Intel (Lyude Paul)
+- Fedora: Enable CHARGER_GPIO on aarch64 too (Peter Robinson)
+- Fix build with patch for CVE-2021-30178 (Justin M. Forbes)
+- KVM: x86: hyper-v: Fix Hyper-V context null-ptr-deref (Wanpeng Li)
 
 * Wed Apr 07 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.12-14]
 - Backport of SOF audio hang fix for X1 Carbon 9 (Mark Pearson)
