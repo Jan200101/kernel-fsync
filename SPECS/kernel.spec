@@ -64,7 +64,7 @@ Summary: The Linux kernel
 # For a stable, released kernel, released_kernel should be 1.
 %global released_kernel 1
 
-%global distro_build 200
+%global distro_build 300
 
 %if 0%{?fedora}
 %define secure_boot_arch x86_64
@@ -104,15 +104,15 @@ Summary: The Linux kernel
 %define primary_target rhel
 %endif
 
-%define rpmversion 5.11.16
+%define rpmversion 5.11.17
 %define stableversion 5.11
-%define pkgrelease 201
+%define pkgrelease 301
 
 # This is needed to do merge window version magic
 %define patchlevel 11
 
 # allow pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 301%{?buildid}%{?dist}
 
 %define pkg_release %{specrelease}
 
@@ -603,7 +603,7 @@ BuildRequires: asciidoc
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.11.16.tar.xz
+Source0: linux-5.11.17.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1255,8 +1255,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.11.16 -c
-mv linux-5.11.16 linux-%{KVERREL}
+%setup -q -n kernel-5.11.17 -c
+mv linux-5.11.17 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2773,8 +2773,11 @@ fi
 #
 #
 %changelog
-* Sat Apr 24 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.16-201.fsync
-- Linux v5.11.16 futex2 zen
+* Mon May 03 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.17-301.fsync
+- Linux v5.11.17 futex2 zen
+
+* Wed Apr 28 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.17-0]
+- Fedora: ARMv7: build for 16 CPUs. (Peter Robinson)
 
 * Wed Apr 21 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.16-0]
 - Turn off ADI_AXI_ADC and AD9467 which now require CONFIG_OF (Justin M. Forbes)
