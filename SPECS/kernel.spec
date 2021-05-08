@@ -104,7 +104,7 @@ Summary: The Linux kernel
 %define primary_target rhel
 %endif
 
-%define rpmversion 5.11.17
+%define rpmversion 5.11.18
 %define stableversion 5.11
 %define pkgrelease 301
 
@@ -603,7 +603,7 @@ BuildRequires: asciidoc
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.11.17.tar.xz
+Source0: linux-5.11.18.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1255,8 +1255,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.11.17 -c
-mv linux-5.11.17 linux-%{KVERREL}
+%setup -q -n kernel-5.11.18 -c
+mv linux-5.11.18 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2422,7 +2422,7 @@ if [ -f /etc/sysconfig/kernel ]\
 then\
     . /etc/sysconfig/kernel || exit $?\
 fi\
-if [ "$HARDLINK" != "no" -a -x /usr/sbin/hardlink -a ! -e /run/ostree-booted ] \
+if [ "$HARDLINK" != "no" -a -x /usr/bin/hardlink -a ! -e /run/ostree-booted ] \
 then\
     (cd /usr/src/kernels/%{KVERREL}%{?1:+%{1}} &&\
      /usr/bin/find . -type f | while read f; do\
@@ -2773,8 +2773,18 @@ fi
 #
 #
 %changelog
-* Mon May 03 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.17-301.fsync
-- Linux v5.11.17 futex2 zen
+* Sat May 08 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.18-301.fsync
+- Linux v5.11.18 futex2 zen
+
+* Mon May 03 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.18-300]
+- nitro_enclaves: Fix stale file descriptors on failed usercopy (Mathias Krause)
+
+* Mon May 03 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.18-0]
+- Enable mtdram for fedora (rhbz 1955916) (Justin M. Forbes)
+- hardlink is in /usr/bin/ (rhbz 1889043) (Justin M. Forbes)
+- sfc: ef10: fix TX queue lookup in TX event handling (Edward Cree)
+- sfc: farch: fix TX queue lookup in TX event handling (Edward Cree)
+- sfc: farch: fix TX queue lookup in TX flush done handling (Edward Cree)
 
 * Wed Apr 28 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.17-0]
 - Fedora: ARMv7: build for 16 CPUs. (Peter Robinson)
