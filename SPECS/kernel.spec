@@ -104,7 +104,7 @@ Summary: The Linux kernel
 %define primary_target rhel
 %endif
 
-%define rpmversion 5.11.18
+%define rpmversion 5.11.19
 %define stableversion 5.11
 %define pkgrelease 301
 
@@ -603,7 +603,7 @@ BuildRequires: asciidoc
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.11.18.tar.xz
+Source0: linux-5.11.19.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1255,8 +1255,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.11.18 -c
-mv linux-5.11.18 linux-%{KVERREL}
+%setup -q -n kernel-5.11.19 -c
+mv linux-5.11.19 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2773,10 +2773,12 @@ fi
 #
 #
 %changelog
-* Sat May 08 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.18-301.fsync
-- Linux v5.11.18 futex2 zen
+* Thu May 13 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.11.19-301.fsync
+- Linux v5.11.19 futex2 zen
 
-* Mon May 03 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.18-300]
+* Fri May 07 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.19-0]
+- Fedora-5.12: Make amd_pinctrl module builtin (Hans de Goede)
+- ALSA: hda/realtek: Fix silent headphone output on ASUS UX430UA (Takashi Iwai)
 - nitro_enclaves: Fix stale file descriptors on failed usercopy (Mathias Krause)
 
 * Mon May 03 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.11.18-0]
