@@ -106,7 +106,7 @@ Summary: The Linux kernel
 %define primary_target rhel
 %endif
 
-%define rpmversion 5.12.7
+%define rpmversion 5.12.8
 %define stableversion 5.12
 %define pkgrelease 301
 
@@ -623,7 +623,7 @@ BuildRequires: clang
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.12.7.tar.xz
+Source0: linux-5.12.8.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1281,8 +1281,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.12.7 -c
-mv linux-5.12.7 linux-%{KVERREL}
+%setup -q -n kernel-5.12.8 -c
+mv linux-5.12.8 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2800,8 +2800,8 @@ fi
 #
 #
 %changelog
-* Fri May 28 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.12.7-301.fsync
-- Linux v5.12.7 futex2 zen
+* Wed Jun 02 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.12.8-300
+- Linux v5.12.8 futex2 zen
 
 * Wed May 26 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.12.7-0]
 - Fix up merge issue resulting in dual entries for ALC295_FIXUP_ASUS_DACS (Justin M. Forbes)
