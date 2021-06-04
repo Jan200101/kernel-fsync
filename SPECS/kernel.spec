@@ -106,7 +106,7 @@ Summary: The Linux kernel
 %define primary_target rhel
 %endif
 
-%define rpmversion 5.12.8
+%define rpmversion 5.12.9
 %define stableversion 5.12
 %define pkgrelease 301
 
@@ -623,7 +623,7 @@ BuildRequires: clang
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.12.8.tar.xz
+Source0: linux-5.12.9.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -781,6 +781,7 @@ Patch1: patch-%{stableversion}-redhat.patch
 # linux-fsync patches
 Patch200: zen.patch
 Patch201: futex2.patch
+Patch202: OpenRGB.patch
 %endif
 
 # empty final patch to facilitate testing of kernel patches
@@ -1281,8 +1282,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.12.8 -c
-mv linux-5.12.8 linux-%{KVERREL}
+%setup -q -n kernel-5.12.9 -c
+mv linux-5.12.9 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -1294,6 +1295,7 @@ ApplyOptionalPatch patch-%{stableversion}-redhat.patch
 # linux-fsync patches
 ApplyOptionalPatch zen.patch
 ApplyOptionalPatch futex2.patch
+ApplyOptionalPatch OpenRGB.patch
 %endif
 
 ApplyOptionalPatch linux-kernel-test.patch
@@ -2800,8 +2802,11 @@ fi
 #
 #
 %changelog
-* Wed Jun 02 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.12.8-300
-- Linux v5.12.8 futex2 zen
+* Fri Jun 04 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.12.9-301.fsync
+- Linux v5.12.8 futex2 zen openrgb
+
+* Thu Jun 03 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.12.9-0]
+- selinux: Allow context mounts for unpriviliged overlayfs (Vivek Goyal)
 
 * Wed May 26 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.12.7-0]
 - Fix up merge issue resulting in dual entries for ALC295_FIXUP_ASUS_DACS (Justin M. Forbes)
