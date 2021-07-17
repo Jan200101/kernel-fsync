@@ -106,7 +106,7 @@ Summary: The Linux kernel
 %define primary_target rhel
 %endif
 
-%define rpmversion 5.12.15
+%define rpmversion 5.12.17
 %define stableversion 5.12
 %define pkgrelease 301
 
@@ -623,7 +623,7 @@ BuildRequires: clang
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.12.15.tar.xz
+Source0: linux-5.12.17.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1282,8 +1282,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.12.15 -c
-mv linux-5.12.15 linux-%{KVERREL}
+%setup -q -n kernel-5.12.17 -c
+mv linux-5.12.17 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2802,8 +2802,8 @@ fi
 #
 #
 %changelog
-* Fri Jul 09 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.12.15-301.fsync
-- Linux v5.12.15 futex2 zen openrgb
+* Sat Jul 17 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.12.17-301.fsync
+- Linux v5.12.17 futex2 zen openrgb
 
 * Wed Jun 30 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.12.14-0]
 - Add CONFIG_SYSTEM_REVOCATION_LIST backported config option for 5.12.14 (Justin M. Forbes)
