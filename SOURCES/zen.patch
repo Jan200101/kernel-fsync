@@ -451,10 +451,10 @@ Signed-off-by: Alexandre Frade <admfrade@gmail.com>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/block/elevator.c b/block/elevator.c
-index 293c5c8..71111fa 100644
+index 4eab3d70e880..79669aa39d79 100644
 --- a/block/elevator.c
 +++ b/block/elevator.c
-@@ -616,15 +616,15 @@ static inline bool elv_support_iosched(struct request_queue *q)
+@@ -623,16 +623,16 @@ static inline bool elv_support_iosched(struct request_queue *q)
  }
  
  /*
@@ -465,7 +465,8 @@ index 293c5c8..71111fa 100644
   */
  static struct elevator_type *elevator_get_default(struct request_queue *q)
  {
- 	if (q->nr_hw_queues != 1)
+ 	if (q->nr_hw_queues != 1 &&
+ 			!blk_mq_is_sbitmap_shared(q->tag_set->flags))
  		return NULL;
  
 -	return elevator_get(q, "mq-deadline", false);
