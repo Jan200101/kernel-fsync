@@ -368,9 +368,9 @@ index 898ff44f2c7b..e72074034793 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
 @@ -330,7 +330,7 @@ int watermark_boost_factor __read_mostly;
- #else
+ int min_free_kbytes = 1024;
+ int user_min_free_kbytes = -1;
  int watermark_boost_factor __read_mostly = 15000;
- #endif
 -int watermark_scale_factor = 10;
 +int watermark_scale_factor = 200;
  

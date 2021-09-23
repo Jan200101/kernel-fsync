@@ -441,12 +441,11 @@ diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
 index f532c59bb59b..496f20d69914 100644
 --- a/drivers/misc/Kconfig
 +++ b/drivers/misc/Kconfig
-@@ -447,6 +447,18 @@
+@@ -445,6 +445,17 @@ config HISI_HIKEY_USB
  	  switching between the dual-role USB-C port and the USB-A host ports
  	  using only one USB controller.
  
 +config WINESYNC
-+	default y
 +	tristate "Synchronization primitives for Wine"
 +	help
 +	  This module provides kernel support for synchronization primitives
@@ -460,7 +459,6 @@ index f532c59bb59b..496f20d69914 100644
  source "drivers/misc/c2port/Kconfig"
  source "drivers/misc/eeprom/Kconfig"
  source "drivers/misc/cb710/Kconfig"
-
 diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
 index 99b6f15a3c70..327c9628c479 100644
 --- a/drivers/misc/Makefile
