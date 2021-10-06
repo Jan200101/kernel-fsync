@@ -80,7 +80,7 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 
-%global distro_build 200
+%global distro_build 300
 
 %if 0%{?fedora}
 %define secure_boot_arch x86_64
@@ -123,15 +123,15 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.14
 
-%define rpmversion 5.14.8
+%define rpmversion 5.14.9
 %define patchversion 5.14
-%define pkgrelease 201
+%define pkgrelease 301
 
 # This is needed to do merge window version magic
 %define patchlevel 14
 
 # allow pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 301%{?buildid}%{?dist}
 
 %define pkg_release %{specrelease}
 
@@ -672,7 +672,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.14.8.tar.xz
+Source0: linux-5.14.9.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1366,8 +1366,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.14.8 -c
-mv linux-5.14.8 linux-%{KVERREL}
+%setup -q -n kernel-5.14.9 -c
+mv linux-5.14.9 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2974,8 +2974,11 @@ fi
 #
 #
 %changelog
-* Sun Oct 03 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.8-201.fsync
-- Linux v5.14.8 futex2 zen openrgb
+* Wed Oct 06 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.9-301.fsync
+- Linux v5.14.9 futex2 zen openrgb
+
+* Thu Sep 30 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.9-0]
+- Revert "block, bfq: honor already-setup queue merges" (Jens Axboe)
 
 * Mon Sep 27 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.8-0]
 - thermal/drivers/int340x: Do not set a wrong tcc offset on resume (Antoine Tenart)

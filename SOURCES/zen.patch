@@ -553,15 +553,12 @@ diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
 index cb95da6..a422e3f 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -3129,6 +3129,8 @@ static int __init intel_pstate_setup(char *str)
- 		pr_info("HWP disabled\n");
+@@ -3367,6 +3367,8 @@
+ 	if (!strcmp(str, "no_hwp"))
  		no_hwp = 1;
- 	}
+ 
 +	if (!strcmp(str, "enable"))
 +		no_load = 0;
  	if (!strcmp(str, "force"))
  		force_load = 1;
  	if (!strcmp(str, "hwp_only"))
--- 
-2.28.0
-
