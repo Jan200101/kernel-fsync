@@ -123,7 +123,7 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.14
 
-%define rpmversion 5.14.14
+%define rpmversion 5.14.15
 %define patchversion 5.14
 %define pkgrelease 301
 
@@ -672,7 +672,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.14.14.tar.xz
+Source0: linux-5.14.15.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1366,8 +1366,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.14.14 -c
-mv linux-5.14.14 linux-%{KVERREL}
+%setup -q -n kernel-5.14.15 -c
+mv linux-5.14.15 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2974,8 +2974,11 @@ fi
 #
 #
 %changelog
-* Wed Oct 20 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.14-301.fsync
-- Linux v5.14.14 futex2 zen openrgb
+* Tue Nov 02 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.15-301.fsync
+- Linux v5.14.15 futex2 zen openrgb
+
+* Wed Oct 27 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.15-300]
+- Linux v5.14.15
 
 * Wed Oct 20 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.14-0]
 - autofs: fix wait name hash calculation in autofs_wait() (Ian Kent)
