@@ -80,7 +80,7 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 
-%global distro_build 301
+%global distro_build 300
 
 %if 0%{?fedora}
 %define secure_boot_arch x86_64
@@ -123,15 +123,15 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.14
 
-%define rpmversion 5.14.17
+%define rpmversion 5.14.18
 %define patchversion 5.14
-%define pkgrelease 302
+%define pkgrelease 301
 
 # This is needed to do merge window version magic
 %define patchlevel 14
 
 # allow pkg_release to have configurable %%{?dist} tag
-%define specrelease 302%{?buildid}%{?dist}
+%define specrelease 301%{?buildid}%{?dist}
 
 %define pkg_release %{specrelease}
 
@@ -672,7 +672,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.14.17.tar.xz
+Source0: linux-5.14.18.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1366,8 +1366,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.14.17 -c
-mv linux-5.14.17 linux-%{KVERREL}
+%setup -q -n kernel-5.14.18 -c
+mv linux-5.14.18 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2974,8 +2974,12 @@ fi
 #
 #
 %changelog
-* Sun Nov 14 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.17-302.fsync.1
-- Linux v5.14.17 futex2 zen openrgb
+* Wed Nov 17 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.18-301.fsync
+- Linux v5.14.18 futex2 zen openrgb
+
+* Fri Nov 12 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.18-1]
+- usb: xhci: tegra: Check padctrl interrupt presence in device tree (Dmitry Osipenko)
+- Input: i8042 - Add quirk for Fujitsu Lifebook T725 (Takashi Iwai)
 
 * Mon Nov 08 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.17-1]
 - btrfs: fix memory ordering between normal and ordered work functions (Nikolay Borisov)
