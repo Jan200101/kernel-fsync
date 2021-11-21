@@ -123,7 +123,7 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.14
 
-%define rpmversion 5.14.18
+%define rpmversion 5.14.19
 %define patchversion 5.14
 %define pkgrelease 301
 
@@ -672,7 +672,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.14.18.tar.xz
+Source0: linux-5.14.19.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1366,8 +1366,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.14.18 -c
-mv linux-5.14.18 linux-%{KVERREL}
+%setup -q -n kernel-5.14.19 -c
+mv linux-5.14.19 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2974,8 +2974,12 @@ fi
 #
 #
 %changelog
-* Wed Nov 17 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.18-301.fsync
-- Linux v5.14.18 futex2 zen openrgb
+* Sun Nov 21 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.19-301
+- Linux v5.14.19 futex2 zen openrgb
+
+* Wed Nov 17 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.19-1]
+- platform/x86: thinkpad_acpi: Add support for dual fan control (Jimmy Wang)
+- Fedora: Enable MediaTek bluetooth pieces (Peter Robinson)
 
 * Fri Nov 12 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.18-1]
 - usb: xhci: tegra: Check padctrl interrupt presence in device tree (Dmitry Osipenko)
