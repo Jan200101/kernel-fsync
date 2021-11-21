@@ -123,7 +123,7 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.14
 
-%define rpmversion 5.14.19
+%define rpmversion 5.14.20
 %define patchversion 5.14
 %define pkgrelease 301
 
@@ -672,7 +672,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.14.19.tar.xz
+Source0: linux-5.14.20.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1366,8 +1366,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.14.19 -c
-mv linux-5.14.19 linux-%{KVERREL}
+%setup -q -n kernel-5.14.20 -c
+mv linux-5.14.20 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2974,8 +2974,11 @@ fi
 #
 #
 %changelog
-* Sun Nov 21 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.19-301
-- Linux v5.14.19 futex2 zen openrgb
+* Sun Nov 21 2021 Jan Drögehoff <sentrycraft123@gmail.com> - 5.14.20-301.fsync
+- Linux v5.14.20 futex2 zen openrgb
+
+* Thu Nov 18 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.20-1]
+- Drop F33 from release_targets as pushes are already disabled in dist-git (Justin M. Forbes)
 
 * Wed Nov 17 2021 Justin M. Forbes <jforbes@fedoraproject.org> [5.14.19-1]
 - platform/x86: thinkpad_acpi: Add support for dual fan control (Jimmy Wang)
