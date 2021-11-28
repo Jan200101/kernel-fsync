@@ -75,15 +75,15 @@ diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd
 index d2a942086fcb..3f55ac23cea9 100644
 --- a/include/uapi/asm-generic/unistd.h
 +++ b/include/uapi/asm-generic/unistd.h
-@@ -878,8 +878,11 @@ __SYSCALL(__NR_landlock_add_rule, sys_landlock_add_rule)
- __SYSCALL(__NR_memfd_secret, sys_memfd_secret)
- #endif
+@@ -880,8 +880,11 @@ __SYSCALL(__NR_landlock_add_rule, sys_landlock_add_rule)
+ #define __NR_process_mrelease 448
+ __SYSCALL(__NR_process_mrelease, sys_process_mrelease)
  
 +#define __NR_futex_waitv 449
 +__SYSCALL(__NR_futex_waitv, sys_futex_waitv)
 +
  #undef __NR_syscalls
--#define __NR_syscalls 448
+-#define __NR_syscalls 449
 +#define __NR_syscalls 450
  
  /*
@@ -129,8 +129,8 @@ diff --git a/kernel/futex.c b/kernel/futex.c
 index 408cad5e8968..d7dc0bd9379c 100644
 --- a/kernel/futex.c
 +++ b/kernel/futex.c
-@@ -227,6 +227,18 @@ static const struct futex_q futex_q_init = {
- 	.bitset = FUTEX_BITSET_MATCH_ANY
+@@ -285,6 +285,18 @@ static const struct futex_q futex_q_init = {
+ 	.requeue_state	= ATOMIC_INIT(Q_REQUEUE_PI_NONE),
  };
  
 +/**
@@ -514,19 +514,19 @@ diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/sy
 index 4bbc267fb36b..b2b9b9df1355 100644
 --- a/arch/x86/entry/syscalls/syscall_32.tbl
 +++ b/arch/x86/entry/syscalls/syscall_32.tbl
-@@ -452,3 +452,4 @@
- 445	i386	landlock_add_rule	sys_landlock_add_rule
+@@ -453,3 +453,4 @@
  446	i386	landlock_restrict_self	sys_landlock_restrict_self
  447	i386	memfd_secret		sys_memfd_secret
+ 448	i386	process_mrelease	sys_process_mrelease
 +449	i386	futex_waitv		sys_futex_waitv
 diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
 index ce18119ea0d0..bfd4e8f5be34 100644
 --- a/arch/x86/entry/syscalls/syscall_64.tbl
 +++ b/arch/x86/entry/syscalls/syscall_64.tbl
-@@ -369,6 +369,7 @@
- 445	common	landlock_add_rule	sys_landlock_add_rule
+@@ -370,6 +370,7 @@
  446	common	landlock_restrict_self	sys_landlock_restrict_self
  447	common	memfd_secret		sys_memfd_secret
+ 448	common	process_mrelease	sys_process_mrelease
 +449	common	futex_waitv		sys_futex_waitv
  
  #
