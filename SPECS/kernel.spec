@@ -128,7 +128,7 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.15
 
-%define rpmversion 5.15.14
+%define rpmversion 5.15.15
 %define patchversion 5.15
 %define pkgrelease 201
 
@@ -682,7 +682,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.15.14.tar.xz
+Source0: linux-5.15.15.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1383,8 +1383,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.15.14 -c
-mv linux-5.15.14 linux-%{KVERREL}
+%setup -q -n kernel-5.15.15 -c
+mv linux-5.15.15 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2990,8 +2990,13 @@ fi
 #
 #
 %changelog
-* Mon Jan 17 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.15.14-201
-- Linux v5.15.14 futex2 zen openrgb
+* Fri Jan 21 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.15.15-201
+- Linux v5.15.15 futex2 zen openrgb
+
+* Sun Jan 16 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.15.15-0]
+- netfilter: nat: force port remap to prevent shadowing well-known ports (Florian Westphal)
+- netfilter: conntrack: tag conntracks picked up in local out hook (Florian Westphal)
+- configs/fedora: Enable CONFIG_NFC_PN532_UART for use PN532 NFC module (Ziqian SUN (Zamir))
 
 * Tue Jan 11 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.15.14-0]
 - Fix up changelog (Justin M. Forbes)
