@@ -41,16 +41,16 @@ diff --git a/kernel/sched/core.c b/kernel/sched/core.c
 index f788cd61df21..2bfbb4213707 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -59,7 +59,7 @@ const_debug unsigned int sysctl_sched_features =
-  * Number of tasks to iterate in a single balance run.
-  * Limited because this is done with IRQs disabled.
-  */
+@@ -77,7 +77,7 @@
+ #ifdef CONFIG_PREEMPT_RT
+ const_debug unsigned int sysctl_sched_nr_migrate = 8;
+ #else
 -const_debug unsigned int sysctl_sched_nr_migrate = 32;
 +const_debug unsigned int sysctl_sched_nr_migrate = 128;
+ #endif
  
  /*
-  * period over which we measure -rt task CPU usage in us.
-@@ -366,9 +366,9 @@
+@@ -370,9 +370,9 @@
  
  /*
   * part of the period that we allow rt tasks to run in us.
@@ -138,7 +138,7 @@ index 6b3b59cc51d6..2a0072192c3d 100644
  
  /*
   * The initial- and re-scaling of tunables is configurable
-@@ -58,13 +63,22 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
+@@ -61,8 +61,13 @@
   *
   * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
   */
@@ -151,6 +151,9 @@ index 6b3b59cc51d6..2a0072192c3d 100644
 +#endif
  
  /*
+  * Minimal preemption granularity for CPU-bound SCHED_IDLE tasks.
+@@ -75,7 +80,11 @@
+ /*
   * This value is kept at sysctl_sched_latency/sysctl_sched_min_granularity
   */
 +#ifdef CONFIG_ZENIFY
@@ -161,6 +164,7 @@ index 6b3b59cc51d6..2a0072192c3d 100644
  
  /*
   * After fork, child runs first. If set to 0 (default) then
+
 @@ -128,8 +149,12 @@ int __weak arch_asym_cpu_priority(int cpu)
   *
   * (default: 5 msec, units: microseconds)
@@ -434,7 +438,7 @@ diff --git a/block/elevator.c b/block/elevator.c
 index 4eab3d70e880..79669aa39d79 100644
 --- a/block/elevator.c
 +++ b/block/elevator.c
-@@ -623,19 +623,19 @@ static inline bool elv_support_iosched(struct request_queue *q)
+@@ -628,8 +628,8 @@
  }
  
  /*
@@ -445,11 +449,8 @@ index 4eab3d70e880..79669aa39d79 100644
   */
  static struct elevator_type *elevator_get_default(struct request_queue *q)
  {
- 	if (q->tag_set && q->tag_set->flags & BLK_MQ_F_NO_SCHED_BY_DEFAULT)
- 		return NULL;
-
- 	if (q->nr_hw_queues != 1 &&
- 			!blk_mq_is_sbitmap_shared(q->tag_set->flags))
+@@ -640,7 +640,7 @@
+ 	    !blk_mq_is_shared_tags(q->tag_set->flags))
  		return NULL;
  
 -	return elevator_get(q, "mq-deadline", false);

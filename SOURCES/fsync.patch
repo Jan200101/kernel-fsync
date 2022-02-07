@@ -13,12 +13,12 @@ of Proton to still use fsync in new kernel releases.
 
 Signed-off-by: André Almeida <andrealmeid@collabora.com>
 ---
- include/uapi/linux/futex.h | 12 ++++++
- kernel/futex.c             | 75 +++++++++++++++++++++++++++++++++++++-
- 2 files changed, 86 insertions(+), 1 deletion(-)
+ include/uapi/linux/futex.h | 13 +++++++
+ kernel/futex/syscalls.c    | 75 +++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 87 insertions(+), 1 deletion(-)
 
 diff --git a/include/uapi/linux/futex.h b/include/uapi/linux/futex.h
-index 2a06b99f9803..417c5d89b745 100644
+index 71a5df8d2689..d375ab21cbf8 100644
 --- a/include/uapi/linux/futex.h
 +++ b/include/uapi/linux/futex.h
 @@ -22,6 +22,7 @@
@@ -29,7 +29,7 @@ index 2a06b99f9803..417c5d89b745 100644
  
  #define FUTEX_PRIVATE_FLAG	128
  #define FUTEX_CLOCK_REALTIME	256
-@@ -68,6 +69,17 @@ struct futex_waitv {
+@@ -68,6 +69,18 @@ struct futex_waitv {
  	__u32 __reserved;
  };
  
@@ -44,14 +44,15 @@ index 2a06b99f9803..417c5d89b745 100644
 +	__u32 val;
 +	__u32 bitset;
 +};
- 
++
  /*
   * Support for robust futexes: the kernel cleans up held futexes at
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 4a9e7ce3714a..c3f2e65afab8 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -4012,6 +4012,7 @@ static __always_inline bool futex_cmd_has_timeout(u32 cmd)
+  * thread exit time.
+diff --git a/kernel/futex/syscalls.c b/kernel/futex/syscalls.c
+index 6f91a07a6a83..2f4d4c04ede2 100644
+--- a/kernel/futex/syscalls.c
++++ b/kernel/futex/syscalls.c
+@@ -158,6 +158,7 @@ static __always_inline bool futex_cmd_has_timeout(u32 cmd)
  	case FUTEX_LOCK_PI2:
  	case FUTEX_WAIT_BITSET:
  	case FUTEX_WAIT_REQUEUE_PI:
@@ -59,7 +60,7 @@ index 4a9e7ce3714a..c3f2e65afab8 100644
  		return true;
  	}
  	return false;
-@@ -4024,13 +4025,79 @@ futex_init_timeout(u32 cmd, u32 op, struct timespec64 *ts, ktime_t *t)
+@@ -170,13 +171,79 @@ futex_init_timeout(u32 cmd, u32 op, struct timespec64 *ts, ktime_t *t)
  		return -EINVAL;
  
  	*t = timespec64_to_ktime(*ts);
@@ -140,7 +141,7 @@ index 4a9e7ce3714a..c3f2e65afab8 100644
  SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
  		const struct __kernel_timespec __user *, utime,
  		u32 __user *, uaddr2, u32, val3)
-@@ -4050,6 +4117,9 @@ SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
+@@ -196,6 +263,9 @@ SYSCALL_DEFINE6(futex, u32 __user *, uaddr, int, op, u32, val,
  		tp = &t;
  	}
  
@@ -150,7 +151,7 @@ index 4a9e7ce3714a..c3f2e65afab8 100644
  	return do_futex(uaddr, op, val, tp, uaddr2, (unsigned long)utime, val3);
  }
  
-@@ -4551,6 +4621,9 @@ SYSCALL_DEFINE6(futex_time32, u32 __user *, uaddr, int, op, u32, val,
+@@ -392,6 +462,9 @@ SYSCALL_DEFINE6(futex_time32, u32 __user *, uaddr, int, op, u32, val,
  		tp = &t;
  	}
  
