@@ -130,7 +130,7 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.16
 
-%define rpmversion 5.16.7
+%define rpmversion 5.16.8
 %define patchversion 5.16
 %define pkgrelease 201
 
@@ -692,7 +692,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.16.7.tar.xz
+Source0: linux-5.16.8.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1395,8 +1395,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.16.7 -c
-mv linux-5.16.7 linux-%{KVERREL}
+%setup -q -n kernel-5.16.8 -c
+mv linux-5.16.8 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -3004,10 +3004,14 @@ fi
 #
 #
 %changelog
-* Fri Feb 11 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.7-201
-- Linux v5.16.7 futex2 zen openrgb
+* Fri Feb 11 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.8-201
+- Linux v5.16.8 futex2 zen openrgb
 
-* Sun Feb 06 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.7-200]
+* Tue Feb 08 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.8-200]
+- v5.16.8 rebase
+- drm/i915/psr: Disable PSR2 selective fetch for all TGL steps (Lyude Paul)
+- Set a value for CONFIG_FRAMEBUFFER_CONSOLE_LEGACY_ACCELERATION coming in with 5.16.8 (Justin M. Forbes)
+- ata: libata-core: Fix ata_dev_config_cpr() (Damien Le Moal)
 - Fix up Changelog for 5.16.7 (Justin M. Forbes)
 
 * Sun Feb 06 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.7-0]
