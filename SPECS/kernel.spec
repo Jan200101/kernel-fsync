@@ -130,7 +130,7 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.16
 
-%define rpmversion 5.16.5
+%define rpmversion 5.16.7
 %define patchversion 5.16
 %define pkgrelease 201
 
@@ -692,7 +692,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.16.5.tar.xz
+Source0: linux-5.16.7.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1395,8 +1395,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.16.5 -c
-mv linux-5.16.5 linux-%{KVERREL}
+%setup -q -n kernel-5.16.7 -c
+mv linux-5.16.7 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -3004,8 +3004,18 @@ fi
 #
 #
 %changelog
-* Sun Feb 06 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.5-201
-- Linux v5.16.5 fsync zen openrgb
+* Fri Feb 11 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.7-201
+- Linux v5.16.7 futex2 zen openrgb
+
+* Sun Feb 06 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.7-200]
+- Fix up Changelog for 5.16.7 (Justin M. Forbes)
+
+* Sun Feb 06 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.7-0]
+- Linux v5.16.7
+
+* Sat Feb 05 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.6-0]
+- Revert "ath11k: add support for WCN6855 hw2.1" (Justin M. Forbes)
+- Changelog updates for rebase (Justin M. Forbes)
 
 * Tue Feb 01 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.5-0]
 - Linux v5.16.5 rebase
