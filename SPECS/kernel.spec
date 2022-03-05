@@ -130,7 +130,7 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.16
 
-%define rpmversion 5.16.11
+%define rpmversion 5.16.12
 %define patchversion 5.16
 %define pkgrelease 201
 
@@ -692,7 +692,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.16.11.tar.xz
+Source0: linux-5.16.12.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1395,8 +1395,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.16.11 -c
-mv linux-5.16.11 linux-%{KVERREL}
+%setup -q -n kernel-5.16.12 -c
+mv linux-5.16.12 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -2131,7 +2131,7 @@ BuildKernel() {
 
 %ifnarch armv7hl
     # Generate vmlinux.h and put it to kernel-devel path
-    #bpftool btf dump file vmlinux format c > $RPM_BUILD_ROOT/$DevelDir/vmlinux.h
+    bpftool btf dump file vmlinux format c > $RPM_BUILD_ROOT/$DevelDir/vmlinux.h
 %endif
 
     # prune junk from kernel-devel
@@ -3003,8 +3003,11 @@ fi
 #
 #
 %changelog
-* Sun Feb 27 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.11-201
-- Linux v5.16.11 futex2 zen openrgb
+* Sat Mar 05 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.12-201
+- Linux v5.16.12 futex2 zen openrgb
+
+* Wed Mar 02 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.12-0]
+- drm/nouveau/backlight: Fix LVDS backlight detection on some laptops (Lyude Paul)
 
 * Wed Feb 23 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.11-0]
 - spec: don't overwrite auto.conf with .config (Ondrej Mosnacek)
