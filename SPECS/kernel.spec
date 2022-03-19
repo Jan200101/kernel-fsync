@@ -87,7 +87,7 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 
-%global distro_build 200
+%global distro_build 201
 
 %if 0%{?fedora}
 %define secure_boot_arch x86_64
@@ -130,15 +130,15 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.16
 
-%define rpmversion 5.16.14
+%define rpmversion 5.16.15
 %define patchversion 5.16
-%define pkgrelease 201
+%define pkgrelease 202
 
 # This is needed to do merge window version magic
 %define patchlevel 16
 
 # allow pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 
 %define pkg_release %{specrelease}
 
@@ -692,7 +692,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.16.14.tar.xz
+Source0: linux-5.16.15.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1395,8 +1395,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.16.14 -c
-mv linux-5.16.14 linux-%{KVERREL}
+%setup -q -n kernel-5.16.15 -c
+mv linux-5.16.15 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -3003,11 +3003,20 @@ fi
 #
 #
 %changelog
-* Mon Mar 14 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.14-201
-- Linux v5.16.14 futex2 zen openrgb
+* Sat Mar 19 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.15-202
+- Linux v5.16.15 futex2 zen openrgb
+
+* Thu Mar 17 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.15-1]
+- Back out the nfs workaround and just revert the query for fs_location (Justin M. Forbes)
+
+* Wed Mar 16 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.15-0]
+- nfc: st21nfca: Fix potential buffer overflows in EVT_TRANSACTION (Jordy Zomer)
+- Restrict FS_LOCATIONS to NFS v4.2+ to work around Qnap knfsd-3.4.6 bug (Justin M. Forbes)
+- Turn on VDPA_SIM_BLOCK (Justin M. Forbes)
+- Fix up changelog (Justin M. Forbes)
 
 * Fri Mar 11 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.14-0]
-- Linux v5.16.14
+- Linux v5.16.14 (Justin M. Forbes)
 
 * Tue Mar 08 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.13-0]
 - Add config for ARM64_ERRATUM_2077057 (Justin M. Forbes)

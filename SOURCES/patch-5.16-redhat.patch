@@ -16,8 +16,6 @@
  drivers/firmware/efi/Makefile                      |   1 +
  drivers/firmware/efi/efi.c                         | 124 +++++++++++++++------
  drivers/firmware/efi/secureboot.c                  |  38 +++++++
- drivers/gpu/drm/i915/display/intel_psr.c           |  16 ++-
- drivers/gpu/drm/i915/i915_reg.h                    |   1 +
  drivers/gpu/drm/nouveau/nouveau_backlight.c        |   3 +-
  drivers/hid/hid-rmi.c                              |  64 -----------
  drivers/hwtracing/coresight/coresight-etm4x-core.c |  19 ++++
@@ -27,15 +25,21 @@
  drivers/net/wireless/ath/ath11k/core.h             |   1 +
  drivers/net/wireless/ath/ath11k/mhi.c              |   1 +
  drivers/net/wireless/ath/ath11k/pci.c              |  16 ++-
+ drivers/nfc/st21nfca/se.c                          |  10 ++
  drivers/nvme/host/core.c                           |  22 +++-
  drivers/nvme/host/multipath.c                      |  19 ++--
  drivers/nvme/host/nvme.h                           |   4 +
  drivers/pci/msi.c                                  |  13 +--
  drivers/pci/quirks.c                               |  24 ++++
  drivers/usb/core/hub.c                             |   7 ++
+ fs/nfs/client.c                                    |   7 --
+ fs/nfs/nfs4_fs.h                                   |   9 +-
+ fs/nfs/nfs4proc.c                                  |  76 ++-----------
+ fs/nfs/nfs4state.c                                 |   3 +-
  include/linux/efi.h                                |  22 ++--
  include/linux/lsm_hook_defs.h                      |   2 +
  include/linux/lsm_hooks.h                          |   6 +
+ include/linux/nfs_xdr.h                            |   1 -
  include/linux/random.h                             |   7 ++
  include/linux/rmi.h                                |   1 +
  include/linux/security.h                           |   5 +
@@ -49,10 +53,10 @@
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |   6 +
  tools/testing/selftests/netfilter/nft_nat.sh       |   5 +-
- 51 files changed, 811 insertions(+), 205 deletions(-)
+ 55 files changed, 821 insertions(+), 284 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 86835419075f..dd0dae5bea09 100644
+index 8675dd2a9cc8..fae0fa3f7ed5 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -18,6 +18,10 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -83,7 +87,7 @@ index c2724d986fa0..8063dcef65f7 100644
  	  The VM uses one page of physical memory for each page table.
  	  For systems with a lot of processes, this can use a lot of
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 0e2c31f7a9aa..25310b3a1fc6 100644
+index d05d94d2b28b..1dfcaaba8810 100644
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
 @@ -1109,7 +1109,7 @@ endchoice
@@ -95,7 +99,7 @@ index 0e2c31f7a9aa..25310b3a1fc6 100644
  	help
  	  For systems with 52-bit userspace VAs enabled, the kernel will attempt
  	  to maintain compatibility with older software by providing 48-bit VAs
-@@ -1363,6 +1363,7 @@ config XEN
+@@ -1360,6 +1360,7 @@ config XEN
  config FORCE_MAX_ZONEORDER
  	int
  	default "14" if ARM64_64K_PAGES
@@ -151,7 +155,7 @@ index 65a31cb0611f..5d059341f02b 100644
  	/* boot_command_line has been already set up in early.c */
  	*cmdline_p = boot_command_line;
 diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index e04f5e6eb33f..8015e3d2dc9a 100644
+index 1782b3fb9320..d4b69f672bec 100644
 --- a/arch/x86/kernel/setup.c
 +++ b/arch/x86/kernel/setup.c
 @@ -20,6 +20,7 @@
@@ -162,7 +166,7 @@ index e04f5e6eb33f..8015e3d2dc9a 100644
  #include <linux/usb/xhci-dbgp.h>
  #include <linux/static_call.h>
  #include <linux/swiotlb.h>
-@@ -929,6 +930,13 @@ void __init setup_arch(char **cmdline_p)
+@@ -949,6 +950,13 @@ void __init setup_arch(char **cmdline_p)
  	if (efi_enabled(EFI_BOOT))
  		efi_init();
 
@@ -176,7 +180,7 @@ index e04f5e6eb33f..8015e3d2dc9a 100644
  	dmi_setup();
 
  	/*
-@@ -1094,19 +1102,7 @@ void __init setup_arch(char **cmdline_p)
+@@ -1114,19 +1122,7 @@ void __init setup_arch(char **cmdline_p)
  	/* Allocate bigger log buffer */
  	setup_log_buf(1);
 
@@ -850,59 +854,6 @@ index 000000000000..de0a3714a5d4
 +		}
 +	}
 +}
-diff --git a/drivers/gpu/drm/i915/display/intel_psr.c b/drivers/gpu/drm/i915/display/intel_psr.c
-index 7a205fd5023b..3ba8b717e176 100644
---- a/drivers/gpu/drm/i915/display/intel_psr.c
-+++ b/drivers/gpu/drm/i915/display/intel_psr.c
-@@ -1400,6 +1400,13 @@ static inline u32 man_trk_ctl_single_full_frame_bit_get(struct drm_i915_private
- 	       PSR2_MAN_TRK_CTL_SF_SINGLE_FULL_FRAME;
- }
-
-+static inline u32 man_trk_ctl_partial_frame_bit_get(struct drm_i915_private *dev_priv)
-+{
-+	return IS_ALDERLAKE_P(dev_priv) ?
-+	       ADLP_PSR2_MAN_TRK_CTL_SF_PARTIAL_FRAME_UPDATE :
-+	       PSR2_MAN_TRK_CTL_SF_PARTIAL_FRAME_UPDATE;
-+}
-+
- static void psr_force_hw_tracking_exit(struct intel_dp *intel_dp)
- {
- 	struct drm_i915_private *dev_priv = dp_to_i915(intel_dp);
-@@ -1495,7 +1502,13 @@ static void psr2_man_trk_ctl_calc(struct intel_crtc_state *crtc_state,
- {
- 	struct intel_crtc *crtc = to_intel_crtc(crtc_state->uapi.crtc);
- 	struct drm_i915_private *dev_priv = to_i915(crtc->base.dev);
--	u32 val = PSR2_MAN_TRK_CTL_ENABLE;
-+	u32 val = 0;
-+
-+	if (!IS_ALDERLAKE_P(dev_priv))
-+		val = PSR2_MAN_TRK_CTL_ENABLE;
-+
-+	/* SF partial frame enable has to be set even on full update */
-+	val |= man_trk_ctl_partial_frame_bit_get(dev_priv);
-
- 	if (full_update) {
- 		/*
-@@ -1515,7 +1528,6 @@ static void psr2_man_trk_ctl_calc(struct intel_crtc_state *crtc_state,
- 	} else {
- 		drm_WARN_ON(crtc_state->uapi.crtc->dev, clip->y1 % 4 || clip->y2 % 4);
-
--		val |= PSR2_MAN_TRK_CTL_SF_PARTIAL_FRAME_UPDATE;
- 		val |= PSR2_MAN_TRK_CTL_SU_REGION_START_ADDR(clip->y1 / 4 + 1);
- 		val |= PSR2_MAN_TRK_CTL_SU_REGION_END_ADDR(clip->y2 / 4 + 1);
- 	}
-diff --git a/drivers/gpu/drm/i915/i915_reg.h b/drivers/gpu/drm/i915/i915_reg.h
-index 14ce8809efdd..e927776ae183 100644
---- a/drivers/gpu/drm/i915/i915_reg.h
-+++ b/drivers/gpu/drm/i915/i915_reg.h
-@@ -4738,6 +4738,7 @@ enum {
- #define  ADLP_PSR2_MAN_TRK_CTL_SU_REGION_START_ADDR(val)	REG_FIELD_PREP(ADLP_PSR2_MAN_TRK_CTL_SU_REGION_START_ADDR_MASK, val)
- #define  ADLP_PSR2_MAN_TRK_CTL_SU_REGION_END_ADDR_MASK		REG_GENMASK(12, 0)
- #define  ADLP_PSR2_MAN_TRK_CTL_SU_REGION_END_ADDR(val)		REG_FIELD_PREP(ADLP_PSR2_MAN_TRK_CTL_SU_REGION_END_ADDR_MASK, val)
-+#define  ADLP_PSR2_MAN_TRK_CTL_SF_PARTIAL_FRAME_UPDATE		REG_BIT(31)
- #define  ADLP_PSR2_MAN_TRK_CTL_SF_SINGLE_FULL_FRAME		REG_BIT(14)
- #define  ADLP_PSR2_MAN_TRK_CTL_SF_CONTINUOS_FULL_FRAME		REG_BIT(13)
-
 diff --git a/drivers/gpu/drm/nouveau/nouveau_backlight.c b/drivers/gpu/drm/nouveau/nouveau_backlight.c
 index 1cbd71abc80a..9d2513de959b 100644
 --- a/drivers/gpu/drm/nouveau/nouveau_backlight.c
@@ -1422,6 +1373,34 @@ index 4c348bacf2cb..9fe496d35b38 100644
  			dev_err(&pdev->dev, "Unsupported WCN6855 SOC hardware version: %d %d\n",
  				soc_hw_version_major, soc_hw_version_minor);
  			ret = -EOPNOTSUPP;
+diff --git a/drivers/nfc/st21nfca/se.c b/drivers/nfc/st21nfca/se.c
+index a43fc4117fa5..c922f10d0d7b 100644
+--- a/drivers/nfc/st21nfca/se.c
++++ b/drivers/nfc/st21nfca/se.c
+@@ -316,6 +316,11 @@ int st21nfca_connectivity_event_received(struct nfc_hci_dev *hdev, u8 host,
+ 			return -ENOMEM;
+
+ 		transaction->aid_len = skb->data[1];
++
++		/* Checking if the length of the AID is valid */
++		if (transaction->aid_len > sizeof(transaction->aid))
++			return -EINVAL;
++
+ 		memcpy(transaction->aid, &skb->data[2],
+ 		       transaction->aid_len);
+
+@@ -325,6 +330,11 @@ int st21nfca_connectivity_event_received(struct nfc_hci_dev *hdev, u8 host,
+ 			return -EPROTO;
+
+ 		transaction->params_len = skb->data[transaction->aid_len + 3];
++
++		/* Total size is allocated (skb->len - 2) minus fixed array members */
++		if (transaction->params_len > ((skb->len - 2) - sizeof(struct nfc_evt_transaction)))
++			return -EINVAL;
++
+ 		memcpy(transaction->params, skb->data +
+ 		       transaction->aid_len + 4, transaction->params_len);
+
 diff --git a/drivers/nvme/host/core.c b/drivers/nvme/host/core.c
 index 5785f6abf194..7fc5f15a4b78 100644
 --- a/drivers/nvme/host/core.c
@@ -1590,7 +1569,7 @@ index 8465221be6d2..64f37ad8227d 100644
 
  	pcibios_free_irq(dev);
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 20a932690738..494cee3aec7b 100644
+index db864bf634a3..0489be6c81d4 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
 @@ -4272,6 +4272,30 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM, 0x9000,
@@ -1642,6 +1621,209 @@ index ac6c5ccfe1cb..ec784479eece 100644
  	/* Lock the device, then check to see if we were
  	 * disconnected while waiting for the lock to succeed. */
  	usb_lock_device(hdev);
+diff --git a/fs/nfs/client.c b/fs/nfs/client.c
+index a1e87419f3a4..2d2f2c091c65 100644
+--- a/fs/nfs/client.c
++++ b/fs/nfs/client.c
+@@ -860,13 +860,6 @@ static int nfs_probe_fsinfo(struct nfs_server *server, struct nfs_fh *mntfh, str
+ 			server->namelen = pathinfo.max_namelen;
+ 	}
+
+-	if (clp->rpc_ops->discover_trunking != NULL &&
+-			(server->caps & NFS_CAP_FS_LOCATIONS)) {
+-		error = clp->rpc_ops->discover_trunking(server, mntfh);
+-		if (error < 0)
+-			return error;
+-	}
+-
+ 	return 0;
+ }
+
+diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
+index 85c5d08dfa9c..2364661a6a08 100644
+--- a/fs/nfs/nfs4_fs.h
++++ b/fs/nfs/nfs4_fs.h
+@@ -260,8 +260,8 @@ struct nfs4_state_maintenance_ops {
+ };
+
+ struct nfs4_mig_recovery_ops {
+-	int (*get_locations)(struct nfs_server *, struct nfs_fh *,
+-		struct nfs4_fs_locations *, struct page *, const struct cred *);
++	int (*get_locations)(struct inode *, struct nfs4_fs_locations *,
++		struct page *, const struct cred *);
+ 	int (*fsid_present)(struct inode *, const struct cred *);
+ };
+
+@@ -303,9 +303,8 @@ extern int nfs4_do_close(struct nfs4_state *state, gfp_t gfp_mask, int wait);
+ extern int nfs4_server_capabilities(struct nfs_server *server, struct nfs_fh *fhandle);
+ extern int nfs4_proc_fs_locations(struct rpc_clnt *, struct inode *, const struct qstr *,
+ 				  struct nfs4_fs_locations *, struct page *);
+-extern int nfs4_proc_get_locations(struct nfs_server *, struct nfs_fh *,
+-				   struct nfs4_fs_locations *,
+-				   struct page *page, const struct cred *);
++extern int nfs4_proc_get_locations(struct inode *, struct nfs4_fs_locations *,
++		struct page *page, const struct cred *);
+ extern int nfs4_proc_fsid_present(struct inode *, const struct cred *);
+ extern struct rpc_clnt *nfs4_proc_lookup_mountpoint(struct inode *,
+ 						    struct dentry *,
+diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+index 0abbbf5d2bdf..ba3aa4575d25 100644
+--- a/fs/nfs/nfs4proc.c
++++ b/fs/nfs/nfs4proc.c
+@@ -3933,60 +3933,6 @@ int nfs4_server_capabilities(struct nfs_server *server, struct nfs_fh *fhandle)
+ 	return err;
+ }
+
+-static int _nfs4_discover_trunking(struct nfs_server *server,
+-				   struct nfs_fh *fhandle)
+-{
+-	struct nfs4_fs_locations *locations = NULL;
+-	struct page *page;
+-	const struct cred *cred;
+-	struct nfs_client *clp = server->nfs_client;
+-	const struct nfs4_state_maintenance_ops *ops =
+-		clp->cl_mvops->state_renewal_ops;
+-	int status = -ENOMEM;
+-
+-	cred = ops->get_state_renewal_cred(clp);
+-	if (cred == NULL) {
+-		cred = nfs4_get_clid_cred(clp);
+-		if (cred == NULL)
+-			return -ENOKEY;
+-	}
+-
+-	page = alloc_page(GFP_KERNEL);
+-	locations = kmalloc(sizeof(struct nfs4_fs_locations), GFP_KERNEL);
+-	if (page == NULL || locations == NULL)
+-		goto out;
+-
+-	status = nfs4_proc_get_locations(server, fhandle, locations, page,
+-					 cred);
+-	if (status)
+-		goto out;
+-out:
+-	if (page)
+-		__free_page(page);
+-	kfree(locations);
+-	return status;
+-}
+-
+-static int nfs4_discover_trunking(struct nfs_server *server,
+-				  struct nfs_fh *fhandle)
+-{
+-	struct nfs4_exception exception = {
+-		.interruptible = true,
+-	};
+-	struct nfs_client *clp = server->nfs_client;
+-	int err = 0;
+-
+-	if (!nfs4_has_session(clp))
+-		goto out;
+-	do {
+-		err = nfs4_handle_exception(server,
+-				_nfs4_discover_trunking(server, fhandle),
+-				&exception);
+-	} while (exception.retry);
+-out:
+-	return err;
+-}
+-
+ static int _nfs4_lookup_root(struct nfs_server *server, struct nfs_fh *fhandle,
+ 		struct nfs_fsinfo *info)
+ {
+@@ -7873,18 +7819,18 @@ int nfs4_proc_fs_locations(struct rpc_clnt *client, struct inode *dir,
+  * appended to this compound to identify the client ID which is
+  * performing recovery.
+  */
+-static int _nfs40_proc_get_locations(struct nfs_server *server,
+-				     struct nfs_fh *fhandle,
++static int _nfs40_proc_get_locations(struct inode *inode,
+ 				     struct nfs4_fs_locations *locations,
+ 				     struct page *page, const struct cred *cred)
+ {
++	struct nfs_server *server = NFS_SERVER(inode);
+ 	struct rpc_clnt *clnt = server->client;
+ 	u32 bitmask[2] = {
+ 		[0] = FATTR4_WORD0_FSID | FATTR4_WORD0_FS_LOCATIONS,
+ 	};
+ 	struct nfs4_fs_locations_arg args = {
+ 		.clientid	= server->nfs_client->cl_clientid,
+-		.fh		= fhandle,
++		.fh		= NFS_FH(inode),
+ 		.page		= page,
+ 		.bitmask	= bitmask,
+ 		.migration	= 1,		/* skip LOOKUP */
+@@ -7930,17 +7876,17 @@ static int _nfs40_proc_get_locations(struct nfs_server *server,
+  * When the client supports GETATTR(fs_locations_info), it can
+  * be plumbed in here.
+  */
+-static int _nfs41_proc_get_locations(struct nfs_server *server,
+-				     struct nfs_fh *fhandle,
++static int _nfs41_proc_get_locations(struct inode *inode,
+ 				     struct nfs4_fs_locations *locations,
+ 				     struct page *page, const struct cred *cred)
+ {
++	struct nfs_server *server = NFS_SERVER(inode);
+ 	struct rpc_clnt *clnt = server->client;
+ 	u32 bitmask[2] = {
+ 		[0] = FATTR4_WORD0_FSID | FATTR4_WORD0_FS_LOCATIONS,
+ 	};
+ 	struct nfs4_fs_locations_arg args = {
+-		.fh		= fhandle,
++		.fh		= NFS_FH(inode),
+ 		.page		= page,
+ 		.bitmask	= bitmask,
+ 		.migration	= 1,		/* skip LOOKUP */
+@@ -7989,11 +7935,11 @@ static int _nfs41_proc_get_locations(struct nfs_server *server,
+  * -NFS4ERR_LEASE_MOVED is returned if the server still has leases
+  * from this client that require migration recovery.
+  */
+-int nfs4_proc_get_locations(struct nfs_server *server,
+-			    struct nfs_fh *fhandle,
++int nfs4_proc_get_locations(struct inode *inode,
+ 			    struct nfs4_fs_locations *locations,
+ 			    struct page *page, const struct cred *cred)
+ {
++	struct nfs_server *server = NFS_SERVER(inode);
+ 	struct nfs_client *clp = server->nfs_client;
+ 	const struct nfs4_mig_recovery_ops *ops =
+ 					clp->cl_mvops->mig_recovery_ops;
+@@ -8006,11 +7952,10 @@ int nfs4_proc_get_locations(struct nfs_server *server,
+ 		(unsigned long long)server->fsid.major,
+ 		(unsigned long long)server->fsid.minor,
+ 		clp->cl_hostname);
+-	nfs_display_fhandle(fhandle, __func__);
++	nfs_display_fhandle(NFS_FH(inode), __func__);
+
+ 	do {
+-		status = ops->get_locations(server, fhandle, locations, page,
+-					    cred);
++		status = ops->get_locations(inode, locations, page, cred);
+ 		if (status != -NFS4ERR_DELAY)
+ 			break;
+ 		nfs4_handle_exception(server, status, &exception);
+@@ -10479,7 +10424,6 @@ const struct nfs_rpc_ops nfs_v4_clientops = {
+ 	.free_client	= nfs4_free_client,
+ 	.create_server	= nfs4_create_server,
+ 	.clone_server	= nfs_clone_server,
+-	.discover_trunking = nfs4_discover_trunking,
+ };
+
+ static const struct xattr_handler nfs4_xattr_nfs4_acl_handler = {
+diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
+index 499bef9fe118..f3265575c28d 100644
+--- a/fs/nfs/nfs4state.c
++++ b/fs/nfs/nfs4state.c
+@@ -2098,8 +2098,7 @@ static int nfs4_try_migration(struct nfs_server *server, const struct cred *cred
+ 	}
+
+ 	inode = d_inode(server->super->s_root);
+-	result = nfs4_proc_get_locations(server, NFS_FH(inode), locations,
+-					 page, cred);
++	result = nfs4_proc_get_locations(inode, locations, page, cred);
+ 	if (result) {
+ 		dprintk("<-- %s: failed to retrieve fs_locations: %d\n",
+ 			__func__, result);
 diff --git a/include/linux/efi.h b/include/linux/efi.h
 index ef8dbc0a1522..836a5dfc6156 100644
 --- a/include/linux/efi.h
@@ -1740,6 +1922,18 @@ index d45b6f6e27fd..70622b506461 100644
   * Security hooks for perf events
   *
   * @perf_event_open:
+diff --git a/include/linux/nfs_xdr.h b/include/linux/nfs_xdr.h
+index 695fa84611b6..967a0098f0a9 100644
+--- a/include/linux/nfs_xdr.h
++++ b/include/linux/nfs_xdr.h
+@@ -1795,7 +1795,6 @@ struct nfs_rpc_ops {
+ 	struct nfs_server *(*create_server)(struct fs_context *);
+ 	struct nfs_server *(*clone_server)(struct nfs_server *, struct nfs_fh *,
+ 					   struct nfs_fattr *, rpc_authflavor_t);
+-	int	(*discover_trunking)(struct nfs_server *, struct nfs_fh *);
+ };
+
+ /*
 diff --git a/include/linux/random.h b/include/linux/random.h
 index f45b8be3e3c4..7ccdec68b789 100644
 --- a/include/linux/random.h
