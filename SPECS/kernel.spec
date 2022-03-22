@@ -87,7 +87,7 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 
-%global distro_build 201
+%global distro_build 200
 
 %if 0%{?fedora}
 %define secure_boot_arch x86_64
@@ -130,15 +130,15 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.16
 
-%define rpmversion 5.16.15
+%define rpmversion 5.16.16
 %define patchversion 5.16
-%define pkgrelease 202
+%define pkgrelease 201
 
 # This is needed to do merge window version magic
 %define patchlevel 16
 
 # allow pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 
 %define pkg_release %{specrelease}
 
@@ -692,7 +692,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.16.15.tar.xz
+Source0: linux-5.16.16.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -864,6 +864,7 @@ Patch202: fsync.patch
 Patch203: OpenRGB.patch
 Patch204: winesync.patch
 Patch205: steam-deck.patch
+Patch206: amdgpu-si-cik-default.patch
 
 Patch301: AMD_CPPC.patch
 %endif
@@ -1395,8 +1396,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.16.15 -c
-mv linux-5.16.15 linux-%{KVERREL}
+%setup -q -n kernel-5.16.16 -c
+mv linux-5.16.16 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -1411,6 +1412,7 @@ ApplyOptionalPatch fsync.patch
 ApplyOptionalPatch OpenRGB.patch
 ApplyOptionalPatch winesync.patch
 ApplyOptionalPatch steam-deck.patch
+ApplyOptionalPatch amdgpu-si-cik-default.patch
 
 ApplyOptionalPatch AMD_CPPC.patch
 %endif
@@ -3003,8 +3005,11 @@ fi
 #
 #
 %changelog
-* Sat Mar 19 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.15-202
-- Linux v5.16.15 futex2 zen openrgb
+* Tue Mar 22 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.16-201-fsync
+- Linux v5.16.16 futex2 zen openrgb
+
+* Sat Mar 19 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.16-0]
+- drm/mgag200: Fix PLL setup for g200wb and g200ew (Jocelyn Falempe)
 
 * Thu Mar 17 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.15-1]
 - Back out the nfs workaround and just revert the query for fs_location (Justin M. Forbes)
