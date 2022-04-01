@@ -130,7 +130,7 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.16
 
-%define rpmversion 5.16.17
+%define rpmversion 5.16.18
 %define patchversion 5.16
 %define pkgrelease 201
 
@@ -692,7 +692,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.16.17.tar.xz
+Source0: linux-5.16.18.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1396,8 +1396,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.16.17 -c
-mv linux-5.16.17 linux-%{KVERREL}
+%setup -q -n kernel-5.16.18 -c
+mv linux-5.16.18 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -3005,10 +3005,12 @@ fi
 #
 #
 %changelog
-* Sun Mar 27 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.17-201
-- Linux v5.16.17 futex2 zen openrgb
+* Fri Apr 01 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.16.18-201
+- Linux v5.16.18 futex2 zen openrgb
 
-* Wed Mar 23 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.17-200]
+* Mon Mar 28 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.18-0]
+- Revert "swiotlb: rework "fix info leak with DMA_FROM_DEVICE"" (Linus Torvalds)
+- Fix RHDISTGIT for Fedora (Justin M. Forbes)
 - Fix up changelog (Justin M. Forbes)
 
 * Wed Mar 23 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.16.17-0]
