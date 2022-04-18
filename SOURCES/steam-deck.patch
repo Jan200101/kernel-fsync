@@ -1,40 +1,10 @@
-
-Add a driver exposing various bits and pieces of functionality
-provided by Steam Deck specific VLV0100 device presented by EC
-firmware. This includes but not limited to:
-
-    - CPU/device's fan control
-    - Read-only access to DDIC registers
-    - Battery tempreature measurements
-    - Various display related control knobs
-    - USB Type-C connector event notification
-
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Mark Gross <markgross@kernel.org>
-Cc: Jean Delvare <jdelvare@suse.com>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-kernel@vger.kernel.org (open list)
-Cc: platform-driver-x86@vger.kernel.org
-Cc: linux-hwmon@vger.kernel.org
-Signed-off-by: Andrey Smirnov <andrew.smirnov@gmail.com>
----
-
-This driver is really a kitchen sink of various small bits. Maybe it
-is worth splitting into an MFD + child drivers/devices?
-
- drivers/platform/x86/Kconfig     |  15 +
- drivers/platform/x86/Makefile    |   2 +
- drivers/platform/x86/steamdeck.c | 523 +++++++++++++++++++++++++++++++
- 3 files changed, 540 insertions(+)
- create mode 100644 drivers/platform/x86/steamdeck.c
-
 diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-index c23612d98126..86f014e78a6e 100644
+index 53abd553b842..5c42b99fe26d 100644
 --- a/drivers/platform/x86/Kconfig
 +++ b/drivers/platform/x86/Kconfig
-@@ -1075,6 +1075,20 @@
- 	  low level access for debug work and updating the firmware. Say
- 	  N unless you will be doing this on an Intel MID platform.
+@@ -1138,6 +1138,20 @@ config SIEMENS_SIMATIC_IPC
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called simatic-ipc.
  
 +config STEAMDECK
 +	tristate "Valve Steam Deck platform driver"
@@ -53,15 +23,14 @@ index c23612d98126..86f014e78a6e 100644
  endif # X86_PLATFORM_DEVICES
  
  config PMC_ATOM
-
 diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
-index c12a9b044fd8..2eb965e14ced 100644
+index c12a9b044fd8..c3cc86b27350 100644
 --- a/drivers/platform/x86/Makefile
 +++ b/drivers/platform/x86/Makefile
-@@ -123,3 +123,6 @@
- obj-$(CONFIG_INTEL_SCU_WDT)		+= intel_scu_wdt.o
- obj-$(CONFIG_INTEL_SCU_IPC_UTIL)	+= intel_scu_ipcutil.o
- obj-$(CONFIG_PMC_ATOM)			+= pmc_atom.o
+@@ -129,3 +129,6 @@ obj-$(CONFIG_PMC_ATOM)			+= pmc_atom.o
+ 
+ # Siemens Simatic Industrial PCs
+ obj-$(CONFIG_SIEMENS_SIMATIC_IPC)	+= simatic-ipc.o
 +
 +# Steam Deck
 +obj-$(CONFIG_STEAMDECK)			+= steamdeck.o
@@ -594,5 +563,3 @@ index 000000000000..77a6677ec19e
 +MODULE_AUTHOR("Andrey Smirnov <andrew.smirnov@gmail.com>");
 +MODULE_DESCRIPTION("Steam Deck ACPI platform driver");
 +MODULE_LICENSE("GPL");
---
-2.25.1
