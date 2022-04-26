@@ -1,0 +1,5574 @@
+From ec6fa26f04034a252e606d4cdc8097282c59ab18 Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Sun, 18 Oct 2020 16:42:44 +0900
+Subject: [PATCH] (surface3-oemb) add DMI matches for Surface 3 with broken DMI
+ table
+
+On some Surface 3, the DMI table gets corrupted for unknown reasons
+and breaks existing DMI matching used for device-specific quirks.
+
+This commit adds the (broken) DMI data into dmi_system_id tables used
+for quirks so that each driver can enable quirks even on the affected
+systems.
+
+On affected systems, DMI data will look like this:
+    $ grep . /sys/devices/virtual/dmi/id/{bios_vendor,board_name,board_vendor,\
+    chassis_vendor,product_name,sys_vendor}
+    /sys/devices/virtual/dmi/id/bios_vendor:American Megatrends Inc.
+    /sys/devices/virtual/dmi/id/board_name:OEMB
+    /sys/devices/virtual/dmi/id/board_vendor:OEMB
+    /sys/devices/virtual/dmi/id/chassis_vendor:OEMB
+    /sys/devices/virtual/dmi/id/product_name:OEMB
+    /sys/devices/virtual/dmi/id/sys_vendor:OEMB
+
+Expected:
+    $ grep . /sys/devices/virtual/dmi/id/{bios_vendor,board_name,board_vendor,\
+    chassis_vendor,product_name,sys_vendor}
+    /sys/devices/virtual/dmi/id/bios_vendor:American Megatrends Inc.
+    /sys/devices/virtual/dmi/id/board_name:Surface 3
+    /sys/devices/virtual/dmi/id/board_vendor:Microsoft Corporation
+    /sys/devices/virtual/dmi/id/chassis_vendor:Microsoft Corporation
+    /sys/devices/virtual/dmi/id/product_name:Surface 3
+    /sys/devices/virtual/dmi/id/sys_vendor:Microsoft Corporation
+
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+Patchset: surface3-oemb
+---
+ drivers/platform/surface/surface3-wmi.c           | 7 +++++++
+ sound/soc/codecs/rt5645.c                         | 9 +++++++++
+ sound/soc/intel/common/soc-acpi-intel-cht-match.c | 8 ++++++++
+ 3 files changed, 24 insertions(+)
+
+diff --git a/drivers/platform/surface/surface3-wmi.c b/drivers/platform/surface/surface3-wmi.c
+index 09ac9cfc40d8..c626109cf445 100644
+--- a/drivers/platform/surface/surface3-wmi.c
++++ b/drivers/platform/surface/surface3-wmi.c
+@@ -37,6 +37,13 @@ static const struct dmi_system_id surface3_dmi_table[] = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "Surface 3"),
+ 		},
+ 	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BIOS_VENDOR, "American Megatrends Inc."),
++			DMI_MATCH(DMI_SYS_VENDOR, "OEMB"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "OEMB"),
++		},
++	},
+ #endif
+ 	{ }
+ };
+diff --git a/sound/soc/codecs/rt5645.c b/sound/soc/codecs/rt5645.c
+index 197c56047947..9893e9c3cdf7 100644
+--- a/sound/soc/codecs/rt5645.c
++++ b/sound/soc/codecs/rt5645.c
+@@ -3718,6 +3718,15 @@ static const struct dmi_system_id dmi_platform_data[] = {
+ 		},
+ 		.driver_data = (void *)&intel_braswell_platform_data,
+ 	},
++	{
++		.ident = "Microsoft Surface 3",
++		.matches = {
++			DMI_MATCH(DMI_BIOS_VENDOR, "American Megatrends Inc."),
++			DMI_MATCH(DMI_SYS_VENDOR, "OEMB"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "OEMB"),
++		},
++		.driver_data = (void *)&intel_braswell_platform_data,
++	},
+ 	{
+ 		/*
+ 		 * Match for the GPDwin which unfortunately uses somewhat
+diff --git a/sound/soc/intel/common/soc-acpi-intel-cht-match.c b/sound/soc/intel/common/soc-acpi-intel-cht-match.c
+index c60a5e8e7bc9..e947133a2c36 100644
+--- a/sound/soc/intel/common/soc-acpi-intel-cht-match.c
++++ b/sound/soc/intel/common/soc-acpi-intel-cht-match.c
+@@ -27,6 +27,14 @@ static const struct dmi_system_id cht_table[] = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "Surface 3"),
+ 		},
+ 	},
++	{
++		.callback = cht_surface_quirk_cb,
++		.matches = {
++			DMI_MATCH(DMI_BIOS_VENDOR, "American Megatrends Inc."),
++			DMI_MATCH(DMI_SYS_VENDOR, "OEMB"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "OEMB"),
++		},
++	},
+ 	{ }
+ };
+ 
+-- 
+2.36.0
+
+From 1395350fc7351ab5a75541dd444b9321ab51642a Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Tue, 29 Sep 2020 17:32:22 +0900
+Subject: [PATCH] mwifiex: pcie: add reset_wsid quirk for Surface 3
+
+This commit adds reset_wsid quirk and uses this quirk for Surface 3 on
+card reset.
+
+To reset mwifiex on Surface 3, it seems that calling the _DSM method
+exists in \_SB.WSID [1] device is required.
+
+On Surface 3, calling the _DSM method removes/re-probes the card by
+itself. So, need to place the reset function before performing FLR and
+skip performing any other reset-related works.
+
+Note that Surface Pro 3 also has the WSID device [2], but it seems to need
+more work. This commit only supports Surface 3 yet.
+
+[1] https://github.com/linux-surface/acpidumps/blob/05cba925f3a515f222acb5b3551a032ddde958fe/surface_3/dsdt.dsl#L11947-L12011
+[2] https://github.com/linux-surface/acpidumps/blob/05cba925f3a515f222acb5b3551a032ddde958fe/surface_pro_3/dsdt.dsl#L12164-L12216
+
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+Patchset: mwifiex
+---
+ drivers/net/wireless/marvell/mwifiex/pcie.c   | 10 +++
+ .../wireless/marvell/mwifiex/pcie_quirks.c    | 83 +++++++++++++++++++
+ .../wireless/marvell/mwifiex/pcie_quirks.h    |  6 ++
+ 3 files changed, 99 insertions(+)
+
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie.c b/drivers/net/wireless/marvell/mwifiex/pcie.c
+index d5fb29400bad..033648526f16 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie.c
++++ b/drivers/net/wireless/marvell/mwifiex/pcie.c
+@@ -2993,6 +2993,16 @@ static void mwifiex_pcie_card_reset_work(struct mwifiex_adapter *adapter)
+ {
+ 	struct pcie_service_card *card = adapter->card;
+ 
++	/* On Surface 3, reset_wsid method removes then re-probes card by
++	 * itself. So, need to place it here and skip performing any other
++	 * reset-related works.
++	 */
++	if (card->quirks & QUIRK_FW_RST_WSID_S3) {
++		mwifiex_pcie_reset_wsid_quirk(card->dev);
++		/* skip performing any other reset-related works */
++		return;
++	}
++
+ 	/* We can't afford to wait here; remove() might be waiting on us. If we
+ 	 * can't grab the device lock, maybe we'll get another chance later.
+ 	 */
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
+index 0234cf3c2974..563dd0d5ac79 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
++++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
+@@ -15,10 +15,21 @@
+  * this warranty disclaimer.
+  */
+ 
++#include <linux/acpi.h>
+ #include <linux/dmi.h>
+ 
+ #include "pcie_quirks.h"
+ 
++/* For reset_wsid quirk */
++#define ACPI_WSID_PATH		"\\_SB.WSID"
++#define WSID_REV		0x0
++#define WSID_FUNC_WIFI_PWR_OFF	0x1
++#define WSID_FUNC_WIFI_PWR_ON	0x2
++/* WSID _DSM UUID: "534ea3bf-fcc2-4e7a-908f-a13978f0c7ef" */
++static const guid_t wsid_dsm_guid =
++	GUID_INIT(0x534ea3bf, 0xfcc2, 0x4e7a,
++		  0x90, 0x8f, 0xa1, 0x39, 0x78, 0xf0, 0xc7, 0xef);
++
+ /* quirk table based on DMI matching */
+ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 	{
+@@ -87,6 +98,14 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 		},
+ 		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
+ 	},
++	{
++		.ident = "Surface 3",
++		.matches = {
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface 3"),
++		},
++		.driver_data = (void *)QUIRK_FW_RST_WSID_S3,
++	},
+ 	{}
+ };
+ 
+@@ -103,6 +122,9 @@ void mwifiex_initialize_quirks(struct pcie_service_card *card)
+ 		dev_info(&pdev->dev, "no quirks enabled\n");
+ 	if (card->quirks & QUIRK_FW_RST_D3COLD)
+ 		dev_info(&pdev->dev, "quirk reset_d3cold enabled\n");
++	if (card->quirks & QUIRK_FW_RST_WSID_S3)
++		dev_info(&pdev->dev,
++			 "quirk reset_wsid for Surface 3 enabled\n");
+ }
+ 
+ static void mwifiex_pcie_set_power_d3cold(struct pci_dev *pdev)
+@@ -159,3 +181,64 @@ int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev)
+ 
+ 	return 0;
+ }
++
++int mwifiex_pcie_reset_wsid_quirk(struct pci_dev *pdev)
++{
++	acpi_handle handle;
++	union acpi_object *obj;
++	acpi_status status;
++
++	dev_info(&pdev->dev, "Using reset_wsid quirk to perform FW reset\n");
++
++	status = acpi_get_handle(NULL, ACPI_WSID_PATH, &handle);
++	if (ACPI_FAILURE(status)) {
++		dev_err(&pdev->dev, "No ACPI handle for path %s\n",
++			ACPI_WSID_PATH);
++		return -ENODEV;
++	}
++
++	if (!acpi_has_method(handle, "_DSM")) {
++		dev_err(&pdev->dev, "_DSM method not found\n");
++		return -ENODEV;
++	}
++
++	if (!acpi_check_dsm(handle, &wsid_dsm_guid,
++			    WSID_REV, WSID_FUNC_WIFI_PWR_OFF)) {
++		dev_err(&pdev->dev,
++			"_DSM method doesn't support wifi power off func\n");
++		return -ENODEV;
++	}
++
++	if (!acpi_check_dsm(handle, &wsid_dsm_guid,
++			    WSID_REV, WSID_FUNC_WIFI_PWR_ON)) {
++		dev_err(&pdev->dev,
++			"_DSM method doesn't support wifi power on func\n");
++		return -ENODEV;
++	}
++
++	/* card will be removed immediately after this call on Surface 3 */
++	dev_info(&pdev->dev, "turning wifi off...\n");
++	obj = acpi_evaluate_dsm(handle, &wsid_dsm_guid,
++				WSID_REV, WSID_FUNC_WIFI_PWR_OFF,
++				NULL);
++	if (!obj) {
++		dev_err(&pdev->dev,
++			"device _DSM execution failed for turning wifi off\n");
++		return -EIO;
++	}
++	ACPI_FREE(obj);
++
++	/* card will be re-probed immediately after this call on Surface 3 */
++	dev_info(&pdev->dev, "turning wifi on...\n");
++	obj = acpi_evaluate_dsm(handle, &wsid_dsm_guid,
++				WSID_REV, WSID_FUNC_WIFI_PWR_ON,
++				NULL);
++	if (!obj) {
++		dev_err(&pdev->dev,
++			"device _DSM execution failed for turning wifi on\n");
++		return -EIO;
++	}
++	ACPI_FREE(obj);
++
++	return 0;
++}
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
+index 8ec4176d698f..25370c5a4f59 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
++++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
+@@ -19,5 +19,11 @@
+ 
+ #define QUIRK_FW_RST_D3COLD	BIT(0)
+ 
++/* Surface 3 and Surface Pro 3 have the same _DSM method but need to
++ * be handled differently. Currently, only S3 is supported.
++ */
++#define QUIRK_FW_RST_WSID_S3	BIT(1)
++
+ void mwifiex_initialize_quirks(struct pcie_service_card *card);
+ int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
++int mwifiex_pcie_reset_wsid_quirk(struct pci_dev *pdev);
+-- 
+2.36.0
+
+From 312dfdce8be446cbe3fc1fb49754057218e2c7bd Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Wed, 30 Sep 2020 18:08:24 +0900
+Subject: [PATCH] mwifiex: pcie: (OEMB) add quirk for Surface 3 with broken DMI
+ table
+
+(made referring to http://git.osdn.net/view?p=android-x86/kernel.git;a=commitdiff;h=18e2e857c57633b25b3b4120f212224a108cd883)
+
+On some Surface 3, the DMI table gets corrupted for unknown reasons
+and breaks existing DMI matching used for device-specific quirks.
+
+This commit adds the (broken) DMI info for the affected Surface 3.
+
+On affected systems, DMI info will look like this:
+    $ grep . /sys/devices/virtual/dmi/id/{bios_vendor,board_name,board_vendor,\
+    chassis_vendor,product_name,sys_vendor}
+    /sys/devices/virtual/dmi/id/bios_vendor:American Megatrends Inc.
+    /sys/devices/virtual/dmi/id/board_name:OEMB
+    /sys/devices/virtual/dmi/id/board_vendor:OEMB
+    /sys/devices/virtual/dmi/id/chassis_vendor:OEMB
+    /sys/devices/virtual/dmi/id/product_name:OEMB
+    /sys/devices/virtual/dmi/id/sys_vendor:OEMB
+
+Expected:
+    $ grep . /sys/devices/virtual/dmi/id/{bios_vendor,board_name,board_vendor,\
+    chassis_vendor,product_name,sys_vendor}
+    /sys/devices/virtual/dmi/id/bios_vendor:American Megatrends Inc.
+    /sys/devices/virtual/dmi/id/board_name:Surface 3
+    /sys/devices/virtual/dmi/id/board_vendor:Microsoft Corporation
+    /sys/devices/virtual/dmi/id/chassis_vendor:Microsoft Corporation
+    /sys/devices/virtual/dmi/id/product_name:Surface 3
+    /sys/devices/virtual/dmi/id/sys_vendor:Microsoft Corporation
+
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+Patchset: mwifiex
+---
+ drivers/net/wireless/marvell/mwifiex/pcie_quirks.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
+index 563dd0d5ac79..32e2f000e57b 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
++++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
+@@ -106,6 +106,15 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 		},
+ 		.driver_data = (void *)QUIRK_FW_RST_WSID_S3,
+ 	},
++	{
++		.ident = "Surface 3",
++		.matches = {
++			DMI_EXACT_MATCH(DMI_BIOS_VENDOR, "American Megatrends Inc."),
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "OEMB"),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "OEMB"),
++		},
++		.driver_data = (void *)QUIRK_FW_RST_WSID_S3,
++	},
+ 	{}
+ };
+ 
+-- 
+2.36.0
+
+From 91a301f7fd782acf695910c618edcb98c062ed99 Mon Sep 17 00:00:00 2001
+From: Tsuchiya Yuto <kitakar@gmail.com>
+Date: Sun, 4 Oct 2020 00:11:49 +0900
+Subject: [PATCH] mwifiex: pcie: disable bridge_d3 for Surface gen4+
+
+Currently, mwifiex fw will crash after suspend on recent kernel series.
+On Windows, it seems that the root port of wifi will never enter D3 state
+(stay on D0 state). And on Linux, disabling the D3 state for the
+bridge fixes fw crashing after suspend.
+
+This commit disables the D3 state of root port on driver initialization
+and fixes fw crashing after suspend.
+
+Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
+Patchset: mwifiex
+---
+ drivers/net/wireless/marvell/mwifiex/pcie.c   |  7 +++++
+ .../wireless/marvell/mwifiex/pcie_quirks.c    | 27 +++++++++++++------
+ .../wireless/marvell/mwifiex/pcie_quirks.h    |  1 +
+ 3 files changed, 27 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie.c b/drivers/net/wireless/marvell/mwifiex/pcie.c
+index 033648526f16..ca6bcbe4794c 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie.c
++++ b/drivers/net/wireless/marvell/mwifiex/pcie.c
+@@ -380,6 +380,7 @@ static int mwifiex_pcie_probe(struct pci_dev *pdev,
+ 					const struct pci_device_id *ent)
+ {
+ 	struct pcie_service_card *card;
++	struct pci_dev *parent_pdev = pci_upstream_bridge(pdev);
+ 	int ret;
+ 
+ 	pr_debug("info: vendor=0x%4.04X device=0x%4.04X rev=%d\n",
+@@ -421,6 +422,12 @@ static int mwifiex_pcie_probe(struct pci_dev *pdev,
+ 		return -1;
+ 	}
+ 
++	/* disable bridge_d3 for Surface gen4+ devices to fix fw crashing
++	 * after suspend
++	 */
++	if (card->quirks & QUIRK_NO_BRIDGE_D3)
++		parent_pdev->bridge_d3 = false;
++
+ 	return 0;
+ }
+ 
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
+index 32e2f000e57b..356401bab59c 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
++++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
+@@ -38,7 +38,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Pro 4"),
+ 		},
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
++					QUIRK_NO_BRIDGE_D3),
+ 	},
+ 	{
+ 		.ident = "Surface Pro 5",
+@@ -47,7 +48,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_1796"),
+ 		},
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
++					QUIRK_NO_BRIDGE_D3),
+ 	},
+ 	{
+ 		.ident = "Surface Pro 5 (LTE)",
+@@ -56,7 +58,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_1807"),
+ 		},
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
++					QUIRK_NO_BRIDGE_D3),
+ 	},
+ 	{
+ 		.ident = "Surface Pro 6",
+@@ -64,7 +67,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Pro 6"),
+ 		},
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
++					QUIRK_NO_BRIDGE_D3),
+ 	},
+ 	{
+ 		.ident = "Surface Book 1",
+@@ -72,7 +76,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book"),
+ 		},
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
++					QUIRK_NO_BRIDGE_D3),
+ 	},
+ 	{
+ 		.ident = "Surface Book 2",
+@@ -80,7 +85,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book 2"),
+ 		},
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
++					QUIRK_NO_BRIDGE_D3),
+ 	},
+ 	{
+ 		.ident = "Surface Laptop 1",
+@@ -88,7 +94,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Laptop"),
+ 		},
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
++					QUIRK_NO_BRIDGE_D3),
+ 	},
+ 	{
+ 		.ident = "Surface Laptop 2",
+@@ -96,7 +103,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Laptop 2"),
+ 		},
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
++					QUIRK_NO_BRIDGE_D3),
+ 	},
+ 	{
+ 		.ident = "Surface 3",
+@@ -134,6 +142,9 @@ void mwifiex_initialize_quirks(struct pcie_service_card *card)
+ 	if (card->quirks & QUIRK_FW_RST_WSID_S3)
+ 		dev_info(&pdev->dev,
+ 			 "quirk reset_wsid for Surface 3 enabled\n");
++	if (card->quirks & QUIRK_NO_BRIDGE_D3)
++		dev_info(&pdev->dev,
++			 "quirk no_brigde_d3 enabled\n");
+ }
+ 
+ static void mwifiex_pcie_set_power_d3cold(struct pci_dev *pdev)
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
+index 25370c5a4f59..a1de111ad1db 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
++++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
+@@ -23,6 +23,7 @@
+  * be handled differently. Currently, only S3 is supported.
+  */
+ #define QUIRK_FW_RST_WSID_S3	BIT(1)
++#define QUIRK_NO_BRIDGE_D3	BIT(2)
+ 
+ void mwifiex_initialize_quirks(struct pcie_service_card *card);
+ int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
+-- 
+2.36.0
+
+From 1febd99bd24be85092ba5ddbf04cac8d9deab2c0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
+Date: Tue, 3 Nov 2020 13:28:04 +0100
+Subject: [PATCH] mwifiex: Add quirk resetting the PCI bridge on MS Surface
+ devices
+
+The most recent firmware of the 88W8897 card reports a hardcoded LTR
+value to the system during initialization, probably as an (unsuccessful)
+attempt of the developers to fix firmware crashes. This LTR value
+prevents most of the Microsoft Surface devices from entering deep
+powersaving states (either platform C-State 10 or S0ix state), because
+the exit latency of that state would be higher than what the card can
+tolerate.
+
+Turns out the card works just the same (including the firmware crashes)
+no matter if that hardcoded LTR value is reported or not, so it's kind
+of useless and only prevents us from saving power.
+
+To get rid of those hardcoded LTR reports, it's possible to reset the
+PCI bridge device after initializing the cards firmware. I'm not exactly
+sure why that works, maybe the power management subsystem of the PCH
+resets its stored LTR values when doing a function level reset of the
+bridge device. Doing the reset once after starting the wifi firmware
+works very well, probably because the firmware only reports that LTR
+value a single time during firmware startup.
+
+Patchset: mwifiex
+---
+ drivers/net/wireless/marvell/mwifiex/pcie.c   | 12 +++++++++
+ .../wireless/marvell/mwifiex/pcie_quirks.c    | 26 +++++++++++++------
+ .../wireless/marvell/mwifiex/pcie_quirks.h    |  1 +
+ 3 files changed, 31 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie.c b/drivers/net/wireless/marvell/mwifiex/pcie.c
+index ca6bcbe4794c..24bcd22a2618 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie.c
++++ b/drivers/net/wireless/marvell/mwifiex/pcie.c
+@@ -1781,9 +1781,21 @@ mwifiex_pcie_send_boot_cmd(struct mwifiex_adapter *adapter, struct sk_buff *skb)
+ static int mwifiex_pcie_init_fw_port(struct mwifiex_adapter *adapter)
+ {
+ 	struct pcie_service_card *card = adapter->card;
++	struct pci_dev *pdev = card->dev;
++	struct pci_dev *parent_pdev = pci_upstream_bridge(pdev);
+ 	const struct mwifiex_pcie_card_reg *reg = card->pcie.reg;
+ 	int tx_wrap = card->txbd_wrptr & reg->tx_wrap_mask;
+ 
++	/* Trigger a function level reset of the PCI bridge device, this makes
++	 * the firmware of PCIe 88W8897 cards stop reporting a fixed LTR value
++	 * that prevents the system from entering package C10 and S0ix powersaving
++	 * states.
++	 * We need to do it here because it must happen after firmware
++	 * initialization and this function is called after that is done.
++	 */
++	if (card->quirks & QUIRK_DO_FLR_ON_BRIDGE)
++		pci_reset_function(parent_pdev);
++
+ 	/* Write the RX ring read pointer in to reg->rx_rdptr */
+ 	if (mwifiex_write_reg(adapter, reg->rx_rdptr, card->rxbd_rdptr |
+ 			      tx_wrap)) {
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
+index 356401bab59c..6437f067d07a 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
++++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
+@@ -39,7 +39,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Pro 4"),
+ 		},
+ 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
+-					QUIRK_NO_BRIDGE_D3),
++					QUIRK_NO_BRIDGE_D3 |
++					QUIRK_DO_FLR_ON_BRIDGE),
+ 	},
+ 	{
+ 		.ident = "Surface Pro 5",
+@@ -49,7 +50,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_1796"),
+ 		},
+ 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
+-					QUIRK_NO_BRIDGE_D3),
++					QUIRK_NO_BRIDGE_D3 |
++					QUIRK_DO_FLR_ON_BRIDGE),
+ 	},
+ 	{
+ 		.ident = "Surface Pro 5 (LTE)",
+@@ -59,7 +61,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_1807"),
+ 		},
+ 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
+-					QUIRK_NO_BRIDGE_D3),
++					QUIRK_NO_BRIDGE_D3 |
++					QUIRK_DO_FLR_ON_BRIDGE),
+ 	},
+ 	{
+ 		.ident = "Surface Pro 6",
+@@ -68,7 +71,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Pro 6"),
+ 		},
+ 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
+-					QUIRK_NO_BRIDGE_D3),
++					QUIRK_NO_BRIDGE_D3 |
++					QUIRK_DO_FLR_ON_BRIDGE),
+ 	},
+ 	{
+ 		.ident = "Surface Book 1",
+@@ -77,7 +81,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book"),
+ 		},
+ 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
+-					QUIRK_NO_BRIDGE_D3),
++					QUIRK_NO_BRIDGE_D3 |
++					QUIRK_DO_FLR_ON_BRIDGE),
+ 	},
+ 	{
+ 		.ident = "Surface Book 2",
+@@ -86,7 +91,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book 2"),
+ 		},
+ 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
+-					QUIRK_NO_BRIDGE_D3),
++					QUIRK_NO_BRIDGE_D3 |
++					QUIRK_DO_FLR_ON_BRIDGE),
+ 	},
+ 	{
+ 		.ident = "Surface Laptop 1",
+@@ -95,7 +101,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Laptop"),
+ 		},
+ 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
+-					QUIRK_NO_BRIDGE_D3),
++					QUIRK_NO_BRIDGE_D3 |
++					QUIRK_DO_FLR_ON_BRIDGE),
+ 	},
+ 	{
+ 		.ident = "Surface Laptop 2",
+@@ -104,7 +111,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Laptop 2"),
+ 		},
+ 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
+-					QUIRK_NO_BRIDGE_D3),
++					QUIRK_NO_BRIDGE_D3 |
++					QUIRK_DO_FLR_ON_BRIDGE),
+ 	},
+ 	{
+ 		.ident = "Surface 3",
+@@ -145,6 +153,8 @@ void mwifiex_initialize_quirks(struct pcie_service_card *card)
+ 	if (card->quirks & QUIRK_NO_BRIDGE_D3)
+ 		dev_info(&pdev->dev,
+ 			 "quirk no_brigde_d3 enabled\n");
++	if (card->quirks & QUIRK_DO_FLR_ON_BRIDGE)
++		dev_info(&pdev->dev, "quirk do_flr_on_bridge enabled\n");
+ }
+ 
+ static void mwifiex_pcie_set_power_d3cold(struct pci_dev *pdev)
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
+index a1de111ad1db..0e429779bb04 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
++++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
+@@ -24,6 +24,7 @@
+  */
+ #define QUIRK_FW_RST_WSID_S3	BIT(1)
+ #define QUIRK_NO_BRIDGE_D3	BIT(2)
++#define QUIRK_DO_FLR_ON_BRIDGE	BIT(3)
+ 
+ void mwifiex_initialize_quirks(struct pcie_service_card *card);
+ int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
+-- 
+2.36.0
+
+From 8c6862539a41224f764f06e5f0c7284770edc3f4 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
+Date: Thu, 25 Mar 2021 11:33:02 +0100
+Subject: [PATCH] Bluetooth: btusb: Lower passive lescan interval on Marvell
+ 88W8897
+
+The Marvell 88W8897 combined wifi and bluetooth card (pcie+usb version)
+is used in a lot of Microsoft Surface devices, and all those devices
+suffer from very low 2.4GHz wifi connection speeds while bluetooth is
+enabled. The reason for that is that the default passive scanning
+interval for Bluetooth Low Energy devices is quite high in Linux
+(interval of 60 msec and scan window of 30 msec, see hci_core.c), and
+the Marvell chip is known for its bad bt+wifi coexisting performance.
+
+So decrease that passive scan interval and make the scan window shorter
+on this particular device to allow for spending more time transmitting
+wifi signals: The new scan interval is 250 msec (0x190 * 0.625 msec) and
+the new scan window is 6.25 msec (0xa * 0,625 msec).
+
+This change has a very large impact on the 2.4GHz wifi speeds and gets
+it up to performance comparable with the Windows driver, which seems to
+apply a similar quirk.
+
+The interval and window length were tested and found to work very well
+with a lot of Bluetooth Low Energy devices, including the Surface Pen, a
+Bluetooth Speaker and two modern Bluetooth headphones. All devices were
+discovered immediately after turning them on. Even lower values were
+also tested, but they introduced longer delays until devices get
+discovered.
+
+Patchset: mwifiex
+---
+ drivers/bluetooth/btusb.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+index 42234d5f602d..72202a744564 100644
+--- a/drivers/bluetooth/btusb.c
++++ b/drivers/bluetooth/btusb.c
+@@ -63,6 +63,7 @@ static struct usb_driver btusb_driver;
+ #define BTUSB_INTEL_BROKEN_SHUTDOWN_LED	0x2000000
+ #define BTUSB_INTEL_BROKEN_INITIAL_NCMD 0x4000000
+ #define BTUSB_INTEL_NO_WBS_SUPPORT	0x8000000
++#define BTUSB_LOWER_LESCAN_INTERVAL	0x10000000
+ 
+ static const struct usb_device_id btusb_table[] = {
+ 	/* Generic Bluetooth USB device */
+@@ -377,6 +378,7 @@ static const struct usb_device_id blacklist_table[] = {
+ 	{ USB_DEVICE(0x1286, 0x2044), .driver_info = BTUSB_MARVELL },
+ 	{ USB_DEVICE(0x1286, 0x2046), .driver_info = BTUSB_MARVELL },
+ 	{ USB_DEVICE(0x1286, 0x204e), .driver_info = BTUSB_MARVELL },
++	{ USB_DEVICE(0x1286, 0x204c), .driver_info = BTUSB_LOWER_LESCAN_INTERVAL },
+ 
+ 	/* Intel Bluetooth devices */
+ 	{ USB_DEVICE(0x8087, 0x0025), .driver_info = BTUSB_INTEL_COMBINED },
+@@ -3751,6 +3753,19 @@ static int btusb_probe(struct usb_interface *intf,
+ 	if (id->driver_info & BTUSB_MARVELL)
+ 		hdev->set_bdaddr = btusb_set_bdaddr_marvell;
+ 
++	/* The Marvell 88W8897 combined wifi and bluetooth card is known for
++	 * very bad bt+wifi coexisting performance.
++	 *
++	 * Decrease the passive BT Low Energy scan interval a bit
++	 * (0x0190 * 0.625 msec = 250 msec) and make the scan window shorter
++	 * (0x000a * 0,625 msec = 6.25 msec). This allows for significantly
++	 * higher wifi throughput while passively scanning for BT LE devices.
++	 */
++	if (id->driver_info & BTUSB_LOWER_LESCAN_INTERVAL) {
++		hdev->le_scan_interval = 0x0190;
++		hdev->le_scan_window = 0x000a;
++	}
++
+ 	if (IS_ENABLED(CONFIG_BT_HCIBTUSB_MTK) &&
+ 	    (id->driver_info & BTUSB_MEDIATEK)) {
+ 		hdev->setup = btusb_mtk_setup;
+-- 
+2.36.0
+
+From 921b3bdd8d6d963f5ea108a699ef6f70a3709acd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
+Date: Tue, 10 Nov 2020 12:49:56 +0100
+Subject: [PATCH] mwifiex: Use non-posted PCI register writes
+
+On the 88W8897 card it's very important the TX ring write pointer is
+updated correctly to its new value before setting the TX ready
+interrupt, otherwise the firmware appears to crash (probably because
+it's trying to DMA-read from the wrong place).
+
+Since PCI uses "posted writes" when writing to a register, it's not
+guaranteed that a write will happen immediately. That means the pointer
+might be outdated when setting the TX ready interrupt, leading to
+firmware crashes especially when ASPM L1 and L1 substates are enabled
+(because of the higher link latency, the write will probably take
+longer).
+
+So fix those firmware crashes by always forcing non-posted writes. We do
+that by simply reading back the register after writing it, just as a lot
+of other drivers do.
+
+There are two reproducers that are fixed with this patch:
+
+1) During rx/tx traffic and with ASPM L1 substates enabled (the enabled
+substates are platform dependent), the firmware crashes and eventually a
+command timeout appears in the logs. That crash is fixed by using a
+non-posted write in mwifiex_pcie_send_data().
+
+2) When sending lots of commands to the card, waking it up from sleep in
+very quick intervals, the firmware eventually crashes. That crash
+appears to be fixed by some other non-posted write included here.
+
+Patchset: mwifiex
+---
+ drivers/net/wireless/marvell/mwifiex/pcie.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/net/wireless/marvell/mwifiex/pcie.c b/drivers/net/wireless/marvell/mwifiex/pcie.c
+index 24bcd22a2618..b4ad0113a035 100644
+--- a/drivers/net/wireless/marvell/mwifiex/pcie.c
++++ b/drivers/net/wireless/marvell/mwifiex/pcie.c
+@@ -238,6 +238,12 @@ static int mwifiex_write_reg(struct mwifiex_adapter *adapter, int reg, u32 data)
+ 
+ 	iowrite32(data, card->pci_mmap1 + reg);
+ 
++	/* Do a read-back, which makes the write non-posted, ensuring the
++	 * completion before returning.
++	 * The firmware of the 88W8897 card is buggy and this avoids crashes.
++	 */
++	ioread32(card->pci_mmap1 + reg);
++
+ 	return 0;
+ }
+ 
+-- 
+2.36.0
+
+From 1e8468a42b52eb369a70003f99dde7b16846c5e2 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Sat, 27 Feb 2021 00:45:52 +0100
+Subject: [PATCH] ath10k: Add module parameters to override board files
+
+Some Surface devices, specifically the Surface Go and AMD version of the
+Surface Laptop 3 (wich both come with QCA6174 WiFi chips), work better
+with a different board file, as it seems that the firmeware included
+upstream is buggy.
+
+As it is generally not a good idea to randomly overwrite files, let
+alone doing so via packages, we add module parameters to override those
+file names in the driver. This allows us to package/deploy the override
+via a modprobe.d config.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: ath10k
+---
+ drivers/net/wireless/ath/ath10k/core.c | 58 ++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+
+diff --git a/drivers/net/wireless/ath/ath10k/core.c b/drivers/net/wireless/ath/ath10k/core.c
+index 8f5b8eb368fa..80c1bac732bc 100644
+--- a/drivers/net/wireless/ath/ath10k/core.c
++++ b/drivers/net/wireless/ath/ath10k/core.c
+@@ -36,6 +36,9 @@ static bool skip_otp;
+ static bool rawmode;
+ static bool fw_diag_log;
+ 
++static char *override_board = "";
++static char *override_board2 = "";
++
+ unsigned long ath10k_coredump_mask = BIT(ATH10K_FW_CRASH_DUMP_REGISTERS) |
+ 				     BIT(ATH10K_FW_CRASH_DUMP_CE_DATA);
+ 
+@@ -48,6 +51,9 @@ module_param(rawmode, bool, 0644);
+ module_param(fw_diag_log, bool, 0644);
+ module_param_named(coredump_mask, ath10k_coredump_mask, ulong, 0444);
+ 
++module_param(override_board, charp, 0644);
++module_param(override_board2, charp, 0644);
++
+ MODULE_PARM_DESC(debug_mask, "Debugging mask");
+ MODULE_PARM_DESC(uart_print, "Uart target debugging");
+ MODULE_PARM_DESC(skip_otp, "Skip otp failure for calibration in testmode");
+@@ -56,6 +62,9 @@ MODULE_PARM_DESC(rawmode, "Use raw 802.11 frame datapath");
+ MODULE_PARM_DESC(coredump_mask, "Bitfield of what to include in firmware crash file");
+ MODULE_PARM_DESC(fw_diag_log, "Diag based fw log debugging");
+ 
++MODULE_PARM_DESC(override_board, "Override for board.bin file");
++MODULE_PARM_DESC(override_board2, "Override for board-2.bin file");
++
+ static const struct ath10k_hw_params ath10k_hw_params_list[] = {
+ 	{
+ 		.id = QCA988X_HW_2_0_VERSION,
+@@ -844,6 +853,42 @@ static int ath10k_init_configure_target(struct ath10k *ar)
+ 	return 0;
+ }
+ 
++static const char *ath10k_override_board_fw_file(struct ath10k *ar,
++						 const char *file)
++{
++	if (strcmp(file, "board.bin") == 0) {
++		if (strcmp(override_board, "") == 0)
++			return file;
++
++		if (strcmp(override_board, "none") == 0) {
++			dev_info(ar->dev, "firmware override: pretending 'board.bin' does not exist\n");
++			return NULL;
++		}
++
++		dev_info(ar->dev, "firmware override: replacing 'board.bin' with '%s'\n",
++			 override_board);
++
++		return override_board;
++	}
++
++	if (strcmp(file, "board-2.bin") == 0) {
++		if (strcmp(override_board2, "") == 0)
++			return file;
++
++		if (strcmp(override_board2, "none") == 0) {
++			dev_info(ar->dev, "firmware override: pretending 'board-2.bin' does not exist\n");
++			return NULL;
++		}
++
++		dev_info(ar->dev, "firmware override: replacing 'board-2.bin' with '%s'\n",
++			 override_board2);
++
++		return override_board2;
++	}
++
++	return file;
++}
++
+ static const struct firmware *ath10k_fetch_fw_file(struct ath10k *ar,
+ 						   const char *dir,
+ 						   const char *file)
+@@ -858,6 +903,19 @@ static const struct firmware *ath10k_fetch_fw_file(struct ath10k *ar,
+ 	if (dir == NULL)
+ 		dir = ".";
+ 
++	/* HACK: Override board.bin and board-2.bin files if specified.
++	 *
++	 * Some Surface devices perform better with a different board
++	 * configuration. To this end, one would need to replace the board.bin
++	 * file with the modified config and remove the board-2.bin file.
++	 * Unfortunately, that's not a solution that we can easily package. So
++	 * we add module options to perform these overrides here.
++	 */
++
++	file = ath10k_override_board_fw_file(ar, file);
++	if (!file)
++		return ERR_PTR(-ENOENT);
++
+ 	snprintf(filename, sizeof(filename), "%s/%s", dir, file);
+ 	ret = firmware_request_nowarn(&fw, filename, ar->dev);
+ 	ath10k_dbg(ar, ATH10K_DBG_BOOT, "boot fw request '%s': %d\n",
+-- 
+2.36.0
+
+From 5f96f9f986f4177c1072baa7f3ab5f134cf20415 Mon Sep 17 00:00:00 2001
+From: Dorian Stoll <dorian.stoll@tmsp.io>
+Date: Thu, 30 Jul 2020 13:21:53 +0200
+Subject: [PATCH] misc: mei: Add missing IPTS device IDs
+
+Patchset: ipts
+---
+ drivers/misc/mei/hw-me-regs.h | 1 +
+ drivers/misc/mei/pci-me.c     | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/drivers/misc/mei/hw-me-regs.h b/drivers/misc/mei/hw-me-regs.h
+index 64ce3f830262..c208a1e3a7c1 100644
+--- a/drivers/misc/mei/hw-me-regs.h
++++ b/drivers/misc/mei/hw-me-regs.h
+@@ -92,6 +92,7 @@
+ #define MEI_DEV_ID_CDF        0x18D3  /* Cedar Fork */
+ 
+ #define MEI_DEV_ID_ICP_LP     0x34E0  /* Ice Lake Point LP */
++#define MEI_DEV_ID_ICP_LP_3   0x34E4  /* Ice Lake Point LP 3 (iTouch) */
+ #define MEI_DEV_ID_ICP_N      0x38E0  /* Ice Lake Point N */
+ 
+ #define MEI_DEV_ID_JSP_N      0x4DE0  /* Jasper Lake Point N */
+diff --git a/drivers/misc/mei/pci-me.c b/drivers/misc/mei/pci-me.c
+index a738253dbd05..4e1c3fe09e53 100644
+--- a/drivers/misc/mei/pci-me.c
++++ b/drivers/misc/mei/pci-me.c
+@@ -96,6 +96,7 @@ static const struct pci_device_id mei_me_pci_tbl[] = {
+ 	{MEI_PCI_DEVICE(MEI_DEV_ID_CMP_H_3, MEI_ME_PCH8_ITOUCH_CFG)},
+ 
+ 	{MEI_PCI_DEVICE(MEI_DEV_ID_ICP_LP, MEI_ME_PCH12_CFG)},
++	{MEI_PCI_DEVICE(MEI_DEV_ID_ICP_LP_3, MEI_ME_PCH12_CFG)},
+ 	{MEI_PCI_DEVICE(MEI_DEV_ID_ICP_N, MEI_ME_PCH12_CFG)},
+ 
+ 	{MEI_PCI_DEVICE(MEI_DEV_ID_TGP_LP, MEI_ME_PCH15_CFG)},
+-- 
+2.36.0
+
+From fce727fc65f22335a65f82446d045da06cae42c6 Mon Sep 17 00:00:00 2001
+From: Dorian Stoll <dorian.stoll@tmsp.io>
+Date: Thu, 6 Aug 2020 11:20:41 +0200
+Subject: [PATCH] misc: Add support for Intel Precise Touch & Stylus
+
+Based on linux-surface/intel-precise-touch@3f362c
+
+Signed-off-by: Dorian Stoll <dorian.stoll@tmsp.io>
+Patchset: ipts
+---
+ drivers/misc/Kconfig          |   1 +
+ drivers/misc/Makefile         |   1 +
+ drivers/misc/ipts/Kconfig     |  17 ++
+ drivers/misc/ipts/Makefile    |  12 ++
+ drivers/misc/ipts/context.h   |  47 +++++
+ drivers/misc/ipts/control.c   | 113 +++++++++++
+ drivers/misc/ipts/control.h   |  24 +++
+ drivers/misc/ipts/mei.c       | 125 ++++++++++++
+ drivers/misc/ipts/protocol.h  | 347 ++++++++++++++++++++++++++++++++++
+ drivers/misc/ipts/receiver.c  | 224 ++++++++++++++++++++++
+ drivers/misc/ipts/receiver.h  |  16 ++
+ drivers/misc/ipts/resources.c | 128 +++++++++++++
+ drivers/misc/ipts/resources.h |  17 ++
+ drivers/misc/ipts/uapi.c      | 208 ++++++++++++++++++++
+ drivers/misc/ipts/uapi.h      |  47 +++++
+ 15 files changed, 1327 insertions(+)
+ create mode 100644 drivers/misc/ipts/Kconfig
+ create mode 100644 drivers/misc/ipts/Makefile
+ create mode 100644 drivers/misc/ipts/context.h
+ create mode 100644 drivers/misc/ipts/control.c
+ create mode 100644 drivers/misc/ipts/control.h
+ create mode 100644 drivers/misc/ipts/mei.c
+ create mode 100644 drivers/misc/ipts/protocol.h
+ create mode 100644 drivers/misc/ipts/receiver.c
+ create mode 100644 drivers/misc/ipts/receiver.h
+ create mode 100644 drivers/misc/ipts/resources.c
+ create mode 100644 drivers/misc/ipts/resources.h
+ create mode 100644 drivers/misc/ipts/uapi.c
+ create mode 100644 drivers/misc/ipts/uapi.h
+
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 0f5a49fc7c9e..12b081bc875a 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -487,4 +487,5 @@ source "drivers/misc/cardreader/Kconfig"
+ source "drivers/misc/habanalabs/Kconfig"
+ source "drivers/misc/uacce/Kconfig"
+ source "drivers/misc/pvpanic/Kconfig"
++source "drivers/misc/ipts/Kconfig"
+ endmenu
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index a086197af544..972cae33ba36 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -59,3 +59,4 @@ obj-$(CONFIG_UACCE)		+= uacce/
+ obj-$(CONFIG_XILINX_SDFEC)	+= xilinx_sdfec.o
+ obj-$(CONFIG_HISI_HIKEY_USB)	+= hisi_hikey_usb.o
+ obj-$(CONFIG_HI6421V600_IRQ)	+= hi6421v600-irq.o
++obj-$(CONFIG_MISC_IPTS)		+= ipts/
+diff --git a/drivers/misc/ipts/Kconfig b/drivers/misc/ipts/Kconfig
+new file mode 100644
+index 000000000000..83e2a930c396
+--- /dev/null
++++ b/drivers/misc/ipts/Kconfig
+@@ -0,0 +1,17 @@
++# SPDX-License-Identifier: GPL-2.0-or-later
++
++config MISC_IPTS
++	tristate "Intel Precise Touch & Stylus"
++	depends on INTEL_MEI
++	help
++	  Say Y here if your system has a touchscreen using Intels
++	  Precise Touch & Stylus (IPTS) technology.
++
++	  If unsure say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called ipts.
++
++	  Building this driver alone will not give you a working touchscreen.
++	  It only exposed a userspace API that can be used by a daemon to
++	  receive and process data from the touchscreen hardware.
+diff --git a/drivers/misc/ipts/Makefile b/drivers/misc/ipts/Makefile
+new file mode 100644
+index 000000000000..8f58b9adbc94
+--- /dev/null
++++ b/drivers/misc/ipts/Makefile
+@@ -0,0 +1,12 @@
++# SPDX-License-Identifier: GPL-2.0-or-later
++#
++# Makefile for the IPTS touchscreen driver
++#
++
++obj-$(CONFIG_MISC_IPTS) += ipts.o
++ipts-objs := control.o
++ipts-objs += mei.o
++ipts-objs += receiver.o
++ipts-objs += resources.o
++ipts-objs += uapi.o
++
+diff --git a/drivers/misc/ipts/context.h b/drivers/misc/ipts/context.h
+new file mode 100644
+index 000000000000..f4b06a2d3f72
+--- /dev/null
++++ b/drivers/misc/ipts/context.h
+@@ -0,0 +1,47 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#ifndef _IPTS_CONTEXT_H_
++#define _IPTS_CONTEXT_H_
++
++#include <linux/cdev.h>
++#include <linux/device.h>
++#include <linux/mei_cl_bus.h>
++#include <linux/types.h>
++
++#include "protocol.h"
++
++enum ipts_host_status {
++	IPTS_HOST_STATUS_STARTING,
++	IPTS_HOST_STATUS_STARTED,
++	IPTS_HOST_STATUS_STOPPING,
++	IPTS_HOST_STATUS_STOPPED,
++};
++
++struct ipts_buffer_info {
++	u8 *address;
++	dma_addr_t dma_address;
++};
++
++struct ipts_context {
++	struct mei_cl_device *cldev;
++	struct device *dev;
++
++	bool restart;
++	enum ipts_host_status status;
++	struct ipts_get_device_info_rsp device_info;
++
++	struct ipts_buffer_info data[IPTS_BUFFERS];
++	struct ipts_buffer_info doorbell;
++
++	struct ipts_buffer_info feedback[IPTS_BUFFERS];
++	struct ipts_buffer_info workqueue;
++	struct ipts_buffer_info host2me;
++};
++
++#endif /* _IPTS_CONTEXT_H_ */
+diff --git a/drivers/misc/ipts/control.c b/drivers/misc/ipts/control.c
+new file mode 100644
+index 000000000000..a1d1f97a13d7
+--- /dev/null
++++ b/drivers/misc/ipts/control.c
+@@ -0,0 +1,113 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#include <linux/mei_cl_bus.h>
++
++#include "context.h"
++#include "protocol.h"
++#include "resources.h"
++#include "uapi.h"
++
++int ipts_control_send(struct ipts_context *ipts, u32 code, void *payload,
++		      size_t size)
++{
++	int ret;
++	struct ipts_command cmd;
++
++	memset(&cmd, 0, sizeof(struct ipts_command));
++	cmd.code = code;
++
++	if (payload && size > 0)
++		memcpy(&cmd.payload, payload, size);
++
++	ret = mei_cldev_send(ipts->cldev, (u8 *)&cmd, sizeof(cmd.code) + size);
++	if (ret >= 0)
++		return 0;
++
++	/*
++	 * During shutdown the device might get pulled away from below our feet.
++	 * Dont log an error in this case, because it will confuse people.
++	 */
++	if (ret != -ENODEV || ipts->status != IPTS_HOST_STATUS_STOPPING)
++		dev_err(ipts->dev, "Error while sending: 0x%X:%d\n", code, ret);
++
++	return ret;
++}
++
++int ipts_control_send_feedback(struct ipts_context *ipts, u32 buffer)
++{
++	struct ipts_feedback_cmd cmd;
++
++	memset(&cmd, 0, sizeof(struct ipts_feedback_cmd));
++	cmd.buffer = buffer;
++
++	return ipts_control_send(ipts, IPTS_CMD_FEEDBACK, &cmd,
++				 sizeof(struct ipts_feedback_cmd));
++}
++
++int ipts_control_set_feature(struct ipts_context *ipts, u8 report, u8 value)
++{
++	struct ipts_feedback_buffer *feedback;
++
++	memset(ipts->host2me.address, 0, ipts->device_info.feedback_size);
++	feedback = (struct ipts_feedback_buffer *)ipts->host2me.address;
++
++	feedback->cmd_type = IPTS_FEEDBACK_CMD_TYPE_NONE;
++	feedback->data_type = IPTS_FEEDBACK_DATA_TYPE_SET_FEATURES;
++	feedback->buffer = IPTS_HOST2ME_BUFFER;
++	feedback->size = 2;
++	feedback->payload[0] = report;
++	feedback->payload[1] = value;
++
++	return ipts_control_send_feedback(ipts, IPTS_HOST2ME_BUFFER);
++}
++
++int ipts_control_start(struct ipts_context *ipts)
++{
++	if (ipts->status != IPTS_HOST_STATUS_STOPPED)
++		return -EBUSY;
++
++	dev_info(ipts->dev, "Starting IPTS\n");
++	ipts->status = IPTS_HOST_STATUS_STARTING;
++	ipts->restart = false;
++
++	ipts_uapi_link(ipts);
++	return ipts_control_send(ipts, IPTS_CMD_GET_DEVICE_INFO, NULL, 0);
++}
++
++int ipts_control_stop(struct ipts_context *ipts)
++{
++	int ret;
++
++	if (ipts->status == IPTS_HOST_STATUS_STOPPING)
++		return -EBUSY;
++
++	if (ipts->status == IPTS_HOST_STATUS_STOPPED)
++		return -EBUSY;
++
++	dev_info(ipts->dev, "Stopping IPTS\n");
++	ipts->status = IPTS_HOST_STATUS_STOPPING;
++
++	ipts_uapi_unlink();
++	ipts_resources_free(ipts);
++
++	ret = ipts_control_send_feedback(ipts, 0);
++	if (ret == -ENODEV)
++		ipts->status = IPTS_HOST_STATUS_STOPPED;
++
++	return ret;
++}
++
++int ipts_control_restart(struct ipts_context *ipts)
++{
++	if (ipts->restart)
++		return -EBUSY;
++
++	ipts->restart = true;
++	return ipts_control_stop(ipts);
++}
+diff --git a/drivers/misc/ipts/control.h b/drivers/misc/ipts/control.h
+new file mode 100644
+index 000000000000..2c44e9e0e99f
+--- /dev/null
++++ b/drivers/misc/ipts/control.h
+@@ -0,0 +1,24 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#ifndef _IPTS_CONTROL_H_
++#define _IPTS_CONTROL_H_
++
++#include <linux/types.h>
++
++#include "context.h"
++
++int ipts_control_send(struct ipts_context *ipts, u32 cmd, void *payload,
++		      size_t size);
++int ipts_control_send_feedback(struct ipts_context *ipts, u32 buffer);
++int ipts_control_set_feature(struct ipts_context *ipts, u8 report, u8 value);
++int ipts_control_start(struct ipts_context *ipts);
++int ipts_control_restart(struct ipts_context *ipts);
++int ipts_control_stop(struct ipts_context *ipts);
++
++#endif /* _IPTS_CONTROL_H_ */
+diff --git a/drivers/misc/ipts/mei.c b/drivers/misc/ipts/mei.c
+new file mode 100644
+index 000000000000..59ecf13e00d2
+--- /dev/null
++++ b/drivers/misc/ipts/mei.c
+@@ -0,0 +1,125 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#include <linux/delay.h>
++#include <linux/dma-mapping.h>
++#include <linux/mei_cl_bus.h>
++#include <linux/mod_devicetable.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++
++#include "context.h"
++#include "control.h"
++#include "protocol.h"
++#include "receiver.h"
++#include "uapi.h"
++
++static int ipts_mei_set_dma_mask(struct mei_cl_device *cldev)
++{
++	int ret;
++
++	ret = dma_coerce_mask_and_coherent(&cldev->dev, DMA_BIT_MASK(64));
++	if (!ret)
++		return 0;
++
++	return dma_coerce_mask_and_coherent(&cldev->dev, DMA_BIT_MASK(32));
++}
++
++static int ipts_mei_probe(struct mei_cl_device *cldev,
++			  const struct mei_cl_device_id *id)
++{
++	int ret;
++	struct ipts_context *ipts;
++
++	if (ipts_mei_set_dma_mask(cldev)) {
++		dev_err(&cldev->dev, "Failed to set DMA mask for IPTS\n");
++		return -EFAULT;
++	}
++
++	ret = mei_cldev_enable(cldev);
++	if (ret) {
++		dev_err(&cldev->dev, "Failed to enable MEI device: %d\n", ret);
++		return ret;
++	}
++
++	ipts = kzalloc(sizeof(*ipts), GFP_KERNEL);
++	if (!ipts) {
++		mei_cldev_disable(cldev);
++		return -ENOMEM;
++	}
++
++	ipts->cldev = cldev;
++	ipts->dev = &cldev->dev;
++	ipts->status = IPTS_HOST_STATUS_STOPPED;
++
++	mei_cldev_set_drvdata(cldev, ipts);
++	mei_cldev_register_rx_cb(cldev, ipts_receiver_callback);
++
++	return ipts_control_start(ipts);
++}
++
++static void ipts_mei_remove(struct mei_cl_device *cldev)
++{
++	int i;
++	struct ipts_context *ipts = mei_cldev_get_drvdata(cldev);
++
++	ipts_control_stop(ipts);
++
++	for (i = 0; i < 20; i++) {
++		if (ipts->status == IPTS_HOST_STATUS_STOPPED)
++			break;
++
++		msleep(25);
++	}
++
++	mei_cldev_disable(cldev);
++	kfree(ipts);
++}
++
++static struct mei_cl_device_id ipts_mei_device_id_table[] = {
++	{ "", IPTS_MEI_UUID, MEI_CL_VERSION_ANY },
++	{},
++};
++MODULE_DEVICE_TABLE(mei, ipts_mei_device_id_table);
++
++static struct mei_cl_driver ipts_mei_driver = {
++	.id_table = ipts_mei_device_id_table,
++	.name = "ipts",
++	.probe = ipts_mei_probe,
++	.remove = ipts_mei_remove,
++};
++
++static int __init ipts_mei_init(void)
++{
++	int ret;
++
++	ret = ipts_uapi_init();
++	if (ret)
++		return ret;
++
++	ret = mei_cldev_driver_register(&ipts_mei_driver);
++	if (ret) {
++		ipts_uapi_free();
++		return ret;
++	}
++
++	return 0;
++}
++
++static void __exit ipts_mei_exit(void)
++{
++	mei_cldev_driver_unregister(&ipts_mei_driver);
++	ipts_uapi_free();
++}
++
++MODULE_DESCRIPTION("IPTS touchscreen driver");
++MODULE_AUTHOR("Dorian Stoll <dorian.stoll@tmsp.io>");
++MODULE_LICENSE("GPL");
++
++module_init(ipts_mei_init);
++module_exit(ipts_mei_exit);
+diff --git a/drivers/misc/ipts/protocol.h b/drivers/misc/ipts/protocol.h
+new file mode 100644
+index 000000000000..c3458904a94d
+--- /dev/null
++++ b/drivers/misc/ipts/protocol.h
+@@ -0,0 +1,347 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#ifndef _IPTS_PROTOCOL_H_
++#define _IPTS_PROTOCOL_H_
++
++#include <linux/types.h>
++
++/*
++ * The MEI client ID for IPTS functionality.
++ */
++#define IPTS_MEI_UUID                                                          \
++	UUID_LE(0x3e8d0870, 0x271a, 0x4208, 0x8e, 0xb5, 0x9a, 0xcb, 0x94,      \
++		0x02, 0xae, 0x04)
++
++/*
++ * Queries the device for vendor specific information.
++ *
++ * The command must not contain any payload.
++ * The response will contain struct ipts_get_device_info_rsp as payload.
++ */
++#define IPTS_CMD_GET_DEVICE_INFO 0x00000001
++#define IPTS_RSP_GET_DEVICE_INFO 0x80000001
++
++/*
++ * Sets the mode that IPTS will operate in.
++ *
++ * The command must contain struct ipts_set_mode_cmd as payload.
++ * The response will not contain any payload.
++ */
++#define IPTS_CMD_SET_MODE 0x00000002
++#define IPTS_RSP_SET_MODE 0x80000002
++
++/*
++ * Configures the memory buffers that the ME will use
++ * for passing data to the host.
++ *
++ * The command must contain struct ipts_set_mem_window_cmd as payload.
++ * The response will not contain any payload.
++ */
++#define IPTS_CMD_SET_MEM_WINDOW 0x00000003
++#define IPTS_RSP_SET_MEM_WINDOW 0x80000003
++
++/*
++ * Signals that the host is ready to receive data to the ME.
++ *
++ * The command must not contain any payload.
++ * The response will not contain any payload.
++ */
++#define IPTS_CMD_READY_FOR_DATA 0x00000005
++#define IPTS_RSP_READY_FOR_DATA 0x80000005
++
++/*
++ * Signals that a buffer can be refilled to the ME.
++ *
++ * The command must contain struct ipts_feedback_cmd as payload.
++ * The response will not contain any payload.
++ */
++#define IPTS_CMD_FEEDBACK 0x00000006
++#define IPTS_RSP_FEEDBACK 0x80000006
++
++/*
++ * Resets the data flow from the ME to the hosts and
++ * clears the buffers that were set with SET_MEM_WINDOW.
++ *
++ * The command must not contain any payload.
++ * The response will not contain any payload.
++ */
++#define IPTS_CMD_CLEAR_MEM_WINDOW 0x00000007
++#define IPTS_RSP_CLEAR_MEM_WINDOW 0x80000007
++
++/*
++ * Instructs the ME to reset the touch sensor.
++ *
++ * The command must contain struct ipts_reset_sensor_cmd as payload.
++ * The response will not contain any payload.
++ */
++#define IPTS_CMD_RESET_SENSOR 0x0000000B
++#define IPTS_RSP_RESET_SENSOR 0x8000000B
++
++/**
++ * enum ipts_status - Possible status codes returned by IPTS commands.
++ * @IPTS_STATUS_SUCCESS:                 Operation completed successfully.
++ * @IPTS_STATUS_INVALID_PARAMS:          Command contained a payload with invalid parameters.
++ * @IPTS_STATUS_ACCESS_DENIED:           ME could not validate buffer addresses supplied by host.
++ * @IPTS_STATUS_CMD_SIZE_ERROR:          Command contains an invalid payload.
++ * @IPTS_STATUS_NOT_READY:               Buffer addresses have not been set.
++ * @IPTS_STATUS_REQUEST_OUTSTANDING:     There is an outstanding command of the same type.
++ *                                       The host must wait for a response before sending another
++ *                                       command of the same type.
++ * @IPTS_STATUS_NO_SENSOR_FOUND:         No sensor could be found. Either no sensor is connected, it
++ *                                       has not been initialized yet, or the system is improperly
++ *                                       configured.
++ * @IPTS_STATUS_OUT_OF_MEMORY:           Not enough free memory for requested operation.
++ * @IPTS_STATUS_INTERNAL_ERROR:          An unexpected error occurred.
++ * @IPTS_STATUS_SENSOR_DISABLED:         The sensor has been disabled and must be reinitialized.
++ * @IPTS_STATUS_COMPAT_CHECK_FAIL:       Compatibility revision check between sensor and ME failed.
++ *                                       The host can ignore this error and attempt to continue.
++ * @IPTS_STATUS_SENSOR_EXPECTED_RESET:   The sensor went through a reset initiated by ME or host.
++ * @IPTS_STATUS_SENSOR_UNEXPECTED_RESET: The sensor went through an unexpected reset.
++ * @IPTS_STATUS_RESET_FAILED:            Requested sensor reset failed to complete.
++ * @IPTS_STATUS_TIMEOUT:                 The operation timed out.
++ * @IPTS_STATUS_TEST_MODE_FAIL:          Test mode pattern did not match expected values.
++ * @IPTS_STATUS_SENSOR_FAIL_FATAL:       The sensor reported a fatal error during reset sequence.
++ *                                       Further progress is not possible.
++ * @IPTS_STATUS_SENSOR_FAIL_NONFATAL:    The sensor reported a fatal error during reset sequence.
++ *                                       The host can attempt to continue.
++ * @IPTS_STATUS_INVALID_DEVICE_CAPS:     The device reported invalid capabilities.
++ * @IPTS_STATUS_QUIESCE_IO_IN_PROGRESS:  Command cannot be completed until Quiesce IO is done.
++ */
++enum ipts_status {
++	IPTS_STATUS_SUCCESS = 0,
++	IPTS_STATUS_INVALID_PARAMS = 1,
++	IPTS_STATUS_ACCESS_DENIED = 2,
++	IPTS_STATUS_CMD_SIZE_ERROR = 3,
++	IPTS_STATUS_NOT_READY = 4,
++	IPTS_STATUS_REQUEST_OUTSTANDING = 5,
++	IPTS_STATUS_NO_SENSOR_FOUND = 6,
++	IPTS_STATUS_OUT_OF_MEMORY = 7,
++	IPTS_STATUS_INTERNAL_ERROR = 8,
++	IPTS_STATUS_SENSOR_DISABLED = 9,
++	IPTS_STATUS_COMPAT_CHECK_FAIL = 10,
++	IPTS_STATUS_SENSOR_EXPECTED_RESET = 11,
++	IPTS_STATUS_SENSOR_UNEXPECTED_RESET = 12,
++	IPTS_STATUS_RESET_FAILED = 13,
++	IPTS_STATUS_TIMEOUT = 14,
++	IPTS_STATUS_TEST_MODE_FAIL = 15,
++	IPTS_STATUS_SENSOR_FAIL_FATAL = 16,
++	IPTS_STATUS_SENSOR_FAIL_NONFATAL = 17,
++	IPTS_STATUS_INVALID_DEVICE_CAPS = 18,
++	IPTS_STATUS_QUIESCE_IO_IN_PROGRESS = 19,
++};
++
++/*
++ * The amount of buffers that is used for IPTS
++ */
++#define IPTS_BUFFERS 16
++
++/*
++ * The special buffer ID that is used for direct host2me feedback.
++ */
++#define IPTS_HOST2ME_BUFFER IPTS_BUFFERS
++
++/**
++ * enum ipts_mode - Operation mode for IPTS hardware
++ * @IPTS_MODE_SINGLETOUCH: Fallback that supports only one finger and no stylus.
++ *                         The data is received as a HID report with ID 64.
++ * @IPTS_MODE_MULTITOUCH:  The "proper" operation mode for IPTS. It will return
++ *                         stylus data as well as capacitive heatmap touch data.
++ *                         This data needs to be processed in userspace.
++ */
++enum ipts_mode {
++	IPTS_MODE_SINGLETOUCH = 0,
++	IPTS_MODE_MULTITOUCH = 1,
++};
++
++/**
++ * struct ipts_set_mode_cmd - Payload for the SET_MODE command.
++ * @mode: The mode that IPTS should operate in.
++ */
++struct ipts_set_mode_cmd {
++	enum ipts_mode mode;
++	u8 reserved[12];
++} __packed;
++
++#define IPTS_WORKQUEUE_SIZE	 8192
++#define IPTS_WORKQUEUE_ITEM_SIZE 16
++
++/**
++ * struct ipts_set_mem_window_cmd - Payload for the SET_MEM_WINDOW command.
++ * @data_buffer_addr_lower:     Lower 32 bits of the data buffer addresses.
++ * @data_buffer_addr_upper:     Upper 32 bits of the data buffer addresses.
++ * @workqueue_addr_lower:       Lower 32 bits of the workqueue buffer address.
++ * @workqueue_addr_upper:       Upper 32 bits of the workqueue buffer address.
++ * @doorbell_addr_lower:        Lower 32 bits of the doorbell buffer address.
++ * @doorbell_addr_upper:        Upper 32 bits of the doorbell buffer address.
++ * @feedback_buffer_addr_lower: Lower 32 bits of the feedback buffer addresses.
++ * @feedback_buffer_addr_upper: Upper 32 bits of the feedback buffer addresses.
++ * @host2me_addr_lower:         Lower 32 bits of the host2me buffer address.
++ * @host2me_addr_upper:         Upper 32 bits of the host2me buffer address.
++ * @workqueue_item_size:        Magic value. (IPTS_WORKQUEUE_ITEM_SIZE)
++ * @workqueue_size:             Magic value. (IPTS_WORKQUEUE_SIZE)
++ *
++ * The data buffers are buffers that get filled with touch data by the ME.
++ * The doorbell buffer is a u32 that gets incremented by the ME once a data
++ * buffer has been filled with new data.
++ *
++ * The other buffers are required for using GuC submission with binary
++ * firmware. Since support for GuC submission has been dropped from i915,
++ * they are not used anymore, but they need to be allocated and passed,
++ * otherwise the hardware will refuse to start.
++ */
++struct ipts_set_mem_window_cmd {
++	u32 data_buffer_addr_lower[IPTS_BUFFERS];
++	u32 data_buffer_addr_upper[IPTS_BUFFERS];
++	u32 workqueue_addr_lower;
++	u32 workqueue_addr_upper;
++	u32 doorbell_addr_lower;
++	u32 doorbell_addr_upper;
++	u32 feedback_buffer_addr_lower[IPTS_BUFFERS];
++	u32 feedback_buffer_addr_upper[IPTS_BUFFERS];
++	u32 host2me_addr_lower;
++	u32 host2me_addr_upper;
++	u32 host2me_size;
++	u8 reserved1;
++	u8 workqueue_item_size;
++	u16 workqueue_size;
++	u8 reserved[32];
++} __packed;
++
++/**
++ * struct ipts_feedback_cmd - Payload for the FEEDBACK command.
++ * @buffer: The buffer that the ME should refill.
++ */
++struct ipts_feedback_cmd {
++	u32 buffer;
++	u8 reserved[12];
++} __packed;
++
++/**
++ * enum ipts_feedback_cmd_type - Commands that can be executed on the sensor through feedback.
++ */
++enum ipts_feedback_cmd_type {
++	IPTS_FEEDBACK_CMD_TYPE_NONE = 0,
++	IPTS_FEEDBACK_CMD_TYPE_SOFT_RESET = 1,
++	IPTS_FEEDBACK_CMD_TYPE_GOTO_ARMED = 2,
++	IPTS_FEEDBACK_CMD_TYPE_GOTO_SENSING = 3,
++	IPTS_FEEDBACK_CMD_TYPE_GOTO_SLEEP = 4,
++	IPTS_FEEDBACK_CMD_TYPE_GOTO_DOZE = 5,
++	IPTS_FEEDBACK_CMD_TYPE_HARD_RESET = 6,
++};
++
++/**
++ * enum ipts_feedback_data_type - Describes the data that a feedback buffer contains.
++ * @IPTS_FEEDBACK_DATA_TYPE_VENDOR:        The buffer contains vendor specific feedback.
++ * @IPTS_FEEDBACK_DATA_TYPE_SET_FEATURES:  The buffer contains a HID set features command.
++ * @IPTS_FEEDBACK_DATA_TYPE_GET_FEATURES:  The buffer contains a HID get features command.
++ * @IPTS_FEEDBACK_DATA_TYPE_OUTPUT_REPORT: The buffer contains a HID output report.
++ * @IPTS_FEEDBACK_DATA_TYPE_STORE_DATA:    The buffer contains calibration data for the sensor.
++ */
++enum ipts_feedback_data_type {
++	IPTS_FEEDBACK_DATA_TYPE_VENDOR = 0,
++	IPTS_FEEDBACK_DATA_TYPE_SET_FEATURES = 1,
++	IPTS_FEEDBACK_DATA_TYPE_GET_FEATURES = 2,
++	IPTS_FEEDBACK_DATA_TYPE_OUTPUT_REPORT = 3,
++	IPTS_FEEDBACK_DATA_TYPE_STORE_DATA = 4,
++};
++
++/**
++ * struct ipts_feedback_buffer - The contents of an IPTS feedback buffer.
++ * @cmd_type: A command that should be executed on the sensor.
++ * @size: The size of the payload to be written.
++ * @buffer: The ID of the buffer that contains this feedback data.
++ * @protocol: The protocol version of the EDS.
++ * @data_type: The type of payload that the buffer contains.
++ * @spi_offset: The offset at which to write the payload data.
++ * @payload: Payload for the feedback command, or 0 if no payload is sent.
++ */
++struct ipts_feedback_buffer {
++	enum ipts_feedback_cmd_type cmd_type;
++	u32 size;
++	u32 buffer;
++	u32 protocol;
++	enum ipts_feedback_data_type data_type;
++	u32 spi_offset;
++	u8 reserved[40];
++	u8 payload[];
++} __packed;
++
++/**
++ * enum ipts_reset_type - Possible ways of resetting the touch sensor
++ * @IPTS_RESET_TYPE_HARD: Perform hardware reset using GPIO pin.
++ * @IPTS_RESET_TYPE_SOFT: Perform software reset using SPI interface.
++ */
++enum ipts_reset_type {
++	IPTS_RESET_TYPE_HARD = 0,
++	IPTS_RESET_TYPE_SOFT = 1,
++};
++
++/**
++ * struct ipts_reset_sensor_cmd - Payload for the RESET_SENSOR command.
++ * @type: What type of reset should be performed.
++ */
++struct ipts_reset_sensor_cmd {
++	enum ipts_reset_type type;
++	u8 reserved[4];
++} __packed;
++
++/**
++ * struct ipts_command - A message sent from the host to the ME.
++ * @code:    The message code describing the command. (see IPTS_CMD_*)
++ * @payload: Payload for the command, or 0 if no payload is required.
++ */
++struct ipts_command {
++	u32 code;
++	u8 payload[320];
++} __packed;
++
++/**
++ * struct ipts_device_info - Payload for the GET_DEVICE_INFO response.
++ * @vendor_id:     Vendor ID of the touch sensor.
++ * @device_id:     Device ID of the touch sensor.
++ * @hw_rev:        Hardware revision of the touch sensor.
++ * @fw_rev:        Firmware revision of the touch sensor.
++ * @data_size:     Required size of one data buffer.
++ * @feedback_size: Required size of one feedback buffer.
++ * @mode:          Current operation mode of IPTS.
++ * @max_contacts:  The amount of concurrent touches supported by the sensor.
++ */
++struct ipts_get_device_info_rsp {
++	u16 vendor_id;
++	u16 device_id;
++	u32 hw_rev;
++	u32 fw_rev;
++	u32 data_size;
++	u32 feedback_size;
++	enum ipts_mode mode;
++	u8 max_contacts;
++	u8 reserved[19];
++} __packed;
++
++/**
++ * struct ipts_feedback_rsp - Payload for the FEEDBACK response.
++ * @buffer: The buffer that has received feedback.
++ */
++struct ipts_feedback_rsp {
++	u32 buffer;
++} __packed;
++
++/**
++ * struct ipts_response - A message sent from the ME to the host.
++ * @code:    The message code describing the response. (see IPTS_RSP_*)
++ * @status:  The status code returned by the command.
++ * @payload: Payload returned by the command.
++ */
++struct ipts_response {
++	u32 code;
++	enum ipts_status status;
++	u8 payload[80];
++} __packed;
++
++#endif /* _IPTS_PROTOCOL_H_ */
+diff --git a/drivers/misc/ipts/receiver.c b/drivers/misc/ipts/receiver.c
+new file mode 100644
+index 000000000000..23dca13c2139
+--- /dev/null
++++ b/drivers/misc/ipts/receiver.c
+@@ -0,0 +1,224 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#include <linux/mei_cl_bus.h>
++#include <linux/moduleparam.h>
++#include <linux/types.h>
++
++#include "context.h"
++#include "control.h"
++#include "protocol.h"
++#include "resources.h"
++
++/*
++ * Temporary parameter to guard gen7 multitouch mode.
++ * Remove once gen7 has stable iptsd support.
++ */
++static bool gen7mt;
++module_param(gen7mt, bool, 0644);
++
++static int ipts_receiver_handle_get_device_info(struct ipts_context *ipts,
++						struct ipts_response *rsp)
++{
++	struct ipts_set_mode_cmd cmd;
++
++	memcpy(&ipts->device_info, rsp->payload,
++	       sizeof(struct ipts_get_device_info_rsp));
++
++	memset(&cmd, 0, sizeof(struct ipts_set_mode_cmd));
++	cmd.mode = IPTS_MODE_MULTITOUCH;
++
++	return ipts_control_send(ipts, IPTS_CMD_SET_MODE, &cmd,
++				 sizeof(struct ipts_set_mode_cmd));
++}
++
++static int ipts_receiver_handle_set_mode(struct ipts_context *ipts)
++{
++	int i, ret;
++	struct ipts_set_mem_window_cmd cmd;
++
++	ret = ipts_resources_alloc(ipts);
++	if (ret) {
++		dev_err(ipts->dev, "Failed to allocate resources\n");
++		return ret;
++	}
++
++	memset(&cmd, 0, sizeof(struct ipts_set_mem_window_cmd));
++
++	for (i = 0; i < IPTS_BUFFERS; i++) {
++		cmd.data_buffer_addr_lower[i] =
++			lower_32_bits(ipts->data[i].dma_address);
++
++		cmd.data_buffer_addr_upper[i] =
++			upper_32_bits(ipts->data[i].dma_address);
++
++		cmd.feedback_buffer_addr_lower[i] =
++			lower_32_bits(ipts->feedback[i].dma_address);
++
++		cmd.feedback_buffer_addr_upper[i] =
++			upper_32_bits(ipts->feedback[i].dma_address);
++	}
++
++	cmd.workqueue_addr_lower = lower_32_bits(ipts->workqueue.dma_address);
++	cmd.workqueue_addr_upper = upper_32_bits(ipts->workqueue.dma_address);
++
++	cmd.doorbell_addr_lower = lower_32_bits(ipts->doorbell.dma_address);
++	cmd.doorbell_addr_upper = upper_32_bits(ipts->doorbell.dma_address);
++
++	cmd.host2me_addr_lower = lower_32_bits(ipts->host2me.dma_address);
++	cmd.host2me_addr_upper = upper_32_bits(ipts->host2me.dma_address);
++
++	cmd.workqueue_size = IPTS_WORKQUEUE_SIZE;
++	cmd.workqueue_item_size = IPTS_WORKQUEUE_ITEM_SIZE;
++
++	return ipts_control_send(ipts, IPTS_CMD_SET_MEM_WINDOW, &cmd,
++				 sizeof(struct ipts_set_mem_window_cmd));
++}
++
++static int ipts_receiver_handle_set_mem_window(struct ipts_context *ipts)
++{
++	int ret;
++
++	dev_info(ipts->dev, "Device %04hX:%04hX ready\n",
++		 ipts->device_info.vendor_id, ipts->device_info.device_id);
++	ipts->status = IPTS_HOST_STATUS_STARTED;
++
++	ret = ipts_control_send(ipts, IPTS_CMD_READY_FOR_DATA, NULL, 0);
++	if (ret)
++		return ret;
++
++	if (!gen7mt)
++		return 0;
++
++	return ipts_control_set_feature(ipts, 0x5, 0x1);
++}
++
++static int ipts_receiver_handle_feedback(struct ipts_context *ipts,
++					 struct ipts_response *rsp)
++{
++	struct ipts_feedback_rsp feedback;
++
++	if (ipts->status != IPTS_HOST_STATUS_STOPPING)
++		return 0;
++
++	memcpy(&feedback, rsp->payload, sizeof(feedback));
++
++	if (feedback.buffer < IPTS_BUFFERS - 1)
++		return ipts_control_send_feedback(ipts, feedback.buffer + 1);
++
++	return ipts_control_send(ipts, IPTS_CMD_CLEAR_MEM_WINDOW, NULL, 0);
++}
++
++static int ipts_receiver_handle_clear_mem_window(struct ipts_context *ipts)
++{
++	ipts->status = IPTS_HOST_STATUS_STOPPED;
++
++	if (ipts->restart)
++		return ipts_control_start(ipts);
++
++	return 0;
++}
++
++static bool ipts_receiver_sensor_was_reset(u32 status)
++{
++	return status == IPTS_STATUS_SENSOR_EXPECTED_RESET ||
++	       status == IPTS_STATUS_SENSOR_UNEXPECTED_RESET;
++}
++
++static bool ipts_receiver_handle_error(struct ipts_context *ipts,
++				       struct ipts_response *rsp)
++{
++	bool error;
++
++	switch (rsp->status) {
++	case IPTS_STATUS_SUCCESS:
++	case IPTS_STATUS_COMPAT_CHECK_FAIL:
++		error = false;
++		break;
++	case IPTS_STATUS_INVALID_PARAMS:
++		error = rsp->code != IPTS_RSP_FEEDBACK;
++		break;
++	case IPTS_STATUS_SENSOR_DISABLED:
++		error = ipts->status != IPTS_HOST_STATUS_STOPPING;
++		break;
++	default:
++		error = true;
++		break;
++	}
++
++	if (!error)
++		return false;
++
++	dev_err(ipts->dev, "Command 0x%08x failed: %d\n", rsp->code,
++		rsp->status);
++
++	if (ipts_receiver_sensor_was_reset(rsp->status)) {
++		dev_err(ipts->dev, "Sensor was reset\n");
++
++		if (ipts_control_restart(ipts))
++			dev_err(ipts->dev, "Failed to restart IPTS\n");
++	}
++
++	return true;
++}
++
++static void ipts_receiver_handle_response(struct ipts_context *ipts,
++					  struct ipts_response *rsp)
++{
++	int ret;
++
++	if (ipts_receiver_handle_error(ipts, rsp))
++		return;
++
++	switch (rsp->code) {
++	case IPTS_RSP_GET_DEVICE_INFO:
++		ret = ipts_receiver_handle_get_device_info(ipts, rsp);
++		break;
++	case IPTS_RSP_SET_MODE:
++		ret = ipts_receiver_handle_set_mode(ipts);
++		break;
++	case IPTS_RSP_SET_MEM_WINDOW:
++		ret = ipts_receiver_handle_set_mem_window(ipts);
++		break;
++	case IPTS_RSP_FEEDBACK:
++		ret = ipts_receiver_handle_feedback(ipts, rsp);
++		break;
++	case IPTS_RSP_CLEAR_MEM_WINDOW:
++		ret = ipts_receiver_handle_clear_mem_window(ipts);
++		break;
++	default:
++		ret = 0;
++		break;
++	}
++
++	if (!ret)
++		return;
++
++	dev_err(ipts->dev, "Error while handling response 0x%08x: %d\n",
++		rsp->code, ret);
++
++	if (ipts_control_stop(ipts))
++		dev_err(ipts->dev, "Failed to stop IPTS\n");
++}
++
++void ipts_receiver_callback(struct mei_cl_device *cldev)
++{
++	int ret;
++	struct ipts_response rsp;
++	struct ipts_context *ipts;
++
++	ipts = mei_cldev_get_drvdata(cldev);
++
++	ret = mei_cldev_recv(cldev, (u8 *)&rsp, sizeof(struct ipts_response));
++	if (ret <= 0) {
++		dev_err(ipts->dev, "Error while reading response: %d\n", ret);
++		return;
++	}
++
++	ipts_receiver_handle_response(ipts, &rsp);
++}
+diff --git a/drivers/misc/ipts/receiver.h b/drivers/misc/ipts/receiver.h
+new file mode 100644
+index 000000000000..7f075afa7ef8
+--- /dev/null
++++ b/drivers/misc/ipts/receiver.h
+@@ -0,0 +1,16 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#ifndef _IPTS_RECEIVER_H_
++#define _IPTS_RECEIVER_H_
++
++#include <linux/mei_cl_bus.h>
++
++void ipts_receiver_callback(struct mei_cl_device *cldev);
++
++#endif /* _IPTS_RECEIVER_H_ */
+diff --git a/drivers/misc/ipts/resources.c b/drivers/misc/ipts/resources.c
+new file mode 100644
+index 000000000000..8e3a2409e438
+--- /dev/null
++++ b/drivers/misc/ipts/resources.c
+@@ -0,0 +1,128 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#include <linux/dma-mapping.h>
++
++#include "context.h"
++
++void ipts_resources_free(struct ipts_context *ipts)
++{
++	int i;
++	struct ipts_buffer_info *buffers;
++
++	u32 data_buffer_size = ipts->device_info.data_size;
++	u32 feedback_buffer_size = ipts->device_info.feedback_size;
++
++	buffers = ipts->data;
++	for (i = 0; i < IPTS_BUFFERS; i++) {
++		if (!buffers[i].address)
++			continue;
++
++		dma_free_coherent(ipts->dev, data_buffer_size,
++				  buffers[i].address, buffers[i].dma_address);
++
++		buffers[i].address = NULL;
++		buffers[i].dma_address = 0;
++	}
++
++	buffers = ipts->feedback;
++	for (i = 0; i < IPTS_BUFFERS; i++) {
++		if (!buffers[i].address)
++			continue;
++
++		dma_free_coherent(ipts->dev, feedback_buffer_size,
++				  buffers[i].address, buffers[i].dma_address);
++
++		buffers[i].address = NULL;
++		buffers[i].dma_address = 0;
++	}
++
++	if (ipts->doorbell.address) {
++		dma_free_coherent(ipts->dev, sizeof(u32),
++				  ipts->doorbell.address,
++				  ipts->doorbell.dma_address);
++
++		ipts->doorbell.address = NULL;
++		ipts->doorbell.dma_address = 0;
++	}
++
++	if (ipts->workqueue.address) {
++		dma_free_coherent(ipts->dev, sizeof(u32),
++				  ipts->workqueue.address,
++				  ipts->workqueue.dma_address);
++
++		ipts->workqueue.address = NULL;
++		ipts->workqueue.dma_address = 0;
++	}
++
++	if (ipts->host2me.address) {
++		dma_free_coherent(ipts->dev, feedback_buffer_size,
++				  ipts->host2me.address,
++				  ipts->host2me.dma_address);
++
++		ipts->host2me.address = NULL;
++		ipts->host2me.dma_address = 0;
++	}
++}
++
++int ipts_resources_alloc(struct ipts_context *ipts)
++{
++	int i;
++	struct ipts_buffer_info *buffers;
++
++	u32 data_buffer_size = ipts->device_info.data_size;
++	u32 feedback_buffer_size = ipts->device_info.feedback_size;
++
++	buffers = ipts->data;
++	for (i = 0; i < IPTS_BUFFERS; i++) {
++		buffers[i].address =
++			dma_alloc_coherent(ipts->dev, data_buffer_size,
++					   &buffers[i].dma_address, GFP_KERNEL);
++
++		if (!buffers[i].address)
++			goto release_resources;
++	}
++
++	buffers = ipts->feedback;
++	for (i = 0; i < IPTS_BUFFERS; i++) {
++		buffers[i].address =
++			dma_alloc_coherent(ipts->dev, feedback_buffer_size,
++					   &buffers[i].dma_address, GFP_KERNEL);
++
++		if (!buffers[i].address)
++			goto release_resources;
++	}
++
++	ipts->doorbell.address =
++		dma_alloc_coherent(ipts->dev, sizeof(u32),
++				   &ipts->doorbell.dma_address, GFP_KERNEL);
++
++	if (!ipts->doorbell.address)
++		goto release_resources;
++
++	ipts->workqueue.address =
++		dma_alloc_coherent(ipts->dev, sizeof(u32),
++				   &ipts->workqueue.dma_address, GFP_KERNEL);
++
++	if (!ipts->workqueue.address)
++		goto release_resources;
++
++	ipts->host2me.address =
++		dma_alloc_coherent(ipts->dev, feedback_buffer_size,
++				   &ipts->host2me.dma_address, GFP_KERNEL);
++
++	if (!ipts->workqueue.address)
++		goto release_resources;
++
++	return 0;
++
++release_resources:
++
++	ipts_resources_free(ipts);
++	return -ENOMEM;
++}
+diff --git a/drivers/misc/ipts/resources.h b/drivers/misc/ipts/resources.h
+new file mode 100644
+index 000000000000..fdac0eee9156
+--- /dev/null
++++ b/drivers/misc/ipts/resources.h
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#ifndef _IPTS_RESOURCES_H_
++#define _IPTS_RESOURCES_H_
++
++#include "context.h"
++
++int ipts_resources_alloc(struct ipts_context *ipts);
++void ipts_resources_free(struct ipts_context *ipts);
++
++#endif /* _IPTS_RESOURCES_H_ */
+diff --git a/drivers/misc/ipts/uapi.c b/drivers/misc/ipts/uapi.c
+new file mode 100644
+index 000000000000..598f0710ad64
+--- /dev/null
++++ b/drivers/misc/ipts/uapi.c
+@@ -0,0 +1,208 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#include <linux/cdev.h>
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <linux/fs.h>
++#include <linux/types.h>
++#include <linux/uaccess.h>
++
++#include "context.h"
++#include "control.h"
++#include "protocol.h"
++#include "uapi.h"
++
++struct ipts_uapi uapi;
++
++static ssize_t ipts_uapi_read(struct file *file, char __user *buf, size_t count,
++			      loff_t *offset)
++{
++	int buffer;
++	int maxbytes;
++	struct ipts_context *ipts = uapi.ipts;
++
++	buffer = MINOR(file->f_path.dentry->d_inode->i_rdev);
++
++	if (!ipts || ipts->status != IPTS_HOST_STATUS_STARTED)
++		return -ENODEV;
++
++	maxbytes = ipts->device_info.data_size - *offset;
++	if (maxbytes <= 0 || count > maxbytes)
++		return -EINVAL;
++
++	if (copy_to_user(buf, ipts->data[buffer].address + *offset, count))
++		return -EFAULT;
++
++	return count;
++}
++
++static long ipts_uapi_ioctl_get_device_ready(struct ipts_context *ipts,
++					     unsigned long arg)
++{
++	void __user *buffer = (void __user *)arg;
++	u8 ready = 0;
++
++	if (ipts)
++		ready = ipts->status == IPTS_HOST_STATUS_STARTED;
++
++	if (copy_to_user(buffer, &ready, sizeof(u8)))
++		return -EFAULT;
++
++	return 0;
++}
++
++static long ipts_uapi_ioctl_get_device_info(struct ipts_context *ipts,
++					    unsigned long arg)
++{
++	struct ipts_device_info info;
++	void __user *buffer = (void __user *)arg;
++
++	if (!ipts || ipts->status != IPTS_HOST_STATUS_STARTED)
++		return -ENODEV;
++
++	info.vendor = ipts->device_info.vendor_id;
++	info.product = ipts->device_info.device_id;
++	info.version = ipts->device_info.fw_rev;
++	info.buffer_size = ipts->device_info.data_size;
++	info.max_contacts = ipts->device_info.max_contacts;
++
++	if (copy_to_user(buffer, &info, sizeof(struct ipts_device_info)))
++		return -EFAULT;
++
++	return 0;
++}
++
++static long ipts_uapi_ioctl_get_doorbell(struct ipts_context *ipts,
++					 unsigned long arg)
++{
++	void __user *buffer = (void __user *)arg;
++
++	if (!ipts || ipts->status != IPTS_HOST_STATUS_STARTED)
++		return -ENODEV;
++
++	if (copy_to_user(buffer, ipts->doorbell.address, sizeof(u32)))
++		return -EFAULT;
++
++	return 0;
++}
++
++static long ipts_uapi_ioctl_send_feedback(struct ipts_context *ipts,
++					  struct file *file)
++{
++	int ret;
++	u32 buffer;
++
++	if (!ipts || ipts->status != IPTS_HOST_STATUS_STARTED)
++		return -ENODEV;
++
++	buffer = MINOR(file->f_path.dentry->d_inode->i_rdev);
++
++	ret = ipts_control_send_feedback(ipts, buffer);
++	if (ret)
++		return -EFAULT;
++
++	return 0;
++}
++
++static long ipts_uapi_ioctl_send_reset(struct ipts_context *ipts)
++{
++	int ret;
++	struct ipts_reset_sensor_cmd cmd;
++
++	if (!ipts || ipts->status != IPTS_HOST_STATUS_STARTED)
++		return -ENODEV;
++
++	memset(&cmd, 0, sizeof(struct ipts_reset_sensor_cmd));
++	cmd.type = IPTS_RESET_TYPE_SOFT;
++
++	ret = ipts_control_send(ipts, IPTS_CMD_RESET_SENSOR, &cmd,
++				sizeof(struct ipts_reset_sensor_cmd));
++
++	if (ret)
++		return -EFAULT;
++
++	return 0;
++}
++
++static long ipts_uapi_ioctl(struct file *file, unsigned int cmd,
++			    unsigned long arg)
++{
++	struct ipts_context *ipts = uapi.ipts;
++
++	switch (cmd) {
++	case IPTS_IOCTL_GET_DEVICE_READY:
++		return ipts_uapi_ioctl_get_device_ready(ipts, arg);
++	case IPTS_IOCTL_GET_DEVICE_INFO:
++		return ipts_uapi_ioctl_get_device_info(ipts, arg);
++	case IPTS_IOCTL_GET_DOORBELL:
++		return ipts_uapi_ioctl_get_doorbell(ipts, arg);
++	case IPTS_IOCTL_SEND_FEEDBACK:
++		return ipts_uapi_ioctl_send_feedback(ipts, file);
++	case IPTS_IOCTL_SEND_RESET:
++		return ipts_uapi_ioctl_send_reset(ipts);
++	default:
++		return -ENOTTY;
++	}
++}
++
++static const struct file_operations ipts_uapi_fops = {
++	.owner = THIS_MODULE,
++	.read = ipts_uapi_read,
++	.unlocked_ioctl = ipts_uapi_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl = ipts_uapi_ioctl,
++#endif
++};
++
++void ipts_uapi_link(struct ipts_context *ipts)
++{
++	uapi.ipts = ipts;
++}
++
++void ipts_uapi_unlink(void)
++{
++	uapi.ipts = NULL;
++}
++
++int ipts_uapi_init(void)
++{
++	int i, major;
++
++	alloc_chrdev_region(&uapi.dev, 0, IPTS_BUFFERS, "ipts");
++	uapi.class = class_create(THIS_MODULE, "ipts");
++
++	major = MAJOR(uapi.dev);
++
++	cdev_init(&uapi.cdev, &ipts_uapi_fops);
++	uapi.cdev.owner = THIS_MODULE;
++	cdev_add(&uapi.cdev, MKDEV(major, 0), IPTS_BUFFERS);
++
++	for (i = 0; i < IPTS_BUFFERS; i++) {
++		device_create(uapi.class, NULL, MKDEV(major, i), NULL,
++			      "ipts/%d", i);
++	}
++
++	return 0;
++}
++
++void ipts_uapi_free(void)
++{
++	int i;
++	int major;
++
++	major = MAJOR(uapi.dev);
++
++	for (i = 0; i < IPTS_BUFFERS; i++)
++		device_destroy(uapi.class, MKDEV(major, i));
++
++	cdev_del(&uapi.cdev);
++
++	unregister_chrdev_region(MKDEV(major, 0), MINORMASK);
++	class_destroy(uapi.class);
++}
+diff --git a/drivers/misc/ipts/uapi.h b/drivers/misc/ipts/uapi.h
+new file mode 100644
+index 000000000000..53fb86a88f97
+--- /dev/null
++++ b/drivers/misc/ipts/uapi.h
+@@ -0,0 +1,47 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/*
++ * Copyright (c) 2016 Intel Corporation
++ * Copyright (c) 2020 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#ifndef _IPTS_UAPI_H_
++#define _IPTS_UAPI_H_
++
++#include <linux/types.h>
++
++#include "context.h"
++
++struct ipts_uapi {
++	dev_t dev;
++	struct class *class;
++	struct cdev cdev;
++
++	struct ipts_context *ipts;
++};
++
++struct ipts_device_info {
++	__u16 vendor;
++	__u16 product;
++	__u32 version;
++	__u32 buffer_size;
++	__u8 max_contacts;
++
++	/* For future expansion */
++	__u8 reserved[19];
++};
++
++#define IPTS_IOCTL_GET_DEVICE_READY _IOR(0x86, 0x01, __u8)
++#define IPTS_IOCTL_GET_DEVICE_INFO  _IOR(0x86, 0x02, struct ipts_device_info)
++#define IPTS_IOCTL_GET_DOORBELL	    _IOR(0x86, 0x03, __u32)
++#define IPTS_IOCTL_SEND_FEEDBACK    _IO(0x86, 0x04)
++#define IPTS_IOCTL_SEND_RESET	    _IO(0x86, 0x05)
++
++void ipts_uapi_link(struct ipts_context *ipts);
++void ipts_uapi_unlink(void);
++
++int ipts_uapi_init(void);
++void ipts_uapi_free(void);
++
++#endif /* _IPTS_UAPI_H_ */
+-- 
+2.36.0
+
+From db68833d47e0d5ee2bc2003b9e410a4f672aa43a Mon Sep 17 00:00:00 2001
+From: zouxiaoh <xiaohong.zou@intel.com>
+Date: Fri, 25 Jun 2021 08:52:59 +0800
+Subject: [PATCH] iommu: intel-ipu: use IOMMU passthrough mode for Intel IPUs
+
+Intel IPU(Image Processing Unit) has its own (IO)MMU hardware,
+The IPU driver allocates its own page table that is not mapped
+via the DMA, and thus the Intel IOMMU driver blocks access giving
+this error: DMAR: DRHD: handling fault status reg 3 DMAR:
+[DMA Read] Request device [00:05.0] PASID ffffffff
+fault addr 76406000 [fault reason 06] PTE Read access is not set
+As IPU is not an external facing device which is not risky, so use
+IOMMU passthrough mode for Intel IPUs.
+
+Change-Id: I6dcccdadac308cf42e20a18e1b593381391e3e6b
+Depends-On: Iacd67578e8c6a9b9ac73285f52b4081b72fb68a6
+Tracked-On: #JIITL8-411
+Signed-off-by: Bingbu Cao <bingbu.cao@intel.com>
+Signed-off-by: zouxiaoh <xiaohong.zou@intel.com>
+Signed-off-by: Xu Chongyang <chongyang.xu@intel.com>
+Patchset: ipts
+---
+ drivers/iommu/intel/iommu.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+
+diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
+index 5b196cfe9ed2..a5fc95dbb06d 100644
+--- a/drivers/iommu/intel/iommu.c
++++ b/drivers/iommu/intel/iommu.c
+@@ -57,6 +57,12 @@
+ #define IS_GFX_DEVICE(pdev) ((pdev->class >> 16) == PCI_BASE_CLASS_DISPLAY)
+ #define IS_USB_DEVICE(pdev) ((pdev->class >> 8) == PCI_CLASS_SERIAL_USB)
+ #define IS_ISA_DEVICE(pdev) ((pdev->class >> 8) == PCI_CLASS_BRIDGE_ISA)
++#define IS_INTEL_IPU(pdev) ((pdev)->vendor == PCI_VENDOR_ID_INTEL &&	\
++			   ((pdev)->device == 0x9a19 ||		\
++			    (pdev)->device == 0x9a39 ||		\
++			    (pdev)->device == 0x4e19 ||		\
++			    (pdev)->device == 0x465d ||		\
++			    (pdev)->device == 0x1919))
+ #define IS_AZALIA(pdev) ((pdev)->vendor == 0x8086 && (pdev)->device == 0x3a3e)
+ 
+ #define IOAPIC_RANGE_START	(0xfee00000)
+@@ -332,12 +338,14 @@ int intel_iommu_enabled = 0;
+ EXPORT_SYMBOL_GPL(intel_iommu_enabled);
+ 
+ static int dmar_map_gfx = 1;
++static int dmar_map_ipu = 1;
+ static int intel_iommu_superpage = 1;
+ static int iommu_identity_mapping;
+ static int iommu_skip_te_disable;
+ 
+ #define IDENTMAP_GFX		2
+ #define IDENTMAP_AZALIA		4
++#define IDENTMAP_IPU		8
+ 
+ int intel_iommu_gfx_mapped;
+ EXPORT_SYMBOL_GPL(intel_iommu_gfx_mapped);
+@@ -2966,6 +2974,9 @@ static int device_def_domain_type(struct device *dev)
+ 
+ 		if ((iommu_identity_mapping & IDENTMAP_GFX) && IS_GFX_DEVICE(pdev))
+ 			return IOMMU_DOMAIN_IDENTITY;
++
++		if ((iommu_identity_mapping & IDENTMAP_IPU) && IS_INTEL_IPU(pdev))
++			return IOMMU_DOMAIN_IDENTITY;
+ 	}
+ 
+ 	return 0;
+@@ -3402,6 +3413,9 @@ static int __init init_dmars(void)
+ 	if (!dmar_map_gfx)
+ 		iommu_identity_mapping |= IDENTMAP_GFX;
+ 
++	if (!dmar_map_ipu)
++		iommu_identity_mapping |= IDENTMAP_IPU;
++
+ 	check_tylersburg_isoch();
+ 
+ 	ret = si_domain_init(hw_pass_through);
+@@ -5643,6 +5657,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
+ 	dmar_map_gfx = 0;
+ }
+ 
++static void quirk_iommu_ipu(struct pci_dev *dev)
++{
++	if (!IS_INTEL_IPU(dev))
++		return;
++
++	if (risky_device(dev))
++		return;
++
++	pci_info(dev, "Passthrough IOMMU for integrated Intel IPU\n");
++	dmar_map_ipu = 0;
++}
++
+ /* G4x/GM45 integrated gfx dmar support is totally busted. */
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
+@@ -5678,6 +5704,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163A, quirk_iommu_igfx);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
+ 
++/* disable IPU dmar support */
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, quirk_iommu_ipu);
++
+ static void quirk_iommu_rwbf(struct pci_dev *dev)
+ {
+ 	if (risky_device(dev))
+-- 
+2.36.0
+
+From b3fbdb5c4552d9d98715e19ca13302615e7aca80 Mon Sep 17 00:00:00 2001
+From: Liban Hannan <liban.p@gmail.com>
+Date: Tue, 12 Apr 2022 23:31:12 +0100
+Subject: [PATCH] iommu: ipts: use IOMMU passthrough mode for IPTS
+
+Adds a quirk so that IOMMU uses passthrough mode for the IPTS device.
+Otherwise, when IOMMU is enabled, IPTS produces DMAR errors like:
+
+DMAR: [DMA Read NO_PASID] Request device [00:16.4] fault addr
+0x104ea3000 [fault reason 0x06] PTE Read access is not set
+
+This is very similar to the bug described at:
+https://bugs.launchpad.net/bugs/1958004
+
+Fixed with the following patch which this patch basically copies:
+https://launchpadlibrarian.net/586396847/43255ca.diff
+Patchset: ipts
+---
+ drivers/iommu/intel/iommu.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
+index a5fc95dbb06d..b3f6213048fd 100644
+--- a/drivers/iommu/intel/iommu.c
++++ b/drivers/iommu/intel/iommu.c
+@@ -63,6 +63,8 @@
+ 			    (pdev)->device == 0x4e19 ||		\
+ 			    (pdev)->device == 0x465d ||		\
+ 			    (pdev)->device == 0x1919))
++#define IS_IPTS(pdev) ((pdev)->vendor == PCI_VENDOR_ID_INTEL &&	\
++			    ((pdev)->device == 0x9d3e))
+ #define IS_AZALIA(pdev) ((pdev)->vendor == 0x8086 && (pdev)->device == 0x3a3e)
+ 
+ #define IOAPIC_RANGE_START	(0xfee00000)
+@@ -339,6 +341,7 @@ EXPORT_SYMBOL_GPL(intel_iommu_enabled);
+ 
+ static int dmar_map_gfx = 1;
+ static int dmar_map_ipu = 1;
++static int dmar_map_ipts = 1;
+ static int intel_iommu_superpage = 1;
+ static int iommu_identity_mapping;
+ static int iommu_skip_te_disable;
+@@ -346,6 +349,7 @@ static int iommu_skip_te_disable;
+ #define IDENTMAP_GFX		2
+ #define IDENTMAP_AZALIA		4
+ #define IDENTMAP_IPU		8
++#define IDENTMAP_IPTS		16
+ 
+ int intel_iommu_gfx_mapped;
+ EXPORT_SYMBOL_GPL(intel_iommu_gfx_mapped);
+@@ -2977,6 +2981,9 @@ static int device_def_domain_type(struct device *dev)
+ 
+ 		if ((iommu_identity_mapping & IDENTMAP_IPU) && IS_INTEL_IPU(pdev))
+ 			return IOMMU_DOMAIN_IDENTITY;
++
++		if ((iommu_identity_mapping & IDENTMAP_IPTS) && IS_IPTS(pdev))
++			return IOMMU_DOMAIN_IDENTITY;
+ 	}
+ 
+ 	return 0;
+@@ -3416,6 +3423,9 @@ static int __init init_dmars(void)
+ 	if (!dmar_map_ipu)
+ 		iommu_identity_mapping |= IDENTMAP_IPU;
+ 
++	if (!dmar_map_ipts)
++		iommu_identity_mapping |= IDENTMAP_IPTS;
++
+ 	check_tylersburg_isoch();
+ 
+ 	ret = si_domain_init(hw_pass_through);
+@@ -5669,6 +5679,17 @@ static void quirk_iommu_ipu(struct pci_dev *dev)
+ 	dmar_map_ipu = 0;
+ }
+ 
++static void quirk_iommu_ipts(struct pci_dev *dev)
++{
++	if (!IS_IPTS(dev))
++		return;
++
++	if (risky_device(dev))
++		return;
++
++	pci_info(dev, "Passthrough IOMMU for IPTS\n");
++	dmar_map_ipts = 0;
++}
+ /* G4x/GM45 integrated gfx dmar support is totally busted. */
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
+@@ -5707,6 +5728,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
+ /* disable IPU dmar support */
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_ANY_ID, quirk_iommu_ipu);
+ 
++/* disable IPTS dmar support */
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9D3E, quirk_iommu_ipts);
++
+ static void quirk_iommu_rwbf(struct pci_dev *dev)
+ {
+ 	if (risky_device(dev))
+-- 
+2.36.0
+
+From 2bb8c3daadfa4daa1f2d0f35b7753f850d0f0b62 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Tue, 8 Jun 2021 00:24:47 +0200
+Subject: [PATCH] platform/surface: aggregator: Allow devices to be marked as
+ hot-removed
+
+Some SSAM devices, notably the keyboard cover (keyboard and touchpad) on
+the Surface Pro 8, can be hot-removed. When this occurs, communication
+with the device may fail and time out. This timeout can unnecessarily
+block and slow down device removal and even cause issues when the
+devices are detached and re-attached quickly. Thus, communication should
+generally be avoided once hot-removal is detected.
+
+While we already remove a device as soon as we detect its (hot-)removal,
+the corresponding device driver may still attempt to communicate with
+the device during teardown. This is especially critical as communication
+failure may also extend to disabling of events, which is typically done
+at that stage.
+
+Add a flag to allow marking devices as hot-removed. This can then be
+used during client driver teardown to check if any communication
+attempts should be avoided.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ drivers/platform/surface/aggregator/bus.c |  3 ++
+ include/linux/surface_aggregator/device.h | 48 +++++++++++++++++++++--
+ 2 files changed, 48 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/platform/surface/aggregator/bus.c b/drivers/platform/surface/aggregator/bus.c
+index abbbb5b08b07..2b003dcbfc4b 100644
+--- a/drivers/platform/surface/aggregator/bus.c
++++ b/drivers/platform/surface/aggregator/bus.c
+@@ -388,6 +388,9 @@ void ssam_remove_clients(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(ssam_remove_clients);
+ 
++
++/* -- Bus registration. ----------------------------------------------------- */
++
+ /**
+  * ssam_bus_register() - Register and set-up the SSAM client device bus.
+  */
+diff --git a/include/linux/surface_aggregator/device.h b/include/linux/surface_aggregator/device.h
+index cc257097eb05..491aa7e9f4bc 100644
+--- a/include/linux/surface_aggregator/device.h
++++ b/include/linux/surface_aggregator/device.h
+@@ -148,17 +148,30 @@ struct ssam_device_uid {
+ #define SSAM_SDEV(cat, tid, iid, fun) \
+ 	SSAM_DEVICE(SSAM_DOMAIN_SERIALHUB, SSAM_SSH_TC_##cat, tid, iid, fun)
+ 
++/*
++ * enum ssam_device_flags - Flags for SSAM client devices.
++ * @SSAM_DEVICE_HOT_REMOVED_BIT:
++ *	The device has been hot-removed. Further communication with it may time
++ *	out and should be avoided.
++ */
++enum ssam_device_flags {
++	SSAM_DEVICE_HOT_REMOVED_BIT = 0,
++};
++
+ /**
+  * struct ssam_device - SSAM client device.
+- * @dev:  Driver model representation of the device.
+- * @ctrl: SSAM controller managing this device.
+- * @uid:  UID identifying the device.
++ * @dev:   Driver model representation of the device.
++ * @ctrl:  SSAM controller managing this device.
++ * @uid:   UID identifying the device.
++ * @flags: Device state flags, see &enum ssam_device_flags.
+  */
+ struct ssam_device {
+ 	struct device dev;
+ 	struct ssam_controller *ctrl;
+ 
+ 	struct ssam_device_uid uid;
++
++	unsigned long flags;
+ };
+ 
+ /**
+@@ -240,6 +253,35 @@ struct ssam_device *ssam_device_alloc(struct ssam_controller *ctrl,
+ int ssam_device_add(struct ssam_device *sdev);
+ void ssam_device_remove(struct ssam_device *sdev);
+ 
++/**
++ * ssam_device_mark_hot_removed() - Mark the given device as hot-removed.
++ * @sdev: The device to mark as hot-removed.
++ *
++ * Mark the device as having been hot-removed. This signals drivers using the
++ * device that communication with the device should be avoided and may lead to
++ * timeouts.
++ */
++static inline void ssam_device_mark_hot_removed(struct ssam_device *sdev)
++{
++	dev_dbg(&sdev->dev, "marking device as hot-removed\n");
++	set_bit(SSAM_DEVICE_HOT_REMOVED_BIT, &sdev->flags);
++}
++
++/**
++ * ssam_device_is_hot_removed() - Check if the given device has been
++ * hot-removed.
++ * @sdev: The device to check.
++ *
++ * Checks if the given device has been marked as hot-removed. See
++ * ssam_device_mark_hot_removed() for more details.
++ *
++ * Return: Returns ``true`` if the device has been marked as hot-removed.
++ */
++static inline bool ssam_device_is_hot_removed(struct ssam_device *sdev)
++{
++	return test_bit(SSAM_DEVICE_HOT_REMOVED_BIT, &sdev->flags);
++}
++
+ /**
+  * ssam_device_get() - Increment reference count of SSAM client device.
+  * @sdev: The device to increment the reference count of.
+-- 
+2.36.0
+
+From e1da5a5135346e7091651f7fe2aa8c43b9d03f7d Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Tue, 8 Jun 2021 00:48:22 +0200
+Subject: [PATCH] platform/surface: aggregator: Allow notifiers to avoid
+ communication on unregistering
+
+When SSAM client devices have been (physically) hot-removed,
+communication attempts with those devices may fail and time out. This
+can even extend to event notifiers, due to which timeouts may occur
+during device removal, slowing down that process.
+
+Add a flag to the notifier unregister function that allows skipping
+communication with the EC to prevent this. Furthermore, add wrappers for
+registering and unregistering notifiers belonging to SSAM client devices
+that automatically check if the device has been marked as hot-removed
+and communication should be avoided.
+
+Note that non-SSAM client devices can generally not be hot-removed, so
+also add a convenience wrapper for those, defaulting to allow
+communication.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ .../driver-api/surface_aggregator/client.rst  |  6 +-
+ .../platform/surface/aggregator/controller.c  | 53 ++++++++++------
+ include/linux/surface_aggregator/controller.h | 24 +++++++-
+ include/linux/surface_aggregator/device.h     | 60 +++++++++++++++++++
+ 4 files changed, 122 insertions(+), 21 deletions(-)
+
+diff --git a/Documentation/driver-api/surface_aggregator/client.rst b/Documentation/driver-api/surface_aggregator/client.rst
+index e519d374c378..27f95abdbe99 100644
+--- a/Documentation/driver-api/surface_aggregator/client.rst
++++ b/Documentation/driver-api/surface_aggregator/client.rst
+@@ -17,6 +17,8 @@
+ .. |SSAM_DEVICE| replace:: :c:func:`SSAM_DEVICE`
+ .. |ssam_notifier_register| replace:: :c:func:`ssam_notifier_register`
+ .. |ssam_notifier_unregister| replace:: :c:func:`ssam_notifier_unregister`
++.. |ssam_device_notifier_register| replace:: :c:func:`ssam_device_notifier_register`
++.. |ssam_device_notifier_unregister| replace:: :c:func:`ssam_device_notifier_unregister`
+ .. |ssam_request_sync| replace:: :c:func:`ssam_request_sync`
+ .. |ssam_event_mask| replace:: :c:type:`enum ssam_event_mask <ssam_event_mask>`
+ 
+@@ -312,7 +314,9 @@ Handling Events
+ To receive events from the SAM EC, an event notifier must be registered for
+ the desired event via |ssam_notifier_register|. The notifier must be
+ unregistered via |ssam_notifier_unregister| once it is not required any
+-more.
++more. For |ssam_device| type clients, the |ssam_device_notifier_register| and
++|ssam_device_notifier_unregister| wrappers should be preferred as they properly
++handle hot-removal of client devices.
+ 
+ Event notifiers are registered by providing (at minimum) a callback to call
+ in case an event has been received, the registry specifying how the event
+diff --git a/drivers/platform/surface/aggregator/controller.c b/drivers/platform/surface/aggregator/controller.c
+index b8c377b3f932..6de834b52b63 100644
+--- a/drivers/platform/surface/aggregator/controller.c
++++ b/drivers/platform/surface/aggregator/controller.c
+@@ -2199,16 +2199,26 @@ static int ssam_nf_refcount_enable(struct ssam_controller *ctrl,
+ }
+ 
+ /**
+- * ssam_nf_refcount_disable_free() - Disable event for reference count entry if it is
+- * no longer in use and free the corresponding entry.
++ * ssam_nf_refcount_disable_free() - Disable event for reference count entry if
++ * it is no longer in use and free the corresponding entry.
+  * @ctrl:  The controller to disable the event on.
+  * @entry: The reference count entry for the event to be disabled.
+  * @flags: The flags used for enabling the event on the EC.
++ * @ec:    Flag specifying if the event should actually be disabled on the EC.
+  *
+- * If the reference count equals zero, i.e. the event is no longer requested by
+- * any client, the event will be disabled and the corresponding reference count
+- * entry freed. The reference count entry must not be used any more after a
+- * call to this function.
++ * If ``ec`` equals ``true`` and the reference count equals zero (i.e. the
++ * event is no longer requested by any client), the specified event will be
++ * disabled on the EC via the corresponding request.
++ *
++ * If ``ec`` equals ``false``, no request will be sent to the EC and the event
++ * can be considered in a detached state (i.e. no longer used but still
++ * enabled). Disabling an event via this method may be required for
++ * hot-removable devices, where event disable requests may time out after the
++ * device has been physically removed.
++ *
++ * In both cases, if the reference count equals zero, the corresponding
++ * reference count entry will be freed. The reference count entry must not be
++ * used any more after a call to this function.
+  *
+  * Also checks if the flags used for disabling the event match the flags used
+  * for enabling the event and warns if they do not (regardless of reference
+@@ -2223,7 +2233,7 @@ static int ssam_nf_refcount_enable(struct ssam_controller *ctrl,
+  * returns the status of the event-enable EC command.
+  */
+ static int ssam_nf_refcount_disable_free(struct ssam_controller *ctrl,
+-					 struct ssam_nf_refcount_entry *entry, u8 flags)
++					 struct ssam_nf_refcount_entry *entry, u8 flags, bool ec)
+ {
+ 	const struct ssam_event_registry reg = entry->key.reg;
+ 	const struct ssam_event_id id = entry->key.id;
+@@ -2232,8 +2242,9 @@ static int ssam_nf_refcount_disable_free(struct ssam_controller *ctrl,
+ 
+ 	lockdep_assert_held(&nf->lock);
+ 
+-	ssam_dbg(ctrl, "disabling event (reg: %#04x, tc: %#04x, iid: %#04x, rc: %d)\n",
+-		 reg.target_category, id.target_category, id.instance, entry->refcount);
++	ssam_dbg(ctrl, "%s event (reg: %#04x, tc: %#04x, iid: %#04x, rc: %d)\n",
++		 ec ? "disabling" : "detaching", reg.target_category, id.target_category,
++		 id.instance, entry->refcount);
+ 
+ 	if (entry->flags != flags) {
+ 		ssam_warn(ctrl,
+@@ -2242,7 +2253,7 @@ static int ssam_nf_refcount_disable_free(struct ssam_controller *ctrl,
+ 			  id.instance);
+ 	}
+ 
+-	if (entry->refcount == 0) {
++	if (ec && entry->refcount == 0) {
+ 		status = ssam_ssh_event_disable(ctrl, reg, id, flags);
+ 		kfree(entry);
+ 	}
+@@ -2322,20 +2333,26 @@ int ssam_notifier_register(struct ssam_controller *ctrl, struct ssam_event_notif
+ EXPORT_SYMBOL_GPL(ssam_notifier_register);
+ 
+ /**
+- * ssam_notifier_unregister() - Unregister an event notifier.
+- * @ctrl: The controller the notifier has been registered on.
+- * @n:    The event notifier to unregister.
++ * __ssam_notifier_unregister() - Unregister an event notifier.
++ * @ctrl:    The controller the notifier has been registered on.
++ * @n:       The event notifier to unregister.
++ * @disable: Whether to disable the corresponding event on the EC.
+  *
+  * Unregister an event notifier. Decrement the usage counter of the associated
+  * SAM event if the notifier is not marked as an observer. If the usage counter
+- * reaches zero, the event will be disabled.
++ * reaches zero and ``disable`` equals ``true``, the event will be disabled.
++ *
++ * Useful for hot-removable devices, where communication may fail once the
++ * device has been physically removed. In that case, specifying ``disable`` as
++ * ``false`` avoids communication with the EC.
+  *
+  * Return: Returns zero on success, %-ENOENT if the given notifier block has
+  * not been registered on the controller. If the given notifier block was the
+  * last one associated with its specific event, returns the status of the
+  * event-disable EC-command.
+  */
+-int ssam_notifier_unregister(struct ssam_controller *ctrl, struct ssam_event_notifier *n)
++int __ssam_notifier_unregister(struct ssam_controller *ctrl, struct ssam_event_notifier *n,
++			       bool disable)
+ {
+ 	u16 rqid = ssh_tc_to_rqid(n->event.id.target_category);
+ 	struct ssam_nf_refcount_entry *entry;
+@@ -2373,7 +2390,7 @@ int ssam_notifier_unregister(struct ssam_controller *ctrl, struct ssam_event_not
+ 			goto remove;
+ 		}
+ 
+-		status = ssam_nf_refcount_disable_free(ctrl, entry, n->event.flags);
++		status = ssam_nf_refcount_disable_free(ctrl, entry, n->event.flags, disable);
+ 	}
+ 
+ remove:
+@@ -2383,7 +2400,7 @@ int ssam_notifier_unregister(struct ssam_controller *ctrl, struct ssam_event_not
+ 
+ 	return status;
+ }
+-EXPORT_SYMBOL_GPL(ssam_notifier_unregister);
++EXPORT_SYMBOL_GPL(__ssam_notifier_unregister);
+ 
+ /**
+  * ssam_controller_event_enable() - Enable the specified event.
+@@ -2477,7 +2494,7 @@ int ssam_controller_event_disable(struct ssam_controller *ctrl,
+ 		return -ENOENT;
+ 	}
+ 
+-	status = ssam_nf_refcount_disable_free(ctrl, entry, flags);
++	status = ssam_nf_refcount_disable_free(ctrl, entry, flags, true);
+ 
+ 	mutex_unlock(&nf->lock);
+ 	return status;
+diff --git a/include/linux/surface_aggregator/controller.h b/include/linux/surface_aggregator/controller.h
+index 74bfdffaf7b0..50a2b4926c06 100644
+--- a/include/linux/surface_aggregator/controller.h
++++ b/include/linux/surface_aggregator/controller.h
+@@ -835,8 +835,28 @@ struct ssam_event_notifier {
+ int ssam_notifier_register(struct ssam_controller *ctrl,
+ 			   struct ssam_event_notifier *n);
+ 
+-int ssam_notifier_unregister(struct ssam_controller *ctrl,
+-			     struct ssam_event_notifier *n);
++int __ssam_notifier_unregister(struct ssam_controller *ctrl,
++			       struct ssam_event_notifier *n, bool disable);
++
++/**
++ * ssam_notifier_unregister() - Unregister an event notifier.
++ * @ctrl:    The controller the notifier has been registered on.
++ * @n:       The event notifier to unregister.
++ *
++ * Unregister an event notifier. Decrement the usage counter of the associated
++ * SAM event if the notifier is not marked as an observer. If the usage counter
++ * reaches zero, the event will be disabled.
++ *
++ * Return: Returns zero on success, %-ENOENT if the given notifier block has
++ * not been registered on the controller. If the given notifier block was the
++ * last one associated with its specific event, returns the status of the
++ * event-disable EC-command.
++ */
++static inline int ssam_notifier_unregister(struct ssam_controller *ctrl,
++					   struct ssam_event_notifier *n)
++{
++	return __ssam_notifier_unregister(ctrl, n, true);
++}
+ 
+ int ssam_controller_event_enable(struct ssam_controller *ctrl,
+ 				 struct ssam_event_registry reg,
+diff --git a/include/linux/surface_aggregator/device.h b/include/linux/surface_aggregator/device.h
+index 491aa7e9f4bc..16816c34da3e 100644
+--- a/include/linux/surface_aggregator/device.h
++++ b/include/linux/surface_aggregator/device.h
+@@ -472,4 +472,64 @@ static inline void ssam_remove_clients(struct device *dev) {}
+ 				    sdev->uid.instance, ret);		\
+ 	}
+ 
++
++/* -- Helpers for client-device notifiers. ---------------------------------- */
++
++/**
++ * ssam_device_notifier_register() - Register an event notifier for the
++ * specified client device.
++ * @sdev: The device the notifier should be registered on.
++ * @n:    The event notifier to register.
++ *
++ * Register an event notifier. Increment the usage counter of the associated
++ * SAM event if the notifier is not marked as an observer. If the event is not
++ * marked as an observer and is currently not enabled, it will be enabled
++ * during this call. If the notifier is marked as an observer, no attempt will
++ * be made at enabling any event and no reference count will be modified.
++ *
++ * Notifiers marked as observers do not need to be associated with one specific
++ * event, i.e. as long as no event matching is performed, only the event target
++ * category needs to be set.
++ *
++ * Return: Returns zero on success, %-ENOSPC if there have already been
++ * %INT_MAX notifiers for the event ID/type associated with the notifier block
++ * registered, %-ENOMEM if the corresponding event entry could not be
++ * allocated, %-ENODEV if the device is marked as hot-removed. If this is the
++ * first time that a notifier block is registered for the specific associated
++ * event, returns the status of the event-enable EC-command.
++ */
++static inline int ssam_device_notifier_register(struct ssam_device *sdev,
++						struct ssam_event_notifier *n)
++{
++	if (ssam_device_is_hot_removed(sdev))
++		return -ENODEV;
++
++	return ssam_notifier_register(sdev->ctrl, n);
++}
++
++/**
++ * ssam_device_notifier_unregister() - Unregister an event notifier for the
++ * specified client device.
++ * @sdev: The device the notifier has been registered on.
++ * @n:    The event notifier to unregister.
++ *
++ * Unregister an event notifier. Decrement the usage counter of the associated
++ * SAM event if the notifier is not marked as an observer. If the usage counter
++ * reaches zero, the event will be disabled.
++ *
++ * In case the device has been marked as hot-removed, the event will not be
++ * disabled on the EC, as in those cases any attempt at doing so may time out.
++ *
++ * Return: Returns zero on success, %-ENOENT if the given notifier block has
++ * not been registered on the controller. If the given notifier block was the
++ * last one associated with its specific event, returns the status of the
++ * event-disable EC-command.
++ */
++static inline int ssam_device_notifier_unregister(struct ssam_device *sdev,
++						  struct ssam_event_notifier *n)
++{
++	return __ssam_notifier_unregister(sdev->ctrl, n,
++					  !ssam_device_is_hot_removed(sdev));
++}
++
+ #endif /* _LINUX_SURFACE_AGGREGATOR_DEVICE_H */
+-- 
+2.36.0
+
+From bf9269161d0e15076508e0ca776a31d860eacb7f Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Tue, 8 Jun 2021 01:20:49 +0200
+Subject: [PATCH] platform/surface: aggregator_registry: Use client device
+ wrappers for notifier registration
+
+Use newly introduced client device wrapper functions for notifier
+registration and unregistration.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ drivers/platform/surface/surface_aggregator_registry.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
+index ce2bd88feeaa..9f630e890ff7 100644
+--- a/drivers/platform/surface/surface_aggregator_registry.c
++++ b/drivers/platform/surface/surface_aggregator_registry.c
+@@ -468,7 +468,7 @@ static int ssam_base_hub_probe(struct ssam_device *sdev)
+ 
+ 	ssam_device_set_drvdata(sdev, hub);
+ 
+-	status = ssam_notifier_register(sdev->ctrl, &hub->notif);
++	status = ssam_device_notifier_register(sdev, &hub->notif);
+ 	if (status)
+ 		return status;
+ 
+@@ -480,7 +480,7 @@ static int ssam_base_hub_probe(struct ssam_device *sdev)
+ 	return 0;
+ 
+ err:
+-	ssam_notifier_unregister(sdev->ctrl, &hub->notif);
++	ssam_device_notifier_unregister(sdev, &hub->notif);
+ 	cancel_delayed_work_sync(&hub->update_work);
+ 	ssam_remove_clients(&sdev->dev);
+ 	return status;
+@@ -492,7 +492,7 @@ static void ssam_base_hub_remove(struct ssam_device *sdev)
+ 
+ 	sysfs_remove_group(&sdev->dev.kobj, &ssam_base_hub_group);
+ 
+-	ssam_notifier_unregister(sdev->ctrl, &hub->notif);
++	ssam_device_notifier_unregister(sdev, &hub->notif);
+ 	cancel_delayed_work_sync(&hub->update_work);
+ 	ssam_remove_clients(&sdev->dev);
+ }
+-- 
+2.36.0
+
+From 7dffc0d5aa0b675201815f0db11d4207ed1bcf47 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Thu, 28 Oct 2021 03:37:06 +0200
+Subject: [PATCH] power/supply: surface_charger: Use client device wrappers for
+ notifier registration
+
+Use newly introduced client device wrapper functions for notifier
+registration and unregistration.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ drivers/power/supply/surface_charger.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/surface_charger.c b/drivers/power/supply/surface_charger.c
+index a060c36c7766..59182d55742d 100644
+--- a/drivers/power/supply/surface_charger.c
++++ b/drivers/power/supply/surface_charger.c
+@@ -216,7 +216,7 @@ static int spwr_ac_register(struct spwr_ac_device *ac)
+ 	if (IS_ERR(ac->psy))
+ 		return PTR_ERR(ac->psy);
+ 
+-	return ssam_notifier_register(ac->sdev->ctrl, &ac->notif);
++	return ssam_device_notifier_register(ac->sdev, &ac->notif);
+ }
+ 
+ 
+@@ -251,7 +251,7 @@ static void surface_ac_remove(struct ssam_device *sdev)
+ {
+ 	struct spwr_ac_device *ac = ssam_device_get_drvdata(sdev);
+ 
+-	ssam_notifier_unregister(sdev->ctrl, &ac->notif);
++	ssam_device_notifier_unregister(sdev, &ac->notif);
+ }
+ 
+ static const struct spwr_psy_properties spwr_psy_props_adp1 = {
+-- 
+2.36.0
+
+From bf04f91eb86cd24faed47f078d4c7cba0d3afb0a Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Thu, 28 Oct 2021 03:38:09 +0200
+Subject: [PATCH] power/supply: surface_battery: Use client device wrappers for
+ notifier registration
+
+Use newly introduced client device wrapper functions for notifier
+registration and unregistration.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ drivers/power/supply/surface_battery.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/surface_battery.c b/drivers/power/supply/surface_battery.c
+index 5ec2e6bb2465..540707882bb0 100644
+--- a/drivers/power/supply/surface_battery.c
++++ b/drivers/power/supply/surface_battery.c
+@@ -802,7 +802,7 @@ static int spwr_battery_register(struct spwr_battery_device *bat)
+ 	if (IS_ERR(bat->psy))
+ 		return PTR_ERR(bat->psy);
+ 
+-	return ssam_notifier_register(bat->sdev->ctrl, &bat->notif);
++	return ssam_device_notifier_register(bat->sdev, &bat->notif);
+ }
+ 
+ 
+@@ -837,7 +837,7 @@ static void surface_battery_remove(struct ssam_device *sdev)
+ {
+ 	struct spwr_battery_device *bat = ssam_device_get_drvdata(sdev);
+ 
+-	ssam_notifier_unregister(sdev->ctrl, &bat->notif);
++	ssam_device_notifier_unregister(sdev, &bat->notif);
+ 	cancel_delayed_work_sync(&bat->update_work);
+ }
+ 
+-- 
+2.36.0
+
+From ec5de9e26ab336abeb4510101843ca9215f306ac Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Tue, 8 Jun 2021 01:33:02 +0200
+Subject: [PATCH] HID: surface-hid: Add support for hot-removal
+
+Add support for hot-removal of SSAM HID client devices.
+
+Once a device has been hot-removed, further communication with it should
+be avoided as it may fail and time out. While the device will be removed
+as soon as we detect hot-removal, communication may still occur during
+teardown, especially when unregistering notifiers.
+
+While hot-removal is a surprise event that can happen any time, try to
+avoid communication as much as possible once it has been detected to
+prevent timeouts that can slow down device removal and cause issues,
+e.g. when quickly re-attaching the device.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ drivers/hid/surface-hid/surface_hid_core.c | 38 +++++++++++++++++++++-
+ 1 file changed, 37 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/hid/surface-hid/surface_hid_core.c b/drivers/hid/surface-hid/surface_hid_core.c
+index e46330b2e561..87637f813de2 100644
+--- a/drivers/hid/surface-hid/surface_hid_core.c
++++ b/drivers/hid/surface-hid/surface_hid_core.c
+@@ -19,12 +19,30 @@
+ #include "surface_hid_core.h"
+ 
+ 
++/* -- Utility functions. ---------------------------------------------------- */
++
++static bool surface_hid_is_hot_removed(struct surface_hid_device *shid)
++{
++	/*
++	 * Non-ssam client devices, i.e. platform client devices, cannot be
++	 * hot-removed.
++	 */
++	if (!is_ssam_device(shid->dev))
++		return false;
++
++	return ssam_device_is_hot_removed(to_ssam_device(shid->dev));
++}
++
++
+ /* -- Device descriptor access. --------------------------------------------- */
+ 
+ static int surface_hid_load_hid_descriptor(struct surface_hid_device *shid)
+ {
+ 	int status;
+ 
++	if (surface_hid_is_hot_removed(shid))
++		return -ENODEV;
++
+ 	status = shid->ops.get_descriptor(shid, SURFACE_HID_DESC_HID,
+ 			(u8 *)&shid->hid_desc, sizeof(shid->hid_desc));
+ 	if (status)
+@@ -61,6 +79,9 @@ static int surface_hid_load_device_attributes(struct surface_hid_device *shid)
+ {
+ 	int status;
+ 
++	if (surface_hid_is_hot_removed(shid))
++		return -ENODEV;
++
+ 	status = shid->ops.get_descriptor(shid, SURFACE_HID_DESC_ATTRS,
+ 			(u8 *)&shid->attrs, sizeof(shid->attrs));
+ 	if (status)
+@@ -88,9 +109,18 @@ static int surface_hid_start(struct hid_device *hid)
+ static void surface_hid_stop(struct hid_device *hid)
+ {
+ 	struct surface_hid_device *shid = hid->driver_data;
++	bool hot_removed;
++
++	/*
++	 * Communication may fail for devices that have been hot-removed. This
++	 * also includes unregistration of HID events, so we need to check this
++	 * here. Only if the device has not been marked as hot-removed, we can
++	 * safely disable events.
++	 */
++	hot_removed = surface_hid_is_hot_removed(shid);
+ 
+ 	/* Note: This call will log errors for us, so ignore them here. */
+-	ssam_notifier_unregister(shid->ctrl, &shid->notif);
++	__ssam_notifier_unregister(shid->ctrl, &shid->notif, !hot_removed);
+ }
+ 
+ static int surface_hid_open(struct hid_device *hid)
+@@ -109,6 +139,9 @@ static int surface_hid_parse(struct hid_device *hid)
+ 	u8 *buf;
+ 	int status;
+ 
++	if (surface_hid_is_hot_removed(shid))
++		return -ENODEV;
++
+ 	buf = kzalloc(len, GFP_KERNEL);
+ 	if (!buf)
+ 		return -ENOMEM;
+@@ -126,6 +159,9 @@ static int surface_hid_raw_request(struct hid_device *hid, unsigned char reportn
+ {
+ 	struct surface_hid_device *shid = hid->driver_data;
+ 
++	if (surface_hid_is_hot_removed(shid))
++		return -ENODEV;
++
+ 	if (rtype == HID_OUTPUT_REPORT && reqtype == HID_REQ_SET_REPORT)
+ 		return shid->ops.output_report(shid, reportnum, buf, len);
+ 
+-- 
+2.36.0
+
+From 4bdf54b718375e303f8fe6745ffa90c4b153e20c Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Sun, 31 Oct 2021 12:34:08 +0100
+Subject: [PATCH] platform/surface: aggregator: Add comment for KIP subsystem
+ category
+
+The KIP subsystem (full name unknown, abbreviation has been obtained
+through reverse engineering) handles detachable peripherals such as the
+keyboard cover on the Surface Pro X and Surface Pro 8.
+
+It is currently not entirely clear what this subsystem entails, but at
+the very least it provides event notifications for when the keyboard
+cover on the Surface Pro X and Surface Pro 8 have been detached or
+re-attached, as well as the state that the keyboard cover is currently
+in (e.g. folded-back, folded laptop-like, closed, etc.).
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ include/linux/surface_aggregator/serial_hub.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/surface_aggregator/serial_hub.h b/include/linux/surface_aggregator/serial_hub.h
+index c3de43edcffa..d1efac85caf1 100644
+--- a/include/linux/surface_aggregator/serial_hub.h
++++ b/include/linux/surface_aggregator/serial_hub.h
+@@ -306,7 +306,7 @@ enum ssam_ssh_tc {
+ 	SSAM_SSH_TC_LPC = 0x0b,
+ 	SSAM_SSH_TC_TCL = 0x0c,
+ 	SSAM_SSH_TC_SFL = 0x0d,
+-	SSAM_SSH_TC_KIP = 0x0e,
++	SSAM_SSH_TC_KIP = 0x0e, /* Manages detachable peripherals (Pro X/8 keyboard cover) */
+ 	SSAM_SSH_TC_EXT = 0x0f,
+ 	SSAM_SSH_TC_BLD = 0x10,
+ 	SSAM_SSH_TC_BAS = 0x11,	/* Detachment system (Surface Book 2/3). */
+-- 
+2.36.0
+
+From b05a57a23fb0dce8c1be11eda511116493d1e114 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Sun, 10 Oct 2021 23:56:23 +0200
+Subject: [PATCH] platform/surface: aggregator_registry: Add KIP device hub
+
+Add a Surface System Aggregator Module (SSAM) client device hub for
+hot-removable devices managed via the KIP subsystem.
+
+The KIP subsystem (full name unknown, abbreviation has been obtained
+through reverse engineering) is a subsystem that manages hot-removable
+SSAM client devices. Specifically, it manages HID input devices
+contained in the detachable keyboard cover of the Surface Pro 8 and
+Surface Pro X.
+
+To properly handle detachable devices, we need to remove their kernel
+representation when the physical device has been detached and (re-)add
+and (re-)initialize said representation when the physical device has
+been (re-)attached. Note that we need to hot-remove those devices, as
+communication (especially during event notifier unregistration) may time
+out when the physical device is no longer present, which would lead to
+an unnecessary delay. This delay might become problematic when devices
+are detached and re-attached quickly.
+
+The KIP subsystem handles a single group of devices (e.g. all devices
+contained in the keyboard cover) and cannot handle devices individually.
+Thus we model it as a client device hub, which removes all devices
+contained under it once removal of the hub (e.g. keyboard cover) has
+been detected and (re-)adds all devices once the physical hub device has
+been (re-)attached.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ .../surface/surface_aggregator_registry.c     | 247 +++++++++++++++++-
+ 1 file changed, 245 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
+index 9f630e890ff7..4838ce6519a6 100644
+--- a/drivers/platform/surface/surface_aggregator_registry.c
++++ b/drivers/platform/surface/surface_aggregator_registry.c
+@@ -514,6 +514,237 @@ static struct ssam_device_driver ssam_base_hub_driver = {
+ };
+ 
+ 
++/* -- SSAM KIP-subsystem hub driver. ---------------------------------------- */
++
++/*
++ * Some devices may need a bit of time to be fully usable after being
++ * (re-)connected. This delay has been determined via experimentation.
++ */
++#define SSAM_KIP_UPDATE_CONNECT_DELAY		msecs_to_jiffies(250)
++
++#define SSAM_EVENT_KIP_CID_CONNECTION		0x2c
++
++enum ssam_kip_hub_state {
++	SSAM_KIP_HUB_UNINITIALIZED,
++	SSAM_KIP_HUB_CONNECTED,
++	SSAM_KIP_HUB_DISCONNECTED,
++};
++
++struct ssam_kip_hub {
++	struct ssam_device *sdev;
++
++	enum ssam_kip_hub_state state;
++	struct delayed_work update_work;
++
++	struct ssam_event_notifier notif;
++};
++
++SSAM_DEFINE_SYNC_REQUEST_R(__ssam_kip_get_connection_state, u8, {
++	.target_category = SSAM_SSH_TC_KIP,
++	.target_id       = 0x01,
++	.command_id      = 0x2c,
++	.instance_id     = 0x00,
++});
++
++static int ssam_kip_get_connection_state(struct ssam_kip_hub *hub, enum ssam_kip_hub_state *state)
++{
++	int status;
++	u8 connected;
++
++	status = ssam_retry(__ssam_kip_get_connection_state, hub->sdev->ctrl, &connected);
++	if (status < 0) {
++		dev_err(&hub->sdev->dev, "failed to query KIP connection state: %d\n", status);
++		return status;
++	}
++
++	*state = connected ? SSAM_KIP_HUB_CONNECTED : SSAM_KIP_HUB_DISCONNECTED;
++	return 0;
++}
++
++static ssize_t ssam_kip_hub_state_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct ssam_kip_hub *hub = dev_get_drvdata(dev);
++	const char *state;
++
++	switch (hub->state) {
++	case SSAM_KIP_HUB_UNINITIALIZED:
++		state = "uninitialized";
++		break;
++
++	case SSAM_KIP_HUB_CONNECTED:
++		state = "connected";
++		break;
++
++	case SSAM_KIP_HUB_DISCONNECTED:
++		state = "disconnected";
++		break;
++
++	default:
++		/*
++		 * Any value not handled in the above cases is invalid and
++		 * should never have been set. Thus this case should be
++		 * impossible to reach.
++		 */
++		WARN(1, "invalid KIP hub state: %d\n", hub->state);
++		state = "<invalid>";
++		break;
++	}
++
++	return sysfs_emit(buf, "%s\n", state);
++}
++
++static struct device_attribute ssam_kip_hub_attr_state =
++	__ATTR(state, 0444, ssam_kip_hub_state_show, NULL);
++
++static struct attribute *ssam_kip_hub_attrs[] = {
++	&ssam_kip_hub_attr_state.attr,
++	NULL,
++};
++
++static const struct attribute_group ssam_kip_hub_group = {
++	.attrs = ssam_kip_hub_attrs,
++};
++
++static int ssam_kip_hub_mark_hot_removed(struct device *dev, void *_data)
++{
++	struct ssam_device *sdev = to_ssam_device(dev);
++
++	if (is_ssam_device(dev))
++		ssam_device_mark_hot_removed(sdev);
++
++	return 0;
++}
++
++static void ssam_kip_hub_update_workfn(struct work_struct *work)
++{
++	struct ssam_kip_hub *hub = container_of(work, struct ssam_kip_hub, update_work.work);
++	struct fwnode_handle *node = dev_fwnode(&hub->sdev->dev);
++	enum ssam_kip_hub_state state;
++	int status = 0;
++
++	status = ssam_kip_get_connection_state(hub, &state);
++	if (status)
++		return;
++
++	if (hub->state == state)
++		return;
++	hub->state = state;
++
++	if (hub->state == SSAM_KIP_HUB_CONNECTED)
++		status = ssam_hub_register_clients(&hub->sdev->dev, hub->sdev->ctrl, node);
++	else
++		ssam_remove_clients(&hub->sdev->dev);
++
++	if (status)
++		dev_err(&hub->sdev->dev, "failed to update KIP-hub devices: %d\n", status);
++}
++
++static u32 ssam_kip_hub_notif(struct ssam_event_notifier *nf, const struct ssam_event *event)
++{
++	struct ssam_kip_hub *hub = container_of(nf, struct ssam_kip_hub, notif);
++	unsigned long delay;
++
++	if (event->command_id != SSAM_EVENT_KIP_CID_CONNECTION)
++		return 0;	/* Return "unhandled". */
++
++	if (event->length < 1) {
++		dev_err(&hub->sdev->dev, "unexpected payload size: %u\n", event->length);
++		return 0;
++	}
++
++	/* Mark devices as hot-removed before we remove any */
++	if (!event->data[0])
++		device_for_each_child_reverse(&hub->sdev->dev, NULL, ssam_kip_hub_mark_hot_removed);
++
++	/*
++	 * Delay update when KIP devices are being connected to give devices/EC
++	 * some time to set up.
++	 */
++	delay = event->data[0] ? SSAM_KIP_UPDATE_CONNECT_DELAY : 0;
++
++	schedule_delayed_work(&hub->update_work, delay);
++	return SSAM_NOTIF_HANDLED;
++}
++
++static int __maybe_unused ssam_kip_hub_resume(struct device *dev)
++{
++	struct ssam_kip_hub *hub = dev_get_drvdata(dev);
++
++	schedule_delayed_work(&hub->update_work, 0);
++	return 0;
++}
++static SIMPLE_DEV_PM_OPS(ssam_kip_hub_pm_ops, NULL, ssam_kip_hub_resume);
++
++static int ssam_kip_hub_probe(struct ssam_device *sdev)
++{
++	struct ssam_kip_hub *hub;
++	int status;
++
++	hub = devm_kzalloc(&sdev->dev, sizeof(*hub), GFP_KERNEL);
++	if (!hub)
++		return -ENOMEM;
++
++	hub->sdev = sdev;
++	hub->state = SSAM_KIP_HUB_UNINITIALIZED;
++
++	hub->notif.base.priority = INT_MAX;  /* This notifier should run first. */
++	hub->notif.base.fn = ssam_kip_hub_notif;
++	hub->notif.event.reg = SSAM_EVENT_REGISTRY_SAM;
++	hub->notif.event.id.target_category = SSAM_SSH_TC_KIP,
++	hub->notif.event.id.instance = 0,
++	hub->notif.event.mask = SSAM_EVENT_MASK_TARGET;
++	hub->notif.event.flags = SSAM_EVENT_SEQUENCED;
++
++	INIT_DELAYED_WORK(&hub->update_work, ssam_kip_hub_update_workfn);
++
++	ssam_device_set_drvdata(sdev, hub);
++
++	status = ssam_device_notifier_register(sdev, &hub->notif);
++	if (status)
++		return status;
++
++	status = sysfs_create_group(&sdev->dev.kobj, &ssam_kip_hub_group);
++	if (status)
++		goto err;
++
++	schedule_delayed_work(&hub->update_work, 0);
++	return 0;
++
++err:
++	ssam_device_notifier_unregister(sdev, &hub->notif);
++	cancel_delayed_work_sync(&hub->update_work);
++	ssam_remove_clients(&sdev->dev);
++	return status;
++}
++
++static void ssam_kip_hub_remove(struct ssam_device *sdev)
++{
++	struct ssam_kip_hub *hub = ssam_device_get_drvdata(sdev);
++
++	sysfs_remove_group(&sdev->dev.kobj, &ssam_kip_hub_group);
++
++	ssam_device_notifier_unregister(sdev, &hub->notif);
++	cancel_delayed_work_sync(&hub->update_work);
++	ssam_remove_clients(&sdev->dev);
++}
++
++static const struct ssam_device_id ssam_kip_hub_match[] = {
++	{ SSAM_SDEV(KIP, 0x01, 0x00, 0x00) },
++	{ },
++};
++
++static struct ssam_device_driver ssam_kip_hub_driver = {
++	.probe = ssam_kip_hub_probe,
++	.remove = ssam_kip_hub_remove,
++	.match_table = ssam_kip_hub_match,
++	.driver = {
++		.name = "surface_kip_hub",
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
++		.pm = &ssam_kip_hub_pm_ops,
++	},
++};
++
++
+ /* -- SSAM platform/meta-hub driver. ---------------------------------------- */
+ 
+ static const struct acpi_device_id ssam_platform_hub_match[] = {
+@@ -636,18 +867,30 @@ static int __init ssam_device_hub_init(void)
+ 
+ 	status = platform_driver_register(&ssam_platform_hub_driver);
+ 	if (status)
+-		return status;
++		goto err_platform;
+ 
+ 	status = ssam_device_driver_register(&ssam_base_hub_driver);
+ 	if (status)
+-		platform_driver_unregister(&ssam_platform_hub_driver);
++		goto err_base;
++
++	status = ssam_device_driver_register(&ssam_kip_hub_driver);
++	if (status)
++		goto err_kip;
+ 
++	return 0;
++
++err_kip:
++	ssam_device_driver_unregister(&ssam_base_hub_driver);
++err_base:
++	platform_driver_unregister(&ssam_platform_hub_driver);
++err_platform:
+ 	return status;
+ }
+ module_init(ssam_device_hub_init);
+ 
+ static void __exit ssam_device_hub_exit(void)
+ {
++	ssam_device_driver_unregister(&ssam_kip_hub_driver);
+ 	ssam_device_driver_unregister(&ssam_base_hub_driver);
+ 	platform_driver_unregister(&ssam_platform_hub_driver);
+ }
+-- 
+2.36.0
+
+From 0e443bc77964f90eed651cb32af45398060ba42e Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Wed, 27 Oct 2021 22:33:03 +0200
+Subject: [PATCH] platform/surface: aggregator_registry: Add support for
+ keyboard cover on Surface Pro 8
+
+Add support for the detachable keyboard cover on the Surface Pro 8.
+
+The keyboard cover on the Surface Pro 8 is, unlike the keyboard covers
+of earlier Surface Pro generations, handled via the Surface System
+Aggregator Module (SSAM). The keyboard and touchpad (as well as other
+HID input devices) of this cover are standard SSAM HID client devices
+(just like keyboard and touchpad on e.g. the Surface Laptop 3 and 4),
+however, some care needs to be taken as they can be physically detached
+(similarly to the Surface Book 3). Specifically, the respective SSAM
+client devices need to be removed when the keyboard cover has been
+detached and (re-)initialized when the keyboard cover has been
+(re-)attached.
+
+On the Surface Pro 8, detachment of the keyboard cover (and by extension
+its devices) is managed via the KIP subsystem. Therefore, said devices
+need to be registered under the KIP device hub, which in turn will
+remove and re-create/re-initialize those devices as needed.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ .../surface/surface_aggregator_registry.c     | 37 ++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
+index 4838ce6519a6..c0e29c0514df 100644
+--- a/drivers/platform/surface/surface_aggregator_registry.c
++++ b/drivers/platform/surface/surface_aggregator_registry.c
+@@ -47,6 +47,12 @@ static const struct software_node ssam_node_hub_base = {
+ 	.parent = &ssam_node_root,
+ };
+ 
++/* KIP device hub (connects keyboard cover devices on Surface Pro 8). */
++static const struct software_node ssam_node_hub_kip = {
++	.name = "ssam:01:0e:01:00:00",
++	.parent = &ssam_node_root,
++};
++
+ /* AC adapter. */
+ static const struct software_node ssam_node_bat_ac = {
+ 	.name = "ssam:01:02:01:01:01",
+@@ -155,6 +161,30 @@ static const struct software_node ssam_node_hid_base_iid6 = {
+ 	.parent = &ssam_node_hub_base,
+ };
+ 
++/* HID keyboard (KIP hub). */
++static const struct software_node ssam_node_hid_kip_keyboard = {
++	.name = "ssam:01:15:02:01:00",
++	.parent = &ssam_node_hub_kip,
++};
++
++/* HID pen stash (KIP hub; pen taken / stashed away evens). */
++static const struct software_node ssam_node_hid_kip_penstash = {
++	.name = "ssam:01:15:02:02:00",
++	.parent = &ssam_node_hub_kip,
++};
++
++/* HID touchpad (KIP hub). */
++static const struct software_node ssam_node_hid_kip_touchpad = {
++	.name = "ssam:01:15:02:03:00",
++	.parent = &ssam_node_hub_kip,
++};
++
++/* HID device instance 5 (KIP hub, unknown HID device). */
++static const struct software_node ssam_node_hid_kip_iid5 = {
++	.name = "ssam:01:15:02:05:00",
++	.parent = &ssam_node_hub_kip,
++};
++
+ /*
+  * Devices for 5th- and 6th-generations models:
+  * - Surface Book 2,
+@@ -230,10 +260,15 @@ static const struct software_node *ssam_node_group_sp7[] = {
+ 
+ static const struct software_node *ssam_node_group_sp8[] = {
+ 	&ssam_node_root,
++	&ssam_node_hub_kip,
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+ 	&ssam_node_tmp_pprof,
+-	/* TODO: Add support for keyboard cover. */
++	&ssam_node_hid_kip_keyboard,
++	&ssam_node_hid_kip_penstash,
++	&ssam_node_hid_kip_touchpad,
++	&ssam_node_hid_kip_iid5,
++	/* TODO: Add support for tablet mode switch. */
+ 	NULL,
+ };
+ 
+-- 
+2.36.0
+
+From f3ff67b118c39ab15a3443f953f93fa933c1d957 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Tue, 8 Jun 2021 03:19:20 +0200
+Subject: [PATCH] platform/surface: Add KIP tablet-mode switch
+
+Add a driver providing a tablet-mode switch input device for Surface
+models using the KIP subsystem to manage detachable peripherals.
+
+The Surface Pro 8 has a detachable keyboard cover. Unlike the keyboard
+covers of previous generation Surface Pro models, this cover is fully
+handled by the Surface System Aggregator Module (SSAM). The SSAM KIP
+subsystem (full name unknown, abbreviation found through reverse
+engineering) provides notifications for mode changes of the cover.
+Specifically, it allows us to know when the cover has been folded back,
+detached, or whether it is in laptop mode.
+
+The driver introduced with this change captures these events and
+translates them to standard SW_TABLET_MODE input events.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ MAINTAINERS                                   |   6 +
+ drivers/platform/surface/Kconfig              |  22 ++
+ drivers/platform/surface/Makefile             |   1 +
+ .../surface/surface_kip_tablet_switch.c       | 245 ++++++++++++++++++
+ 4 files changed, 274 insertions(+)
+ create mode 100644 drivers/platform/surface/surface_kip_tablet_switch.c
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d9b2f1731ee0..4d83cd26e299 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -12823,6 +12823,12 @@ L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+ F:	drivers/platform/surface/surface_hotplug.c
+ 
++MICROSOFT SURFACE KIP TABLET-MODE SWITCH
++M:	Maximilian Luz <luzmaximilian@gmail.com>
++L:	platform-driver-x86@vger.kernel.org
++S:	Maintained
++F:	drivers/platform/surface/surface_kip_tablet_switch.c
++
+ MICROSOFT SURFACE PLATFORM PROFILE DRIVER
+ M:	Maximilian Luz <luzmaximilian@gmail.com>
+ L:	platform-driver-x86@vger.kernel.org
+diff --git a/drivers/platform/surface/Kconfig b/drivers/platform/surface/Kconfig
+index 463f1ec5c14e..9c228090c35b 100644
+--- a/drivers/platform/surface/Kconfig
++++ b/drivers/platform/surface/Kconfig
+@@ -156,6 +156,28 @@ config SURFACE_HOTPLUG
+ 	  Select M or Y here, if you want to (fully) support hot-plugging of
+ 	  dGPU devices on the Surface Book 2 and/or 3 during D3cold.
+ 
++config SURFACE_KIP_TABLET_SWITCH
++	tristate "Surface KIP Tablet-Mode Switch Driver"
++	depends on SURFACE_AGGREGATOR
++	depends on SURFACE_AGGREGATOR_BUS
++	depends on INPUT
++	help
++	  Provides a tablet-mode switch input device on Microsoft Surface models
++	  using the KIP subsystem for detachable keyboards (e.g. keyboard
++	  covers).
++
++	  The KIP subsystem is used on newer Surface generations to handle
++	  detachable input peripherals, specifically the keyboard cover
++	  (containing keyboard and touchpad) on the Surface Pro 8. This module
++	  provides a driver to let user-space know when the device should be
++	  considered in tablet-mode due to the keyboard cover being detached or
++	  folded back (essentially signaling when the keyboard is not available
++	  for input). It does so by creating a tablet-mode switch input device,
++	  sending the standard SW_TABLET_MODE event on mode change.
++
++	  Select M or Y here, if you want to provide tablet-mode switch input
++	  events on the Surface Pro 8.
++
+ config SURFACE_PLATFORM_PROFILE
+ 	tristate "Surface Platform Profile Driver"
+ 	depends on ACPI
+diff --git a/drivers/platform/surface/Makefile b/drivers/platform/surface/Makefile
+index 32889482de55..6d9291c993c4 100644
+--- a/drivers/platform/surface/Makefile
++++ b/drivers/platform/surface/Makefile
+@@ -14,5 +14,6 @@ obj-$(CONFIG_SURFACE_AGGREGATOR_REGISTRY) += surface_aggregator_registry.o
+ obj-$(CONFIG_SURFACE_DTX)		+= surface_dtx.o
+ obj-$(CONFIG_SURFACE_GPE)		+= surface_gpe.o
+ obj-$(CONFIG_SURFACE_HOTPLUG)		+= surface_hotplug.o
++obj-$(CONFIG_SURFACE_KIP_TABLET_SWITCH)	+= surface_kip_tablet_switch.o
+ obj-$(CONFIG_SURFACE_PLATFORM_PROFILE)	+= surface_platform_profile.o
+ obj-$(CONFIG_SURFACE_PRO3_BUTTON)	+= surfacepro3_button.o
+diff --git a/drivers/platform/surface/surface_kip_tablet_switch.c b/drivers/platform/surface/surface_kip_tablet_switch.c
+new file mode 100644
+index 000000000000..458470067579
+--- /dev/null
++++ b/drivers/platform/surface/surface_kip_tablet_switch.c
+@@ -0,0 +1,245 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Surface System Aggregator Module (SSAM) tablet mode switch via KIP
++ * subsystem.
++ *
++ * Copyright (C) 2021 Maximilian Luz <luzmaximilian@gmail.com>
++ */
++
++#include <linux/input.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/types.h>
++#include <linux/workqueue.h>
++
++#include <linux/surface_aggregator/controller.h>
++#include <linux/surface_aggregator/device.h>
++
++#define SSAM_EVENT_KIP_CID_LID_STATE		0x1d
++
++enum ssam_kip_lid_state {
++	SSAM_KIP_LID_STATE_DISCONNECTED   = 0x01,
++	SSAM_KIP_LID_STATE_CLOSED         = 0x02,
++	SSAM_KIP_LID_STATE_LAPTOP         = 0x03,
++	SSAM_KIP_LID_STATE_FOLDED_CANVAS  = 0x04,
++	SSAM_KIP_LID_STATE_FOLDED_BACK    = 0x05,
++};
++
++struct ssam_kip_sw {
++	struct ssam_device *sdev;
++
++	enum ssam_kip_lid_state state;
++	struct work_struct update_work;
++	struct input_dev *mode_switch;
++
++	struct ssam_event_notifier notif;
++};
++
++SSAM_DEFINE_SYNC_REQUEST_R(__ssam_kip_get_lid_state, u8, {
++	.target_category = SSAM_SSH_TC_KIP,
++	.target_id       = 0x01,
++	.command_id      = 0x1d,
++	.instance_id     = 0x00,
++});
++
++static int ssam_kip_get_lid_state(struct ssam_kip_sw *sw, enum ssam_kip_lid_state *state)
++{
++	int status;
++	u8 raw;
++
++	status = ssam_retry(__ssam_kip_get_lid_state, sw->sdev->ctrl, &raw);
++	if (status < 0) {
++		dev_err(&sw->sdev->dev, "failed to query KIP lid state: %d\n", status);
++		return status;
++	}
++
++	*state = raw;
++	return 0;
++}
++
++static ssize_t state_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct ssam_kip_sw *sw = dev_get_drvdata(dev);
++	const char *state;
++
++	switch (sw->state) {
++	case SSAM_KIP_LID_STATE_DISCONNECTED:
++		state = "disconnected";
++		break;
++
++	case SSAM_KIP_LID_STATE_CLOSED:
++		state = "closed";
++		break;
++
++	case SSAM_KIP_LID_STATE_LAPTOP:
++		state = "laptop";
++		break;
++
++	case SSAM_KIP_LID_STATE_FOLDED_CANVAS:
++		state = "folded-canvas";
++		break;
++
++	case SSAM_KIP_LID_STATE_FOLDED_BACK:
++		state = "folded-back";
++		break;
++
++	default:
++		state = "<unknown>";
++		dev_warn(dev, "unknown KIP lid state: %d\n", sw->state);
++		break;
++	}
++
++	return sysfs_emit(buf, "%s\n", state);
++}
++static DEVICE_ATTR_RO(state);
++
++static struct attribute *ssam_kip_sw_attrs[] = {
++	&dev_attr_state.attr,
++	NULL,
++};
++
++static const struct attribute_group ssam_kip_sw_group = {
++	.attrs = ssam_kip_sw_attrs,
++};
++
++static void ssam_kip_sw_update_workfn(struct work_struct *work)
++{
++	struct ssam_kip_sw *sw = container_of(work, struct ssam_kip_sw, update_work);
++	enum ssam_kip_lid_state state;
++	int tablet, status;
++
++	status = ssam_kip_get_lid_state(sw, &state);
++	if (status)
++		return;
++
++	if (sw->state == state)
++		return;
++	sw->state = state;
++
++	/* Send SW_TABLET_MODE event. */
++	tablet = state != SSAM_KIP_LID_STATE_LAPTOP;
++	input_report_switch(sw->mode_switch, SW_TABLET_MODE, tablet);
++	input_sync(sw->mode_switch);
++}
++
++static u32 ssam_kip_sw_notif(struct ssam_event_notifier *nf, const struct ssam_event *event)
++{
++	struct ssam_kip_sw *sw = container_of(nf, struct ssam_kip_sw, notif);
++
++	if (event->command_id != SSAM_EVENT_KIP_CID_LID_STATE)
++		return 0;	/* Return "unhandled". */
++
++	if (event->length < 1) {
++		dev_err(&sw->sdev->dev, "unexpected payload size: %u\n", event->length);
++		return 0;
++	}
++
++	schedule_work(&sw->update_work);
++	return SSAM_NOTIF_HANDLED;
++}
++
++static int __maybe_unused ssam_kip_sw_resume(struct device *dev)
++{
++	struct ssam_kip_sw *sw = dev_get_drvdata(dev);
++
++	schedule_work(&sw->update_work);
++	return 0;
++}
++static SIMPLE_DEV_PM_OPS(ssam_kip_sw_pm_ops, NULL, ssam_kip_sw_resume);
++
++static int ssam_kip_sw_probe(struct ssam_device *sdev)
++{
++	struct ssam_kip_sw *sw;
++	int tablet, status;
++
++	sw = devm_kzalloc(&sdev->dev, sizeof(*sw), GFP_KERNEL);
++	if (!sw)
++		return -ENOMEM;
++
++	sw->sdev = sdev;
++	INIT_WORK(&sw->update_work, ssam_kip_sw_update_workfn);
++
++	ssam_device_set_drvdata(sdev, sw);
++
++	/* Get initial state. */
++	status = ssam_kip_get_lid_state(sw, &sw->state);
++	if (status)
++		return status;
++
++	/* Set up tablet mode switch. */
++	sw->mode_switch = devm_input_allocate_device(&sdev->dev);
++	if (!sw->mode_switch)
++		return -ENOMEM;
++
++	sw->mode_switch->name = "Microsoft Surface KIP Tablet Mode Switch";
++	sw->mode_switch->phys = "ssam/01:0e:01:00:01/input0";
++	sw->mode_switch->id.bustype = BUS_HOST;
++	sw->mode_switch->dev.parent = &sdev->dev;
++
++	tablet = sw->state != SSAM_KIP_LID_STATE_LAPTOP;
++	input_set_capability(sw->mode_switch, EV_SW, SW_TABLET_MODE);
++	input_report_switch(sw->mode_switch, SW_TABLET_MODE, tablet);
++
++	status = input_register_device(sw->mode_switch);
++	if (status)
++		return status;
++
++	/* Set up notifier. */
++	sw->notif.base.priority = 0;
++	sw->notif.base.fn = ssam_kip_sw_notif;
++	sw->notif.event.reg = SSAM_EVENT_REGISTRY_SAM;
++	sw->notif.event.id.target_category = SSAM_SSH_TC_KIP,
++	sw->notif.event.id.instance = 0,
++	sw->notif.event.mask = SSAM_EVENT_MASK_TARGET;
++	sw->notif.event.flags = SSAM_EVENT_SEQUENCED;
++
++	status = ssam_device_notifier_register(sdev, &sw->notif);
++	if (status)
++		return status;
++
++	status = sysfs_create_group(&sdev->dev.kobj, &ssam_kip_sw_group);
++	if (status)
++		goto err;
++
++	/* We might have missed events during setup, so check again. */
++	schedule_work(&sw->update_work);
++	return 0;
++
++err:
++	ssam_device_notifier_unregister(sdev, &sw->notif);
++	cancel_work_sync(&sw->update_work);
++	return status;
++}
++
++static void ssam_kip_sw_remove(struct ssam_device *sdev)
++{
++	struct ssam_kip_sw *sw = ssam_device_get_drvdata(sdev);
++
++	sysfs_remove_group(&sdev->dev.kobj, &ssam_kip_sw_group);
++
++	ssam_device_notifier_unregister(sdev, &sw->notif);
++	cancel_work_sync(&sw->update_work);
++}
++
++static const struct ssam_device_id ssam_kip_sw_match[] = {
++	{ SSAM_SDEV(KIP, 0x01, 0x00, 0x01) },
++	{ },
++};
++MODULE_DEVICE_TABLE(ssam, ssam_kip_sw_match);
++
++static struct ssam_device_driver ssam_kip_sw_driver = {
++	.probe = ssam_kip_sw_probe,
++	.remove = ssam_kip_sw_remove,
++	.match_table = ssam_kip_sw_match,
++	.driver = {
++		.name = "surface_kip_tablet_mode_switch",
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
++		.pm = &ssam_kip_sw_pm_ops,
++	},
++};
++module_ssam_device_driver(ssam_kip_sw_driver);
++
++MODULE_AUTHOR("Maximilian Luz <luzmaximilian@gmail.com>");
++MODULE_DESCRIPTION("Tablet mode switch driver for Surface devices using KIP subsystem");
++MODULE_LICENSE("GPL");
+-- 
+2.36.0
+
+From 228072592809b63575ea69a4d2bb9192beb74b02 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Wed, 27 Oct 2021 22:33:03 +0200
+Subject: [PATCH] platform/surface: aggregator_registry: Add support for tablet
+ mode switch on Surface Pro 8
+
+Add a KIP subsystem tablet-mode switch device for the Surface Pro 8.
+The respective driver for this device provides SW_TABLET_MODE input
+events for user-space based on the state of the keyboard cover (e.g.
+detached, folded-back, normal/laptop mode).
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ drivers/platform/surface/surface_aggregator_registry.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
+index c0e29c0514df..eaf0054627a5 100644
+--- a/drivers/platform/surface/surface_aggregator_registry.c
++++ b/drivers/platform/surface/surface_aggregator_registry.c
+@@ -77,6 +77,12 @@ static const struct software_node ssam_node_tmp_pprof = {
+ 	.parent = &ssam_node_root,
+ };
+ 
++/* Tablet-mode switch via KIP subsystem. */
++static const struct software_node ssam_node_kip_tablet_switch = {
++	.name = "ssam:01:0e:01:00:01",
++	.parent = &ssam_node_root,
++};
++
+ /* DTX / detachment-system device (Surface Book 3). */
+ static const struct software_node ssam_node_bas_dtx = {
+ 	.name = "ssam:01:11:01:00:00",
+@@ -264,11 +270,11 @@ static const struct software_node *ssam_node_group_sp8[] = {
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+ 	&ssam_node_tmp_pprof,
++	&ssam_node_kip_tablet_switch,
+ 	&ssam_node_hid_kip_keyboard,
+ 	&ssam_node_hid_kip_penstash,
+ 	&ssam_node_hid_kip_touchpad,
+ 	&ssam_node_hid_kip_iid5,
+-	/* TODO: Add support for tablet mode switch. */
+ 	NULL,
+ };
+ 
+-- 
+2.36.0
+
+From 82ae885ad1824b149d18d7ac938988d9a5b279d5 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Sat, 25 Jul 2020 17:19:53 +0200
+Subject: [PATCH] i2c: acpi: Implement RawBytes read access
+
+Microsoft Surface Pro 4 and Book 1 devices access the MSHW0030 I2C
+device via a generic serial bus operation region and RawBytes read
+access. On the Surface Book 1, this access is required to turn on (and
+off) the discrete GPU.
+
+Multiple things are to note here:
+
+a) The RawBytes access is device/driver dependent. The ACPI
+   specification states:
+
+   > Raw accesses assume that the writer has knowledge of the bus that
+   > the access is made over and the device that is being accessed. The
+   > protocol may only ensure that the buffer is transmitted to the
+   > appropriate driver, but the driver must be able to interpret the
+   > buffer to communicate to a register.
+
+   Thus this implementation may likely not work on other devices
+   accessing I2C via the RawBytes accessor type.
+
+b) The MSHW0030 I2C device is an HID-over-I2C device which seems to
+   serve multiple functions:
+
+   1. It is the main access point for the legacy-type Surface Aggregator
+      Module (also referred to as SAM-over-HID, as opposed to the newer
+      SAM-over-SSH/UART). It has currently not been determined on how
+      support for the legacy SAM should be implemented. Likely via a
+      custom HID driver.
+
+   2. It seems to serve as the HID device for the Integrated Sensor Hub.
+      This might complicate matters with regards to implementing a
+      SAM-over-HID driver required by legacy SAM.
+
+In light of this, the simplest approach has been chosen for now.
+However, it may make more sense regarding breakage and compatibility to
+either provide functionality for replacing or enhancing the default
+operation region handler via some additional API functions, or even to
+completely blacklist MSHW0030 from the I2C core and provide a custom
+driver for it.
+
+Replacing/enhancing the default operation region handler would, however,
+either require some sort of secondary driver and access point for it,
+from which the new API functions would be called and the new handler
+(part) would be installed, or hard-coding them via some sort of
+quirk-like interface into the I2C core.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam-over-hid
+---
+ drivers/i2c/i2c-core-acpi.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+
+diff --git a/drivers/i2c/i2c-core-acpi.c b/drivers/i2c/i2c-core-acpi.c
+index 85ed4c1d4924..942c1c9a4ea5 100644
+--- a/drivers/i2c/i2c-core-acpi.c
++++ b/drivers/i2c/i2c-core-acpi.c
+@@ -624,6 +624,28 @@ static int acpi_gsb_i2c_write_bytes(struct i2c_client *client,
+ 	return (ret == 1) ? 0 : -EIO;
+ }
+ 
++static int acpi_gsb_i2c_write_raw_bytes(struct i2c_client *client,
++		u8 *data, u8 data_len)
++{
++	struct i2c_msg msgs[1];
++	int ret = AE_OK;
++
++	msgs[0].addr = client->addr;
++	msgs[0].flags = client->flags;
++	msgs[0].len = data_len + 1;
++	msgs[0].buf = data;
++
++	ret = i2c_transfer(client->adapter, msgs, ARRAY_SIZE(msgs));
++
++	if (ret < 0) {
++		dev_err(&client->adapter->dev, "i2c write failed: %d\n", ret);
++		return ret;
++	}
++
++	/* 1 transfer must have completed successfully */
++	return (ret == 1) ? 0 : -EIO;
++}
++
+ static acpi_status
+ i2c_acpi_space_handler(u32 function, acpi_physical_address command,
+ 			u32 bits, u64 *value64,
+@@ -725,6 +747,19 @@ i2c_acpi_space_handler(u32 function, acpi_physical_address command,
+ 		}
+ 		break;
+ 
++	case ACPI_GSB_ACCESS_ATTRIB_RAW_BYTES:
++		if (action == ACPI_READ) {
++			dev_warn(&adapter->dev,
++				 "protocol 0x%02x not supported for client 0x%02x\n",
++				 accessor_type, client->addr);
++			ret = AE_BAD_PARAMETER;
++			goto err;
++		} else {
++			status = acpi_gsb_i2c_write_raw_bytes(client,
++					gsb->data, info->access_length);
++		}
++		break;
++
+ 	default:
+ 		dev_warn(&adapter->dev, "protocol 0x%02x not supported for client 0x%02x\n",
+ 			 accessor_type, client->addr);
+-- 
+2.36.0
+
+From 704aa16555465b0f83471aa84c3a5be3c7133d67 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Sat, 13 Feb 2021 16:41:18 +0100
+Subject: [PATCH] platform/surface: Add driver for Surface Book 1 dGPU switch
+
+Add driver exposing the discrete GPU power-switch of the  Microsoft
+Surface Book 1 to user-space.
+
+On the Surface Book 1, the dGPU power is controlled via the Surface
+System Aggregator Module (SAM). The specific SAM-over-HID command for
+this is exposed via ACPI. This module provides a simple driver exposing
+the ACPI call via a sysfs parameter to user-space, so that users can
+easily power-on/-off the dGPU.
+
+Patchset: surface-sam-over-hid
+---
+ drivers/platform/surface/Kconfig              |   7 +
+ drivers/platform/surface/Makefile             |   1 +
+ .../surface/surfacebook1_dgpu_switch.c        | 162 ++++++++++++++++++
+ 3 files changed, 170 insertions(+)
+ create mode 100644 drivers/platform/surface/surfacebook1_dgpu_switch.c
+
+diff --git a/drivers/platform/surface/Kconfig b/drivers/platform/surface/Kconfig
+index 9c228090c35b..c6c3c9bd3b57 100644
+--- a/drivers/platform/surface/Kconfig
++++ b/drivers/platform/surface/Kconfig
+@@ -106,6 +106,13 @@ config SURFACE_AGGREGATOR_REGISTRY
+ 	  the respective client devices. Drivers for these devices still need to
+ 	  be selected via the other options.
+ 
++config SURFACE_BOOK1_DGPU_SWITCH
++	tristate "Surface Book 1 dGPU Switch Driver"
++	depends on SYSFS
++	help
++	  This driver provides a sysfs switch to set the power-state of the
++	  discrete GPU found on the Microsoft Surface Book 1.
++
+ config SURFACE_DTX
+ 	tristate "Surface DTX (Detachment System) Driver"
+ 	depends on SURFACE_AGGREGATOR
+diff --git a/drivers/platform/surface/Makefile b/drivers/platform/surface/Makefile
+index 6d9291c993c4..9eb3a7e6382c 100644
+--- a/drivers/platform/surface/Makefile
++++ b/drivers/platform/surface/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_SURFACE_ACPI_NOTIFY)	+= surface_acpi_notify.o
+ obj-$(CONFIG_SURFACE_AGGREGATOR)	+= aggregator/
+ obj-$(CONFIG_SURFACE_AGGREGATOR_CDEV)	+= surface_aggregator_cdev.o
+ obj-$(CONFIG_SURFACE_AGGREGATOR_REGISTRY) += surface_aggregator_registry.o
++obj-$(CONFIG_SURFACE_BOOK1_DGPU_SWITCH) += surfacebook1_dgpu_switch.o
+ obj-$(CONFIG_SURFACE_DTX)		+= surface_dtx.o
+ obj-$(CONFIG_SURFACE_GPE)		+= surface_gpe.o
+ obj-$(CONFIG_SURFACE_HOTPLUG)		+= surface_hotplug.o
+diff --git a/drivers/platform/surface/surfacebook1_dgpu_switch.c b/drivers/platform/surface/surfacebook1_dgpu_switch.c
+new file mode 100644
+index 000000000000..8b816ed8f35c
+--- /dev/null
++++ b/drivers/platform/surface/surfacebook1_dgpu_switch.c
+@@ -0,0 +1,162 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/acpi.h>
++#include <linux/platform_device.h>
++
++
++#ifdef pr_fmt
++#undef pr_fmt
++#endif
++#define pr_fmt(fmt) "%s:%s: " fmt, KBUILD_MODNAME, __func__
++
++
++static const guid_t dgpu_sw_guid = GUID_INIT(0x6fd05c69, 0xcde3, 0x49f4,
++	0x95, 0xed, 0xab, 0x16, 0x65, 0x49, 0x80, 0x35);
++
++#define DGPUSW_ACPI_PATH_DSM	"\\_SB_.PCI0.LPCB.EC0_.VGBI"
++#define DGPUSW_ACPI_PATH_HGON	"\\_SB_.PCI0.RP05.HGON"
++#define DGPUSW_ACPI_PATH_HGOF	"\\_SB_.PCI0.RP05.HGOF"
++
++
++static int sb1_dgpu_sw_dsmcall(void)
++{
++	union acpi_object *ret;
++	acpi_handle handle;
++	acpi_status status;
++
++	status = acpi_get_handle(NULL, DGPUSW_ACPI_PATH_DSM, &handle);
++	if (status)
++		return -EINVAL;
++
++	ret = acpi_evaluate_dsm_typed(handle, &dgpu_sw_guid, 1, 1, NULL, ACPI_TYPE_BUFFER);
++	if (!ret)
++		return -EINVAL;
++
++	ACPI_FREE(ret);
++	return 0;
++}
++
++static int sb1_dgpu_sw_hgon(void)
++{
++	struct acpi_buffer buf = {ACPI_ALLOCATE_BUFFER, NULL};
++	acpi_status status;
++
++	status = acpi_evaluate_object(NULL, DGPUSW_ACPI_PATH_HGON, NULL, &buf);
++	if (status) {
++		pr_err("failed to run HGON: %d\n", status);
++		return -EINVAL;
++	}
++
++	if (buf.pointer)
++		ACPI_FREE(buf.pointer);
++
++	pr_info("turned-on dGPU via HGON\n");
++	return 0;
++}
++
++static int sb1_dgpu_sw_hgof(void)
++{
++	struct acpi_buffer buf = {ACPI_ALLOCATE_BUFFER, NULL};
++	acpi_status status;
++
++	status = acpi_evaluate_object(NULL, DGPUSW_ACPI_PATH_HGOF, NULL, &buf);
++	if (status) {
++		pr_err("failed to run HGOF: %d\n", status);
++		return -EINVAL;
++	}
++
++	if (buf.pointer)
++		ACPI_FREE(buf.pointer);
++
++	pr_info("turned-off dGPU via HGOF\n");
++	return 0;
++}
++
++
++static ssize_t dgpu_dsmcall_store(struct device *dev, struct device_attribute *attr,
++				  const char *buf, size_t len)
++{
++	int status, value;
++
++	status = kstrtoint(buf, 0, &value);
++	if (status < 0)
++		return status;
++
++	if (value != 1)
++		return -EINVAL;
++
++	status = sb1_dgpu_sw_dsmcall();
++
++	return status < 0 ? status : len;
++}
++
++static ssize_t dgpu_power_store(struct device *dev, struct device_attribute *attr,
++				const char *buf, size_t len)
++{
++	bool power;
++	int status;
++
++	status = kstrtobool(buf, &power);
++	if (status < 0)
++		return status;
++
++	if (power)
++		status = sb1_dgpu_sw_hgon();
++	else
++		status = sb1_dgpu_sw_hgof();
++
++	return status < 0 ? status : len;
++}
++
++static DEVICE_ATTR_WO(dgpu_dsmcall);
++static DEVICE_ATTR_WO(dgpu_power);
++
++static struct attribute *sb1_dgpu_sw_attrs[] = {
++	&dev_attr_dgpu_dsmcall.attr,
++	&dev_attr_dgpu_power.attr,
++	NULL,
++};
++
++static const struct attribute_group sb1_dgpu_sw_attr_group = {
++	.attrs = sb1_dgpu_sw_attrs,
++};
++
++
++static int sb1_dgpu_sw_probe(struct platform_device *pdev)
++{
++	return sysfs_create_group(&pdev->dev.kobj, &sb1_dgpu_sw_attr_group);
++}
++
++static int sb1_dgpu_sw_remove(struct platform_device *pdev)
++{
++	sysfs_remove_group(&pdev->dev.kobj, &sb1_dgpu_sw_attr_group);
++	return 0;
++}
++
++/*
++ * The dGPU power seems to be actually handled by MSHW0040. However, that is
++ * also the power-/volume-button device with a mainline driver. So let's use
++ * MSHW0041 instead for now, which seems to be the LTCH (latch/DTX) device.
++ */
++static const struct acpi_device_id sb1_dgpu_sw_match[] = {
++	{ "MSHW0041", },
++	{ },
++};
++MODULE_DEVICE_TABLE(acpi, sb1_dgpu_sw_match);
++
++static struct platform_driver sb1_dgpu_sw = {
++	.probe = sb1_dgpu_sw_probe,
++	.remove = sb1_dgpu_sw_remove,
++	.driver = {
++		.name = "surfacebook1_dgpu_switch",
++		.acpi_match_table = sb1_dgpu_sw_match,
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
++	},
++};
++module_platform_driver(sb1_dgpu_sw);
++
++MODULE_AUTHOR("Maximilian Luz <luzmaximilian@gmail.com>");
++MODULE_DESCRIPTION("Discrete GPU Power-Switch for Surface Book 1");
++MODULE_LICENSE("GPL");
+-- 
+2.36.0
+
+From 5a6d26ae3ff1334f0540aef76b28c596ebb67d81 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Wed, 27 Oct 2021 00:56:11 +0200
+Subject: [PATCH] platform/surface: gpe: Add support for Surface Pro 8
+
+The new Surface Pro 8 uses GPEs for lid events as well. Add an entry for
+that so that the lid can be used to wake the device. Note that this is a
+device with a keyboard type cover, where this acts as the "lid".
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-gpe
+---
+ drivers/platform/surface/surface_gpe.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/platform/surface/surface_gpe.c b/drivers/platform/surface/surface_gpe.c
+index c1775db29efb..ec66fde28e75 100644
+--- a/drivers/platform/surface/surface_gpe.c
++++ b/drivers/platform/surface/surface_gpe.c
+@@ -99,6 +99,14 @@ static const struct dmi_system_id dmi_lid_device_table[] = {
+ 		},
+ 		.driver_data = (void *)lid_device_props_l4D,
+ 	},
++	{
++		.ident = "Surface Pro 8",
++		.matches = {
++			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Pro 8"),
++		},
++		.driver_data = (void *)lid_device_props_l4B,
++	},
+ 	{
+ 		.ident = "Surface Book 1",
+ 		.matches = {
+-- 
+2.36.0
+
+From 8944aec8973646c474c14bd6763adee38f0430a3 Mon Sep 17 00:00:00 2001
+From: Sachi King <nakato@nakato.io>
+Date: Tue, 5 Oct 2021 00:05:09 +1100
+Subject: [PATCH] Input: soc_button_array - support AMD variant Surface devices
+
+The power button on the AMD variant of the Surface Laptop uses the
+same MSHW0040 device ID as the 5th and later generation of Surface
+devices, however they report 0 for their OEM platform revision.  As the
+_DSM does not exist on the devices requiring special casing, check for
+the existance of the _DSM to determine if soc_button_array should be
+loaded.
+
+Fixes: c394159310d0 ("Input: soc_button_array - add support for newer surface devices")
+Co-developed-by: Maximilian Luz <luzmaximilian@gmail.com>
+
+Signed-off-by: Sachi King <nakato@nakato.io>
+Patchset: surface-button
+---
+ drivers/input/misc/soc_button_array.c | 33 +++++++--------------------
+ 1 file changed, 8 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/input/misc/soc_button_array.c b/drivers/input/misc/soc_button_array.c
+index cb6ec59a045d..4e8944f59def 100644
+--- a/drivers/input/misc/soc_button_array.c
++++ b/drivers/input/misc/soc_button_array.c
+@@ -474,8 +474,8 @@ static const struct soc_device_data soc_device_INT33D3 = {
+  * Both, the Surface Pro 4 (surfacepro3_button.c) and the above mentioned
+  * devices use MSHW0040 for power and volume buttons, however the way they
+  * have to be addressed differs. Make sure that we only load this drivers
+- * for the correct devices by checking the OEM Platform Revision provided by
+- * the _DSM method.
++ * for the correct devices by checking if the OEM Platform Revision DSM call
++ * exists.
+  */
+ #define MSHW0040_DSM_REVISION		0x01
+ #define MSHW0040_DSM_GET_OMPR		0x02	// get OEM Platform Revision
+@@ -486,31 +486,14 @@ static const guid_t MSHW0040_DSM_UUID =
+ static int soc_device_check_MSHW0040(struct device *dev)
+ {
+ 	acpi_handle handle = ACPI_HANDLE(dev);
+-	union acpi_object *result;
+-	u64 oem_platform_rev = 0;	// valid revisions are nonzero
+-
+-	// get OEM platform revision
+-	result = acpi_evaluate_dsm_typed(handle, &MSHW0040_DSM_UUID,
+-					 MSHW0040_DSM_REVISION,
+-					 MSHW0040_DSM_GET_OMPR, NULL,
+-					 ACPI_TYPE_INTEGER);
+-
+-	if (result) {
+-		oem_platform_rev = result->integer.value;
+-		ACPI_FREE(result);
+-	}
+-
+-	/*
+-	 * If the revision is zero here, the _DSM evaluation has failed. This
+-	 * indicates that we have a Pro 4 or Book 1 and this driver should not
+-	 * be used.
+-	 */
+-	if (oem_platform_rev == 0)
+-		return -ENODEV;
++	bool exists;
+ 
+-	dev_dbg(dev, "OEM Platform Revision %llu\n", oem_platform_rev);
++	// check if OEM platform revision DSM call exists
++	exists = acpi_check_dsm(handle, &MSHW0040_DSM_UUID,
++				MSHW0040_DSM_REVISION,
++				BIT(MSHW0040_DSM_GET_OMPR));
+ 
+-	return 0;
++	return exists ? 0 : -ENODEV;
+ }
+ 
+ /*
+-- 
+2.36.0
+
+From 421af81b0297af32e058cd79dcf3073eb3cf51fa Mon Sep 17 00:00:00 2001
+From: Sachi King <nakato@nakato.io>
+Date: Tue, 5 Oct 2021 00:22:57 +1100
+Subject: [PATCH] platform/surface: surfacepro3_button: don't load on amd
+ variant
+
+The AMD variant of the Surface Laptop report 0 for their OEM platform
+revision.  The Surface devices that require the surfacepro3_button
+driver do not have the _DSM that gets the OEM platform revision.  If the
+method does not exist, load surfacepro3_button.
+
+Fixes: 64dd243d7356 ("platform/x86: surfacepro3_button: Fix device check")
+Co-developed-by: Maximilian Luz <luzmaximilian@gmail.com>
+
+Signed-off-by: Sachi King <nakato@nakato.io>
+Patchset: surface-button
+---
+ drivers/platform/surface/surfacepro3_button.c | 30 ++++---------------
+ 1 file changed, 6 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/platform/surface/surfacepro3_button.c b/drivers/platform/surface/surfacepro3_button.c
+index 242fb690dcaf..30eea54dbb47 100644
+--- a/drivers/platform/surface/surfacepro3_button.c
++++ b/drivers/platform/surface/surfacepro3_button.c
+@@ -149,7 +149,8 @@ static int surface_button_resume(struct device *dev)
+ /*
+  * Surface Pro 4 and Surface Book 2 / Surface Pro 2017 use the same device
+  * ID (MSHW0040) for the power/volume buttons. Make sure this is the right
+- * device by checking for the _DSM method and OEM Platform Revision.
++ * device by checking for the _DSM method and OEM Platform Revision DSM
++ * function.
+  *
+  * Returns true if the driver should bind to this device, i.e. the device is
+  * either MSWH0028 (Pro 3) or MSHW0040 on a Pro 4 or Book 1.
+@@ -157,30 +158,11 @@ static int surface_button_resume(struct device *dev)
+ static bool surface_button_check_MSHW0040(struct acpi_device *dev)
+ {
+ 	acpi_handle handle = dev->handle;
+-	union acpi_object *result;
+-	u64 oem_platform_rev = 0;	// valid revisions are nonzero
+-
+-	// get OEM platform revision
+-	result = acpi_evaluate_dsm_typed(handle, &MSHW0040_DSM_UUID,
+-					 MSHW0040_DSM_REVISION,
+-					 MSHW0040_DSM_GET_OMPR,
+-					 NULL, ACPI_TYPE_INTEGER);
+-
+-	/*
+-	 * If evaluating the _DSM fails, the method is not present. This means
+-	 * that we have either MSHW0028 or MSHW0040 on Pro 4 or Book 1, so we
+-	 * should use this driver. We use revision 0 indicating it is
+-	 * unavailable.
+-	 */
+-
+-	if (result) {
+-		oem_platform_rev = result->integer.value;
+-		ACPI_FREE(result);
+-	}
+-
+-	dev_dbg(&dev->dev, "OEM Platform Revision %llu\n", oem_platform_rev);
+ 
+-	return oem_platform_rev == 0;
++	// make sure that OEM platform revision DSM call does not exist
++	return !acpi_check_dsm(handle, &MSHW0040_DSM_UUID,
++			       MSHW0040_DSM_REVISION,
++			       BIT(MSHW0040_DSM_GET_OMPR));
+ }
+ 
+ 
+-- 
+2.36.0
+
+From 734da7d8f5beb9be996ba99a80f7e603b72130ab Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 24 Feb 2022 12:02:40 +0100
+Subject: [PATCH] Input: soc_button_array - add support for Microsoft Surface 3
+ (MSHW0028) buttons
+
+The drivers/platform/surface/surface3_button.c code is alsmost a 1:1 copy
+of the soc_button_array code.
+
+The only big difference is that it binds to an i2c_client rather then to
+a platform_device. The cause of this is the ACPI resources for the MSHW0028
+device containing a bogus I2cSerialBusV2 resource which causes the kernel
+to instantiate an i2c_client for it instead of a platform_device.
+
+Add "MSHW0028" to the ignore_serial_bus_ids[] list in drivers/apci/scan.c,
+so that a platform_device will be instantiated and add support for
+the MSHW0028 HID to soc_button_array.
+
+This fully replaces surface3_button, which will be removed in a separate
+commit (since it binds to the now no longer created i2c_client it no
+longer does anyyhing after this commit).
+
+Note the MSHW0028 id is used by Microsoft to describe the tablet buttons on
+both the Surface 3 and the Surface 3 Pro and the actual API/implementation
+for the Surface 3 Pro is quite different. The changes in this commit should
+not impact the separate surfacepro3_button driver:
+
+1. Because of the bogus I2cSerialBusV2 resource problem that driver binds
+   to the acpi_device itself, so instantiating a platform_device instead of
+   an i2c_client does not matter.
+
+2. The soc_button_array driver will not bind to the MSHW0028 device on
+   the Surface 3 Pro, because it has no GPIO resources.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Maximilian Luz <luzmaximilian@gmail.com
+Patchset: surface-button
+---
+ drivers/acpi/scan.c                   |  5 +++++
+ drivers/input/misc/soc_button_array.c | 24 +++++++++++++++++++++++-
+ 2 files changed, 28 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index 8b2e5ef15559..c82b1bfa1c3d 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -1753,6 +1753,11 @@ static bool acpi_device_enumeration_by_parent(struct acpi_device *device)
+ 	 */
+ 		{"BCM4752", },
+ 		{"LNV4752", },
++	/*
++	 * Some ACPI devs contain SerialBus resources even though they are not
++	 * attached to a serial bus at all.
++	 */
++		{"MSHW0028", },
+ 		{}
+ 	};
+ 
+diff --git a/drivers/input/misc/soc_button_array.c b/drivers/input/misc/soc_button_array.c
+index 4e8944f59def..f044c731c6a9 100644
+--- a/drivers/input/misc/soc_button_array.c
++++ b/drivers/input/misc/soc_button_array.c
+@@ -469,6 +469,27 @@ static const struct soc_device_data soc_device_INT33D3 = {
+ 	.button_info = soc_button_INT33D3,
+ };
+ 
++/*
++ * Button info for Microsoft Surface 3 (non pro), this is indentical to
++ * the PNP0C40 info except that the home button is active-high.
++ *
++ * The Surface 3 Pro also has a MSHW0028 ACPI device, but that uses a custom
++ * version of the drivers/platform/x86/intel/hid.c 5 button array ACPI API
++ * instead. A check() callback is not necessary though as the Surface 3 Pro
++ * MSHW0028 ACPI device's resource table does not contain any GPIOs.
++ */
++static const struct soc_button_info soc_button_MSHW0028[] = {
++	{ "power", 0, EV_KEY, KEY_POWER, false, true, true },
++	{ "home", 1, EV_KEY, KEY_LEFTMETA, false, true, false },
++	{ "volume_up", 2, EV_KEY, KEY_VOLUMEUP, true, false, true },
++	{ "volume_down", 3, EV_KEY, KEY_VOLUMEDOWN, true, false, true },
++	{ }
++};
++
++static const struct soc_device_data soc_device_MSHW0028 = {
++	.button_info = soc_button_MSHW0028,
++};
++
+ /*
+  * Special device check for Surface Book 2 and Surface Pro (2017).
+  * Both, the Surface Pro 4 (surfacepro3_button.c) and the above mentioned
+@@ -518,7 +539,8 @@ static const struct acpi_device_id soc_button_acpi_match[] = {
+ 	{ "ID9001", (unsigned long)&soc_device_INT33D3 },
+ 	{ "ACPI0011", 0 },
+ 
+-	/* Microsoft Surface Devices (5th and 6th generation) */
++	/* Microsoft Surface Devices (3th, 5th and 6th generation) */
++	{ "MSHW0028", (unsigned long)&soc_device_MSHW0028 },
+ 	{ "MSHW0040", (unsigned long)&soc_device_MSHW0040 },
+ 
+ 	{ }
+-- 
+2.36.0
+
+From 33b3e3c489a43b4c71d5886e10af33473a939ca9 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 24 Feb 2022 12:02:41 +0100
+Subject: [PATCH] platform/surface: Remove Surface 3 Button driver
+
+The Surface 3 buttons are now handled by the generic soc_button_array
+driver. As part of adding support to soc_button_array the ACPI code
+now instantiates a platform_device rather then an i2c_client so there
+no longer is an i2c_client for this driver to bind to.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Reviewed-by: Maximilian Luz <luzmaximilian@gmail.com
+Patchset: surface-button
+---
+ drivers/platform/surface/Kconfig           |   7 -
+ drivers/platform/surface/Makefile          |   1 -
+ drivers/platform/surface/surface3_button.c | 247 ---------------------
+ 3 files changed, 255 deletions(-)
+ delete mode 100644 drivers/platform/surface/surface3_button.c
+
+diff --git a/drivers/platform/surface/Kconfig b/drivers/platform/surface/Kconfig
+index c6c3c9bd3b57..df387ac34a79 100644
+--- a/drivers/platform/surface/Kconfig
++++ b/drivers/platform/surface/Kconfig
+@@ -28,13 +28,6 @@ config SURFACE3_WMI
+ 	  To compile this driver as a module, choose M here: the module will
+ 	  be called surface3-wmi.
+ 
+-config SURFACE_3_BUTTON
+-	tristate "Power/home/volume buttons driver for Microsoft Surface 3 tablet"
+-	depends on ACPI
+-	depends on KEYBOARD_GPIO && I2C
+-	help
+-	  This driver handles the power/home/volume buttons on the Microsoft Surface 3 tablet.
+-
+ config SURFACE_3_POWER_OPREGION
+ 	tristate "Surface 3 battery platform operation region support"
+ 	depends on ACPI
+diff --git a/drivers/platform/surface/Makefile b/drivers/platform/surface/Makefile
+index 9eb3a7e6382c..e4791b47f561 100644
+--- a/drivers/platform/surface/Makefile
++++ b/drivers/platform/surface/Makefile
+@@ -5,7 +5,6 @@
+ #
+ 
+ obj-$(CONFIG_SURFACE3_WMI)		+= surface3-wmi.o
+-obj-$(CONFIG_SURFACE_3_BUTTON)		+= surface3_button.o
+ obj-$(CONFIG_SURFACE_3_POWER_OPREGION)	+= surface3_power.o
+ obj-$(CONFIG_SURFACE_ACPI_NOTIFY)	+= surface_acpi_notify.o
+ obj-$(CONFIG_SURFACE_AGGREGATOR)	+= aggregator/
+diff --git a/drivers/platform/surface/surface3_button.c b/drivers/platform/surface/surface3_button.c
+deleted file mode 100644
+index 48d77e7aae76..000000000000
+--- a/drivers/platform/surface/surface3_button.c
++++ /dev/null
+@@ -1,247 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Supports for the button array on the Surface tablets.
+- *
+- * (C) Copyright 2016 Red Hat, Inc
+- *
+- * Based on soc_button_array.c:
+- *
+- * {C} Copyright 2014 Intel Corporation
+- */
+-
+-#include <linux/module.h>
+-#include <linux/input.h>
+-#include <linux/init.h>
+-#include <linux/kernel.h>
+-#include <linux/i2c.h>
+-#include <linux/slab.h>
+-#include <linux/acpi.h>
+-#include <linux/gpio/consumer.h>
+-#include <linux/gpio_keys.h>
+-#include <linux/gpio.h>
+-#include <linux/platform_device.h>
+-
+-
+-#define SURFACE_BUTTON_OBJ_NAME		"TEV2"
+-#define MAX_NBUTTONS			4
+-
+-/*
+- * Some of the buttons like volume up/down are auto repeat, while others
+- * are not. To support both, we register two platform devices, and put
+- * buttons into them based on whether the key should be auto repeat.
+- */
+-#define BUTTON_TYPES			2
+-
+-/*
+- * Power button, Home button, Volume buttons support is supposed to
+- * be covered by drivers/input/misc/soc_button_array.c, which is implemented
+- * according to "Windows ACPI Design Guide for SoC Platforms".
+- * However surface 3 seems not to obey the specs, instead it uses
+- * device TEV2(MSHW0028) for declaring the GPIOs. The gpios are also slightly
+- * different in which the Home button is active high.
+- * Compared to surfacepro3_button.c which also handles MSHW0028, the Surface 3
+- * is a reduce platform and thus uses GPIOs, not ACPI events.
+- * We choose an I2C driver here because we need to access the resources
+- * declared under the device node, while surfacepro3_button.c only needs
+- * the ACPI companion node.
+- */
+-static const struct acpi_device_id surface3_acpi_match[] = {
+-	{ "MSHW0028", 0 },
+-	{ }
+-};
+-MODULE_DEVICE_TABLE(acpi, surface3_acpi_match);
+-
+-struct surface3_button_info {
+-	const char *name;
+-	int acpi_index;
+-	unsigned int event_type;
+-	unsigned int event_code;
+-	bool autorepeat;
+-	bool wakeup;
+-	bool active_low;
+-};
+-
+-struct surface3_button_data {
+-	struct platform_device *children[BUTTON_TYPES];
+-};
+-
+-/*
+- * Get the Nth GPIO number from the ACPI object.
+- */
+-static int surface3_button_lookup_gpio(struct device *dev, int acpi_index)
+-{
+-	struct gpio_desc *desc;
+-	int gpio;
+-
+-	desc = gpiod_get_index(dev, NULL, acpi_index, GPIOD_ASIS);
+-	if (IS_ERR(desc))
+-		return PTR_ERR(desc);
+-
+-	gpio = desc_to_gpio(desc);
+-
+-	gpiod_put(desc);
+-
+-	return gpio;
+-}
+-
+-static struct platform_device *
+-surface3_button_device_create(struct i2c_client *client,
+-			      const struct surface3_button_info *button_info,
+-			      bool autorepeat)
+-{
+-	const struct surface3_button_info *info;
+-	struct platform_device *pd;
+-	struct gpio_keys_button *gpio_keys;
+-	struct gpio_keys_platform_data *gpio_keys_pdata;
+-	int n_buttons = 0;
+-	int gpio;
+-	int error;
+-
+-	gpio_keys_pdata = devm_kzalloc(&client->dev,
+-				       sizeof(*gpio_keys_pdata) +
+-				       sizeof(*gpio_keys) * MAX_NBUTTONS,
+-				       GFP_KERNEL);
+-	if (!gpio_keys_pdata)
+-		return ERR_PTR(-ENOMEM);
+-
+-	gpio_keys = (void *)(gpio_keys_pdata + 1);
+-
+-	for (info = button_info; info->name; info++) {
+-		if (info->autorepeat != autorepeat)
+-			continue;
+-
+-		gpio = surface3_button_lookup_gpio(&client->dev,
+-						   info->acpi_index);
+-		if (!gpio_is_valid(gpio))
+-			continue;
+-
+-		gpio_keys[n_buttons].type = info->event_type;
+-		gpio_keys[n_buttons].code = info->event_code;
+-		gpio_keys[n_buttons].gpio = gpio;
+-		gpio_keys[n_buttons].active_low = info->active_low;
+-		gpio_keys[n_buttons].desc = info->name;
+-		gpio_keys[n_buttons].wakeup = info->wakeup;
+-		n_buttons++;
+-	}
+-
+-	if (n_buttons == 0) {
+-		error = -ENODEV;
+-		goto err_free_mem;
+-	}
+-
+-	gpio_keys_pdata->buttons = gpio_keys;
+-	gpio_keys_pdata->nbuttons = n_buttons;
+-	gpio_keys_pdata->rep = autorepeat;
+-
+-	pd = platform_device_alloc("gpio-keys", PLATFORM_DEVID_AUTO);
+-	if (!pd) {
+-		error = -ENOMEM;
+-		goto err_free_mem;
+-	}
+-
+-	error = platform_device_add_data(pd, gpio_keys_pdata,
+-					 sizeof(*gpio_keys_pdata));
+-	if (error)
+-		goto err_free_pdev;
+-
+-	error = platform_device_add(pd);
+-	if (error)
+-		goto err_free_pdev;
+-
+-	return pd;
+-
+-err_free_pdev:
+-	platform_device_put(pd);
+-err_free_mem:
+-	devm_kfree(&client->dev, gpio_keys_pdata);
+-	return ERR_PTR(error);
+-}
+-
+-static int surface3_button_remove(struct i2c_client *client)
+-{
+-	struct surface3_button_data *priv = i2c_get_clientdata(client);
+-
+-	int i;
+-
+-	for (i = 0; i < BUTTON_TYPES; i++)
+-		if (priv->children[i])
+-			platform_device_unregister(priv->children[i]);
+-
+-	return 0;
+-}
+-
+-static struct surface3_button_info surface3_button_surface3[] = {
+-	{ "power", 0, EV_KEY, KEY_POWER, false, true, true },
+-	{ "home", 1, EV_KEY, KEY_LEFTMETA, false, true, false },
+-	{ "volume_up", 2, EV_KEY, KEY_VOLUMEUP, true, false, true },
+-	{ "volume_down", 3, EV_KEY, KEY_VOLUMEDOWN, true, false, true },
+-	{ }
+-};
+-
+-static int surface3_button_probe(struct i2c_client *client,
+-				 const struct i2c_device_id *id)
+-{
+-	struct device *dev = &client->dev;
+-	struct surface3_button_data *priv;
+-	struct platform_device *pd;
+-	int i;
+-	int error;
+-
+-	if (strncmp(acpi_device_bid(ACPI_COMPANION(&client->dev)),
+-		    SURFACE_BUTTON_OBJ_NAME,
+-		    strlen(SURFACE_BUTTON_OBJ_NAME)))
+-		return -ENODEV;
+-
+-	error = gpiod_count(dev, NULL);
+-	if (error < 0) {
+-		dev_dbg(dev, "no GPIO attached, ignoring...\n");
+-		return error;
+-	}
+-
+-	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+-	if (!priv)
+-		return -ENOMEM;
+-
+-	i2c_set_clientdata(client, priv);
+-
+-	for (i = 0; i < BUTTON_TYPES; i++) {
+-		pd = surface3_button_device_create(client,
+-						   surface3_button_surface3,
+-						   i == 0);
+-		if (IS_ERR(pd)) {
+-			error = PTR_ERR(pd);
+-			if (error != -ENODEV) {
+-				surface3_button_remove(client);
+-				return error;
+-			}
+-			continue;
+-		}
+-
+-		priv->children[i] = pd;
+-	}
+-
+-	if (!priv->children[0] && !priv->children[1])
+-		return -ENODEV;
+-
+-	return 0;
+-}
+-
+-static const struct i2c_device_id surface3_id[] = {
+-	{ }
+-};
+-MODULE_DEVICE_TABLE(i2c, surface3_id);
+-
+-static struct i2c_driver surface3_driver = {
+-	.probe = surface3_button_probe,
+-	.remove = surface3_button_remove,
+-	.id_table = surface3_id,
+-	.driver = {
+-		.name = "surface3",
+-		.acpi_match_table = ACPI_PTR(surface3_acpi_match),
+-	},
+-};
+-module_i2c_driver(surface3_driver);
+-
+-MODULE_AUTHOR("Benjamin Tissoires <benjamin.tissoires@gmail.com>");
+-MODULE_DESCRIPTION("surface3 button array driver");
+-MODULE_LICENSE("GPL v2");
+-- 
+2.36.0
+
+From 6854ba2ebc5761be240d5fd1d57555011f307f2c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
+Date: Thu, 5 Nov 2020 13:09:45 +0100
+Subject: [PATCH] hid/multitouch: Turn off Type Cover keyboard backlight when
+ suspending
+
+The Type Cover for Microsoft Surface devices supports a special usb
+control request to disable or enable the built-in keyboard backlight.
+On Windows, this request happens when putting the device into suspend or
+resuming it, without it the backlight of the Type Cover will remain
+enabled for some time even though the computer is suspended, which looks
+weird to the user.
+
+So add support for this special usb control request to hid-multitouch,
+which is the driver that's handling the Type Cover.
+
+The reason we have to use a pm_notifier for this instead of the usual
+suspend/resume methods is that those won't get called in case the usb
+device is already autosuspended.
+
+Also, if the device is autosuspended, we have to briefly autoresume it
+in order to send the request. Doing that should be fine, the usb-core
+driver does something similar during suspend inside choose_wakeup().
+
+To make sure we don't send that request to every device but only to
+devices which support it, add a new quirk
+MT_CLS_WIN_8_MS_SURFACE_TYPE_COVER to hid-multitouch. For now this quirk
+is only enabled for the usb id of the Surface Pro 2017 Type Cover, which
+is where I confirmed that it's working.
+
+Patchset: surface-typecover
+---
+ drivers/hid/hid-multitouch.c | 100 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 98 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
+index 99eabfb4145b..bbfcae39f375 100644
+--- a/drivers/hid/hid-multitouch.c
++++ b/drivers/hid/hid-multitouch.c
+@@ -34,7 +34,10 @@
+ #include <linux/device.h>
+ #include <linux/hid.h>
+ #include <linux/module.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
++#include <linux/suspend.h>
++#include <linux/usb.h>
+ #include <linux/input/mt.h>
+ #include <linux/jiffies.h>
+ #include <linux/string.h>
+@@ -47,6 +50,7 @@ MODULE_DESCRIPTION("HID multitouch panels");
+ MODULE_LICENSE("GPL");
+ 
+ #include "hid-ids.h"
++#include "usbhid/usbhid.h"
+ 
+ /* quirks to control the device */
+ #define MT_QUIRK_NOT_SEEN_MEANS_UP	BIT(0)
+@@ -71,12 +75,15 @@ MODULE_LICENSE("GPL");
+ #define MT_QUIRK_SEPARATE_APP_REPORT	BIT(19)
+ #define MT_QUIRK_FORCE_MULTI_INPUT	BIT(20)
+ #define MT_QUIRK_DISABLE_WAKEUP		BIT(21)
++#define MT_QUIRK_HAS_TYPE_COVER_BACKLIGHT	BIT(22)
+ 
+ #define MT_INPUTMODE_TOUCHSCREEN	0x02
+ #define MT_INPUTMODE_TOUCHPAD		0x03
+ 
+ #define MT_BUTTONTYPE_CLICKPAD		0
+ 
++#define MS_TYPE_COVER_FEATURE_REPORT_USAGE	0xff050086
++
+ enum latency_mode {
+ 	HID_LATENCY_NORMAL = 0,
+ 	HID_LATENCY_HIGH = 1,
+@@ -168,6 +175,8 @@ struct mt_device {
+ 
+ 	struct list_head applications;
+ 	struct list_head reports;
++
++	struct notifier_block pm_notifier;
+ };
+ 
+ static void mt_post_parse_default_settings(struct mt_device *td,
+@@ -211,6 +220,7 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app);
+ #define MT_CLS_GOOGLE				0x0111
+ #define MT_CLS_RAZER_BLADE_STEALTH		0x0112
+ #define MT_CLS_SMART_TECH			0x0113
++#define MT_CLS_WIN_8_MS_SURFACE_TYPE_COVER	0x0114
+ 
+ #define MT_DEFAULT_MAXCONTACT	10
+ #define MT_MAX_MAXCONTACT	250
+@@ -386,6 +396,16 @@ static const struct mt_class mt_classes[] = {
+ 			MT_QUIRK_CONTACT_CNT_ACCURATE |
+ 			MT_QUIRK_SEPARATE_APP_REPORT,
+ 	},
++	{ .name = MT_CLS_WIN_8_MS_SURFACE_TYPE_COVER,
++		.quirks = MT_QUIRK_HAS_TYPE_COVER_BACKLIGHT |
++			MT_QUIRK_ALWAYS_VALID |
++			MT_QUIRK_IGNORE_DUPLICATES |
++			MT_QUIRK_HOVERING |
++			MT_QUIRK_CONTACT_CNT_ACCURATE |
++			MT_QUIRK_STICKY_FINGERS |
++			MT_QUIRK_WIN8_PTP_BUTTONS,
++		.export_all_inputs = true
++	},
+ 	{ }
+ };
+ 
+@@ -1695,6 +1715,69 @@ static void mt_expired_timeout(struct timer_list *t)
+ 	clear_bit(MT_IO_FLAGS_RUNNING, &td->mt_io_flags);
+ }
+ 
++static void get_type_cover_backlight_field(struct hid_device *hdev,
++					   struct hid_field **field)
++{
++	struct hid_report_enum *rep_enum;
++	struct hid_report *rep;
++	struct hid_field *cur_field;
++	int i, j;
++
++	rep_enum = &hdev->report_enum[HID_FEATURE_REPORT];
++	list_for_each_entry(rep, &rep_enum->report_list, list) {
++		for (i = 0; i < rep->maxfield; i++) {
++			cur_field = rep->field[i];
++
++			for (j = 0; j < cur_field->maxusage; j++) {
++				if (cur_field->usage[j].hid
++				    == MS_TYPE_COVER_FEATURE_REPORT_USAGE) {
++					*field = cur_field;
++					return;
++				}
++			}
++		}
++	}
++}
++
++static void update_keyboard_backlight(struct hid_device *hdev, bool enabled)
++{
++	struct usb_device *udev = hid_to_usb_dev(hdev);
++	struct hid_field *field = NULL;
++
++	/* Wake up the device in case it's already suspended */
++	pm_runtime_get_sync(&udev->dev);
++
++	get_type_cover_backlight_field(hdev, &field);
++	if (!field) {
++		hid_err(hdev, "couldn't find backlight field\n");
++		goto out;
++	}
++
++	field->value[field->index] = enabled ? 0x01ff00ff : 0x00ff00ff;
++	hid_hw_request(hdev, field->report, HID_REQ_SET_REPORT);
++
++out:
++	pm_runtime_put_sync(&udev->dev);
++}
++
++static int mt_pm_notifier(struct notifier_block *notifier,
++			  unsigned long pm_event,
++			  void *unused)
++{
++	struct mt_device *td =
++		container_of(notifier, struct mt_device, pm_notifier);
++	struct hid_device *hdev = td->hdev;
++
++	if (td->mtclass.quirks & MT_QUIRK_HAS_TYPE_COVER_BACKLIGHT) {
++		if (pm_event == PM_SUSPEND_PREPARE)
++			update_keyboard_backlight(hdev, 0);
++		else if (pm_event == PM_POST_SUSPEND)
++			update_keyboard_backlight(hdev, 1);
++	}
++
++	return NOTIFY_DONE;
++}
++
+ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
+ {
+ 	int ret, i;
+@@ -1718,6 +1801,9 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
+ 	td->inputmode_value = MT_INPUTMODE_TOUCHSCREEN;
+ 	hid_set_drvdata(hdev, td);
+ 
++	td->pm_notifier.notifier_call = mt_pm_notifier;
++	register_pm_notifier(&td->pm_notifier);
++
+ 	INIT_LIST_HEAD(&td->applications);
+ 	INIT_LIST_HEAD(&td->reports);
+ 
+@@ -1747,15 +1833,19 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
+ 	timer_setup(&td->release_timer, mt_expired_timeout, 0);
+ 
+ 	ret = hid_parse(hdev);
+-	if (ret != 0)
++	if (ret != 0) {
++		unregister_pm_notifier(&td->pm_notifier);
+ 		return ret;
++	}
+ 
+ 	if (mtclass->quirks & MT_QUIRK_FIX_CONST_CONTACT_ID)
+ 		mt_fix_const_fields(hdev, HID_DG_CONTACTID);
+ 
+ 	ret = hid_hw_start(hdev, HID_CONNECT_DEFAULT);
+-	if (ret)
++	if (ret) {
++		unregister_pm_notifier(&td->pm_notifier);
+ 		return ret;
++	}
+ 
+ 	ret = sysfs_create_group(&hdev->dev.kobj, &mt_attribute_group);
+ 	if (ret)
+@@ -1807,6 +1897,7 @@ static void mt_remove(struct hid_device *hdev)
+ {
+ 	struct mt_device *td = hid_get_drvdata(hdev);
+ 
++	unregister_pm_notifier(&td->pm_notifier);
+ 	del_timer_sync(&td->release_timer);
+ 
+ 	sysfs_remove_group(&hdev->dev.kobj, &mt_attribute_group);
+@@ -2174,6 +2265,11 @@ static const struct hid_device_id mt_devices[] = {
+ 		MT_USB_DEVICE(USB_VENDOR_ID_XIROKU,
+ 			USB_DEVICE_ID_XIROKU_CSR2) },
+ 
++	/* Microsoft Surface type cover */
++	{ .driver_data = MT_CLS_WIN_8_MS_SURFACE_TYPE_COVER,
++		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY,
++			USB_VENDOR_ID_MICROSOFT, 0x09c0) },
++
+ 	/* Google MT devices */
+ 	{ .driver_data = MT_CLS_GOOGLE,
+ 		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY, USB_VENDOR_ID_GOOGLE,
+-- 
+2.36.0
+
+From 48eab1c5e0d9fe67384d6c2e91efdf0ec3ff54b5 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Tue, 8 Feb 2022 01:29:48 +0100
+Subject: [PATCH] ACPI: battery: Add "Not Charging" quirk for Microsoft Surface
+ devices
+
+Microsoft Surface devices have a limiter that sets a fixed maximum
+charge capacity for the battery. When that maximum capacity has been
+reached, charging stops. In that case, _BST returns a battery state
+field with both "charging" and "discharging" bits cleared. The battery
+driver, however, returns "unknown" as status.
+
+This seems to be the same behavior as observed on the ThinkPads, so
+let's use the same quirk to handle that as well.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-battery
+
+---
+For what it's worth, I don't think the ACPI spec explicitly states that
+any of the status bits need to be set, or that there are only the
+"charging" and "discharging" states. As far as I can tell, ACPI only
+states:
+
+    Notice that the Charging bit and the Discharging bit are mutually
+    exclusive and must not both be set at the same time. Even in
+    critical state, hardware should report the corresponding
+    charging/discharging state.
+
+But that does not exclude the case that no bit is set. So, strictly
+going by spec, I don't think it's necessary to put all of this behind a
+quirk.
+---
+ drivers/acpi/battery.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index dc208f5f5a1f..db2aa56c746a 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -1152,6 +1152,14 @@ static const struct dmi_system_id bat_dmi_table[] __initconst = {
+ 			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad"),
+ 		},
+ 	},
++	{
++		.callback = battery_quirk_not_charging,
++		.ident = "Microsoft Surface",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Surface"),
++		},
++	},
+ 	{
+ 		/* Microsoft Surface Go 3 */
+ 		.callback = battery_notification_delay_quirk,
+-- 
+2.36.0
+
+From f31a3ad42c2c04a17f8675438a1b5a6500bafea5 Mon Sep 17 00:00:00 2001
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Sun, 10 Oct 2021 20:56:57 +0200
+Subject: [PATCH] ACPI: delay enumeration of devices with a _DEP pointing to an
+ INT3472 device
+
+The clk and regulator frameworks expect clk/regulator consumer-devices
+to have info about the consumed clks/regulators described in the device's
+fw_node.
+
+To work around cases where this info is not present in the firmware tables,
+which is often the case on x86/ACPI devices, both frameworks allow the
+provider-driver to attach info about consumers to the clks/regulators
+when registering these.
+
+This causes problems with the probe ordering wrt drivers for consumers
+of these clks/regulators. Since the lookups are only registered when the
+provider-driver binds, trying to get these clks/regulators before then
+results in a -ENOENT error for clks and a dummy regulator for regulators.
+
+One case where we hit this issue is camera sensors such as e.g. the OV8865
+sensor found on the Microsoft Surface Go. The sensor uses clks, regulators
+and GPIOs provided by a TPS68470 PMIC which is described in an INT3472
+ACPI device. There is special platform code handling this and setting
+platform_data with the necessary consumer info on the MFD cells
+instantiated for the PMIC under: drivers/platform/x86/intel/int3472.
+
+For this to work properly the ov8865 driver must not bind to the I2C-client
+for the OV8865 sensor until after the TPS68470 PMIC gpio, regulator and
+clk MFD cells have all been fully setup.
+
+The OV8865 on the Microsoft Surface Go is just one example, all X86
+devices using the Intel IPU3 camera block found on recent Intel SoCs
+have similar issues where there is an INT3472 HID ACPI-device, which
+describes the clks and regulators, and the driver for this INT3472 device
+must be fully initialized before the sensor driver (any sensor driver)
+binds for things to work properly.
+
+On these devices the ACPI nodes describing the sensors all have a _DEP
+dependency on the matching INT3472 ACPI device (there is one per sensor).
+
+This allows solving the probe-ordering problem by delaying the enumeration
+(instantiation of the I2C-client in the ov8865 example) of ACPI-devices
+which have a _DEP dependency on an INT3472 device.
+
+The new acpi_dev_ready_for_enumeration() helper used for this is also
+exported because for devices, which have the enumeration_by_parent flag
+set, the parent-driver will do its own scan of child ACPI devices and
+it will try to enumerate those during its probe(). Code doing this such
+as e.g. the i2c-core-acpi.c code must call this new helper to ensure
+that it too delays the enumeration until all the _DEP dependencies are
+met on devices which have the new honor_deps flag set.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Patchset: cameras
+---
+ drivers/acpi/scan.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index c82b1bfa1c3d..2227625202aa 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -2130,6 +2130,9 @@ static acpi_status acpi_bus_check_add_2(acpi_handle handle, u32 lvl_not_used,
+ 
+ static void acpi_default_enumeration(struct acpi_device *device)
+ {
++	if (!acpi_dev_ready_for_enumeration(device))
++		return;
++
+ 	/*
+ 	 * Do not enumerate devices with enumeration_by_parent flag set as
+ 	 * they will be enumerated by their respective parents.
+-- 
+2.36.0
+
+From 3f7aa178a14b5cdaa3ca424743299d0c271fd202 Mon Sep 17 00:00:00 2001
+From: Daniel Scally <djrscally@gmail.com>
+Date: Sun, 10 Oct 2021 20:57:02 +0200
+Subject: [PATCH] platform/x86: int3472: Enable I2c daisy chain
+
+The TPS68470 PMIC has an I2C passthrough mode through which I2C traffic
+can be forwarded to a device connected to the PMIC as though it were
+connected directly to the system bus. Enable this mode when the chip
+is initialised.
+
+Signed-off-by: Daniel Scally <djrscally@gmail.com>
+Patchset: cameras
+---
+ drivers/platform/x86/intel/int3472/tps68470.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/platform/x86/intel/int3472/tps68470.c b/drivers/platform/x86/intel/int3472/tps68470.c
+index 22f61b47f9e5..e1de1ff40bba 100644
+--- a/drivers/platform/x86/intel/int3472/tps68470.c
++++ b/drivers/platform/x86/intel/int3472/tps68470.c
+@@ -45,6 +45,13 @@ static int tps68470_chip_init(struct device *dev, struct regmap *regmap)
+ 		return ret;
+ 	}
+ 
++	/* Enable I2C daisy chain */
++	ret = regmap_write(regmap, TPS68470_REG_S_I2C_CTL, 0x03);
++	if (ret) {
++		dev_err(dev, "Failed to enable i2c daisy chain\n");
++		return ret;
++	}
++
+ 	dev_info(dev, "TPS68470 REVID: 0x%02x\n", version);
+ 
+ 	return 0;
+-- 
+2.36.0
+
+From 2bd2d24b1a9f413760ef333262833def4c4c7ab2 Mon Sep 17 00:00:00 2001
+From: Sachi King <nakato@nakato.io>
+Date: Sat, 29 May 2021 17:47:38 +1000
+Subject: [PATCH] ACPI: Add quirk for Surface Laptop 4 AMD missing irq 7
+ override
+
+This patch is the work of Thomas Gleixner <tglx@linutronix.de> and is
+copied from:
+https://lore.kernel.org/lkml/87lf8ddjqx.ffs@nanos.tec.linutronix.de/
+
+This patch adds a quirk to the ACPI setup to patch in the the irq 7 pin
+setup that is missing in the laptops ACPI table.
+
+This patch was used for validation of the issue, and is not a proper
+fix, but is probably a better temporary hack than continuing to probe
+the Legacy PIC and run with the PIC in an unknown state.
+
+Patchset: amd-gpio
+---
+ arch/x86/kernel/acpi/boot.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 0d01e7f5078c..2b06cf5f2b1f 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -22,6 +22,7 @@
+ #include <linux/efi-bgrt.h>
+ #include <linux/serial_core.h>
+ #include <linux/pgtable.h>
++#include <linux/dmi.h>
+ 
+ #include <asm/e820/api.h>
+ #include <asm/irqdomain.h>
+@@ -1152,6 +1153,17 @@ static void __init mp_config_acpi_legacy_irqs(void)
+ 	}
+ }
+ 
++static const struct dmi_system_id surface_quirk[] __initconst = {
++	{
++		.ident = "Microsoft Surface Laptop 4 (AMD)",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
++			DMI_MATCH(DMI_PRODUCT_SKU, "Surface_Laptop_4_1952:1953")
++		},
++	},
++	{}
++};
++
+ /*
+  * Parse IOAPIC related entries in MADT
+  * returns 0 on success, < 0 on error
+@@ -1207,6 +1219,11 @@ static int __init acpi_parse_madt_ioapic_entries(void)
+ 		acpi_sci_ioapic_setup(acpi_gbl_FADT.sci_interrupt, 0, 0,
+ 				      acpi_gbl_FADT.sci_interrupt);
+ 
++	if (dmi_check_system(surface_quirk)) {
++		pr_warn("Surface hack: Override irq 7\n");
++		mp_override_legacy_irq(7, 3, 3, 7);
++	}
++
+ 	/* Fill in identity legacy mappings where no override */
+ 	mp_config_acpi_legacy_irqs();
+ 
+-- 
+2.36.0
+
+From 4413582ad25091f1ff7c163c97f938550430834a Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Thu, 3 Jun 2021 14:04:26 +0200
+Subject: [PATCH] ACPI: Add AMD 13" Surface Laptop 4 model to irq 7 override
+ quirk
+
+The 13" version of the Surface Laptop 4 has the same problem as the 15"
+version, but uses a different SKU. Add that SKU to the quirk as well.
+
+Patchset: amd-gpio
+---
+ arch/x86/kernel/acpi/boot.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 2b06cf5f2b1f..caaec200bea2 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -1155,12 +1155,19 @@ static void __init mp_config_acpi_legacy_irqs(void)
+ 
+ static const struct dmi_system_id surface_quirk[] __initconst = {
+ 	{
+-		.ident = "Microsoft Surface Laptop 4 (AMD)",
++		.ident = "Microsoft Surface Laptop 4 (AMD 15\")",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
+ 			DMI_MATCH(DMI_PRODUCT_SKU, "Surface_Laptop_4_1952:1953")
+ 		},
+ 	},
++	{
++		.ident = "Microsoft Surface Laptop 4 (AMD 13\")",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
++			DMI_MATCH(DMI_PRODUCT_SKU, "Surface_Laptop_4_1958:1959")
++		},
++	},
+ 	{}
+ };
+ 
+-- 
+2.36.0
+

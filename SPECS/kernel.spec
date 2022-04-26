@@ -130,15 +130,15 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.17
 
-%define rpmversion 5.17.3
+%define rpmversion 5.17.4
 %define patchversion 5.17
-%define pkgrelease 301
+%define pkgrelease 302
 
 # This is needed to do merge window version magic
 %define patchlevel 17
 
 # allow pkg_release to have configurable %%{?dist} tag
-%define specrelease 301%{?buildid}%{?dist}
+%define specrelease 302%{?buildid}%{?dist}
 
 %define pkg_release %{specrelease}
 
@@ -695,7 +695,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.17.3.tar.xz
+Source0: linux-5.17.4.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -862,9 +862,11 @@ Patch1: patch-%{patchversion}-redhat.patch
 Patch200: tkg.patch
 Patch202: fsync.patch
 Patch203: OpenRGB.patch
-Patch204: winesync.patch
-Patch205: steam-deck.patch
 Patch206: amdgpu-si-cik-default.patch
+
+# device specific patches
+Patch300: linux-surface.patch
+Patch301: steam-deck.patch
 
 %endif
 
@@ -1396,8 +1398,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.17.3 -c
-mv linux-5.17.3 linux-%{KVERREL}
+%setup -q -n kernel-5.17.4 -c
+mv linux-5.17.4 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -1410,9 +1412,11 @@ ApplyOptionalPatch patch-%{patchversion}-redhat.patch
 ApplyOptionalPatch tkg.patch
 ApplyOptionalPatch fsync.patch
 ApplyOptionalPatch OpenRGB.patch
-ApplyOptionalPatch winesync.patch
-ApplyOptionalPatch steam-deck.patch
 ApplyOptionalPatch amdgpu-si-cik-default.patch
+
+# device specific patches
+ApplyOptionalPatch linux-surface.patch
+ApplyOptionalPatch steam-deck.patch
 
 %endif
 
@@ -3033,8 +3037,15 @@ fi
 #
 #
 %changelog
-* Mon Apr 18 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.3-301-fsync
-- Linux v5.17.3 futex2 zen openrgb
+* Tue Apr 26 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.4-302.fsync
+- linux-surface
+
+* Sat Apr 23 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.4-301-fsync
+- Linux v5.17.4 futex2 zen openrgb
+
+* Wed Apr 20 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.17.4-0]
+- Add F34 and F35 as release targets (Justin M. Forbes)
+- Revert "net: bcmgenet: Use stronger register read/writes to assure ordering" (Justin M. Forbes)
 
 * Wed Apr 13 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.17.3-0]
 - ALSA: memalloc: Add fallback SG-buffer allocations for x86 (Takashi Iwai)
