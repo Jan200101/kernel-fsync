@@ -130,15 +130,15 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.17
 
-%define rpmversion 5.17.4
+%define rpmversion 5.17.5
 %define patchversion 5.17
-%define pkgrelease 302
+%define pkgrelease 301
 
 # This is needed to do merge window version magic
 %define patchlevel 17
 
 # allow pkg_release to have configurable %%{?dist} tag
-%define specrelease 302%{?buildid}%{?dist}
+%define specrelease 301%{?buildid}%{?dist}
 
 %define pkg_release %{specrelease}
 
@@ -695,7 +695,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.17.4.tar.xz
+Source0: linux-5.17.5.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1398,8 +1398,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.17.4 -c
-mv linux-5.17.4 linux-%{KVERREL}
+%setup -q -n kernel-5.17.5 -c
+mv linux-5.17.5 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -3037,11 +3037,14 @@ fi
 #
 #
 %changelog
-* Tue Apr 26 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.4-302.fsync
-- linux-surface
+* Mon May 02 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.5-301.fsync
+- Linux v5.17.5 futex2 zen openrgb
 
-* Sat Apr 23 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.4-301-fsync
-- Linux v5.17.4 futex2 zen openrgb
+* Thu Apr 28 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.17.5-300]
+- Update changelog (Justin M. Forbes)
+
+* Thu Apr 28 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.17.5-0]
+- Linux v5.17.5
 
 * Wed Apr 20 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.17.4-0]
 - Add F34 and F35 as release targets (Justin M. Forbes)
