@@ -1,0 +1,108 @@
+From 1b2aa4971d18ae1db3ac0c6c3d9a2fd6b01a1ee1 Mon Sep 17 00:00:00 2001
+From: Evan Quan <evan.quan@amd.com>
+Date: Wed, 6 Apr 2022 14:14:50 +0800
+Subject: [PATCH] drm/amd/pm: correct the metrics version for SMU 11.0.11/12/13
+
+Correct the metrics version used for SMU 11.0.11/12/13.
+
+Signed-off-by: Evan Quan <evan.quan@amd.com>
+--
+v1->v2:
+  - updated to fit 5.16.18 kernel
+v2->v3:
+  - add some verbose debug outputs
+---
+ .../amd/pm/swsmu/smu11/sienna_cichlid_ppt.c   | 50 +++++++++++++++++--
+ 1 file changed, 46 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/pm/swsmu/smu11/sienna_cichlid_ppt.c b/drivers/gpu/drm/amd/pm/swsmu/smu11/sienna_cichlid_ppt.c
+index 59e1b92f0..b0897e2f4 100644
+--- a/drivers/gpu/drm/amd/pm/swsmu/smu11/sienna_cichlid_ppt.c
++++ b/drivers/gpu/drm/amd/pm/swsmu/smu11/sienna_cichlid_ppt.c
+@@ -547,11 +547,29 @@ static int sienna_cichlid_get_smu_metrics_data(struct smu_context *smu,
+ 		&(((SmuMetricsExternal_t *)(smu_table->metrics_table))->SmuMetrics);
+ 	SmuMetrics_V2_t *metrics_v2 =
+ 		&(((SmuMetricsExternal_t *)(smu_table->metrics_table))->SmuMetrics_V2);
+-	bool use_metrics_v2 = ((smu->adev->ip_versions[MP1_HWIP][0] == IP_VERSION(11, 0, 7)) &&
+-		(smu->smc_fw_version >= 0x3A4300)) ? true : false;
++	bool use_metrics_v2 = false;
+ 	uint16_t average_gfx_activity;
+ 	int ret = 0;
+ 
++	switch (smu->adev->ip_versions[MP1_HWIP][0]) {
++	case IP_VERSION(11, 0, 7):
++		if (smu->smc_fw_version >= 0x3A4300)
++			use_metrics_v2 = true;
++		break;
++	case IP_VERSION(11, 0, 11):
++		if (smu->smc_fw_version >= 0x412D00)
++			use_metrics_v2 = true;
++		break;
++	case IP_VERSION(11, 0, 12):
++		if (smu->smc_fw_version >= 0x3B2300)
++			use_metrics_v2 = true;
++		break;
++	case IP_VERSION(11, 0, 13):
++		if (smu->smc_fw_version >= 0x491100)
++			use_metrics_v2 = true;
++		break;
++	}
++
+ 	mutex_lock(&smu->metrics_lock);
+ 
+ 	ret = smu_cmn_get_metrics_table_locked(smu,
+@@ -654,6 +672,9 @@ static int sienna_cichlid_get_smu_metrics_data(struct smu_context *smu,
+ 		break;
+ 	case METRICS_CURR_FANSPEED:
+ 		*value = use_metrics_v2 ? metrics_v2->CurrFanSpeed : metrics->CurrFanSpeed;
++		dev_info(smu->adev->dev, "%s: fanspeed %d\n",
++				use_metrics_v2 ? "metrics_v2" : "metrics_v1",
++				*value);
+ 		break;
+ 	default:
+ 		*value = UINT_MAX;
+@@ -3624,11 +3645,29 @@ static ssize_t sienna_cichlid_get_gpu_metrics(struct smu_context *smu,
+ 	SmuMetrics_V2_t *metrics_v2 =
+ 		&(metrics_external.SmuMetrics_V2);
+ 	struct amdgpu_device *adev = smu->adev;
+-	bool use_metrics_v2 = ((adev->ip_versions[MP1_HWIP][0] == IP_VERSION(11, 0, 7)) &&
+-		(smu->smc_fw_version >= 0x3A4300)) ? true : false;
++	bool use_metrics_v2 = false;
+ 	uint16_t average_gfx_activity;
+ 	int ret = 0;
+ 
++	switch (adev->ip_versions[MP1_HWIP][0]) {
++	case IP_VERSION(11, 0, 7):
++		if (smu->smc_fw_version >= 0x3A4300)
++			use_metrics_v2 = true;
++		break;
++	case IP_VERSION(11, 0, 11):
++		if (smu->smc_fw_version >= 0x412D00)
++			use_metrics_v2 = true;
++		break;
++	case IP_VERSION(11, 0, 12):
++		if (smu->smc_fw_version >= 0x3B2300)
++			use_metrics_v2 = true;
++		break;
++	case IP_VERSION(11, 0, 13):
++		if (smu->smc_fw_version >= 0x491100)
++			use_metrics_v2 = true;
++		break;
++	}
++
+ 	mutex_lock(&smu->metrics_lock);
+ 	ret = smu_cmn_get_metrics_table_locked(smu,
+ 					       &metrics_external,
+@@ -3704,6 +3743,9 @@ static ssize_t sienna_cichlid_get_gpu_metrics(struct smu_context *smu,
+ 							   sienna_cichlid_throttler_map);
+ 
+ 	gpu_metrics->current_fan_speed = use_metrics_v2 ? metrics_v2->CurrFanSpeed : metrics->CurrFanSpeed;
++	dev_info(smu->adev->dev, "%s: curret fanspeed %d\n",
++			use_metrics_v2 ? "metrics_v2" : "metrics_v1",
++			(int)gpu_metrics->current_fan_speed);
+ 
+ 	if (((adev->ip_versions[MP1_HWIP][0] == IP_VERSION(11, 0, 7)) && smu->smc_fw_version > 0x003A1E00) ||
+ 	      ((adev->ip_versions[MP1_HWIP][0] == IP_VERSION(11, 0, 11)) && smu->smc_fw_version > 0x00410400)) {
+-- 
+2.29.0
+

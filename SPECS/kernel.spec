@@ -130,15 +130,15 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.17
 
-%define rpmversion 5.17.8
+%define rpmversion 5.17.9
 %define patchversion 5.17
-%define pkgrelease 301
+%define pkgrelease 302
 
 # This is needed to do merge window version magic
 %define patchlevel 17
 
 # allow pkg_release to have configurable %%{?dist} tag
-%define specrelease 301%{?buildid}%{?dist}
+%define specrelease 302%{?buildid}%{?dist}
 
 %define pkg_release %{specrelease}
 
@@ -695,7 +695,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.17.8.tar.xz
+Source0: linux-5.17.9.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -868,6 +868,11 @@ Patch206: amdgpu-si-cik-default.patch
 Patch300: linux-surface.patch
 Patch301: steam-deck.patch
 
+# temporary patches
+# https://gitlab.com/cki-project/kernel-ark/-/merge_requests/1788
+Patch501: simpledrm-nvidia.patch
+# https://gitlab.freedesktop.org/drm/amd/-/issues/1925
+Patch502: 0001-drm-amd-pm-correct-the-metrics-version-for-SMU-11.0..patch
 %endif
 
 # empty final patch to facilitate testing of kernel patches
@@ -1398,8 +1403,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.17.8 -c
-mv linux-5.17.8 linux-%{KVERREL}
+%setup -q -n kernel-5.17.9 -c
+mv linux-5.17.9 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -1418,6 +1423,8 @@ ApplyOptionalPatch amdgpu-si-cik-default.patch
 ApplyOptionalPatch linux-surface.patch
 ApplyOptionalPatch steam-deck.patch
 
+# temporary patches
+ApplyOptionalPatch simpledrm-nvidia.patch
 %endif
 
 ApplyOptionalPatch linux-kernel-test.patch
@@ -3037,8 +3044,14 @@ fi
 #
 #
 %changelog
-* Fri May 20 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.8-301.fsync
-- Linux v5.17.8 futex2 zen openrgb
+* Mon May 23 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.9-302.fsync
+- Add patch
+
+* Sat May 21 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.9-301.fsync
+- Linux v5.17.9 futex2 zen openrgb
+
+* Wed May 18 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.17.9-0]
+- Fix changelog for 5.17.8 (Justin M. Forbes)
 
 * Sun May 15 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.17.8-0]
 - Linux v5.17.8
