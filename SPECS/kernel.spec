@@ -130,7 +130,7 @@ Summary: The Linux kernel
 # The kernel tarball/base version
 %define kversion 5.17
 
-%define rpmversion 5.17.13
+%define rpmversion 5.17.14
 %define patchversion 5.17
 %define pkgrelease 301
 
@@ -695,7 +695,7 @@ BuildRequires: lld
 # exact git commit you can run
 #
 # xzcat -qq ${TARBALL} | git get-tar-commit-id
-Source0: linux-5.17.13.tar.xz
+Source0: linux-5.17.14.tar.xz
 
 Source1: Makefile.rhelver
 
@@ -1401,8 +1401,8 @@ ApplyOptionalPatch()
   fi
 }
 
-%setup -q -n kernel-5.17.13 -c
-mv linux-5.17.13 linux-%{KVERREL}
+%setup -q -n kernel-5.17.14 -c
+mv linux-5.17.14 linux-%{KVERREL}
 
 cd linux-%{KVERREL}
 cp -a %{SOURCE1} .
@@ -3042,8 +3042,11 @@ fi
 #
 #
 %changelog
-* Wed Jun 08 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.13-301.fsync
-- Linux v5.17.13 futex2 zen openrgb
+* Wed Jun 15 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.17.14-301.fsync
+- Linux v5.17.14 futex2 zen openrgb
+
+* Thu Jun 09 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.17.14-0]
+- Config updates for stable backports (Justin M. Forbes)
 
 * Mon Jun 06 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.17.13-0]
 - Drop F34 from release targets (Justin M. Forbes)
