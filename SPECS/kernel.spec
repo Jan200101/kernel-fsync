@@ -122,11 +122,11 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.18.5
+%define specversion 5.18.6
 %define patchversion 5.18
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.18.5
+%define tarfile_release 5.18.6
 # This is needed to do merge window version magic
 %define patchlevel 18
 # allow pkg_release to have configurable %%{?dist} tag
@@ -3056,10 +3056,11 @@ fi
 #
 #
 %changelog
-* Sun Jun 19 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.5-201.fsync
-- Linux v5.18.5 futex2 zen openrgb
+* Sun Jun 26 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.6-201.fsync
+- Linux v5.18.6 futex2 zen openrgb
 
-* Thu Jun 16 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.5-0]
+* Wed Jun 22 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.6-0]
+- drm/i915: Temporarily disable selective fetch for PSR2 on ADL-P (Mark Pearson) [2065794]
 - Turn E1000 back on correctly (Justin M. Forbes)
 - Turn E1000 back on (Justin M. Forbes)
 - Changelog update for rebase (Justin M. Forbes)
