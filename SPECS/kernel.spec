@@ -122,11 +122,11 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.18.8
+%define specversion 5.18.9
 %define patchversion 5.18
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.18.8
+%define tarfile_release 5.18.9
 # This is needed to do merge window version magic
 %define patchlevel 18
 # allow pkg_release to have configurable %%{?dist} tag
@@ -3056,8 +3056,13 @@ fi
 #
 #
 %changelog
-* Thu Jun 30 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.8-201.fsync
-- Linux v5.18.8 futex2 zen openrgb
+* Mon Jul 04 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.9-201.fsync
+- Linux v5.18.9 futex2 zen openrgb
+
+* Sat Jul 02 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.9-0]
+- Revert "smb3: fix empty netname context on secondary channels" (Justin M. Forbes)
+- Revert "smb3: use netname when available on secondary channels" (Justin M. Forbes)
+- fedora: arm: enable a couple of QCom drivers (Peter Robinson)
 
 * Wed Jun 29 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.8-0]
 - Remove RHJOBS define from fedora-stable-release.sh (Justin M. Forbes)
