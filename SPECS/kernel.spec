@@ -122,11 +122,11 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.18.9
+%define specversion 5.18.10
 %define patchversion 5.18
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.18.9
+%define tarfile_release 5.18.10
 # This is needed to do merge window version magic
 %define patchlevel 18
 # allow pkg_release to have configurable %%{?dist} tag
@@ -3056,8 +3056,13 @@ fi
 #
 #
 %changelog
-* Mon Jul 04 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.9-201.fsync
-- Linux v5.18.9 futex2 zen openrgb
+* Fri Jul 08 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.10-201.fsync
+- Linux v5.18.10 futex2 zen openrgb
+
+* Thu Jul 07 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.10-0]
+- netfilter: nf_tables: stricter validation of element data (Pablo Neira Ayuso)
+- Revert "Revert "smb3: use netname when available on secondary channels"" (Justin M. Forbes)
+- Revert "Revert "smb3: fix empty netname context on secondary channels"" (Justin M. Forbes)
 
 * Sat Jul 02 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.9-0]
 - Revert "smb3: fix empty netname context on secondary channels" (Justin M. Forbes)
