@@ -122,11 +122,11 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.18.13
+%define specversion 5.18.15
 %define patchversion 5.18
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.18.13
+%define tarfile_release 5.18.15
 # This is needed to do merge window version magic
 %define patchlevel 18
 # allow pkg_release to have configurable %%{?dist} tag
@@ -861,10 +861,14 @@ Patch200: tkg.patch
 Patch202: fsync.patch
 Patch203: OpenRGB.patch
 Patch206: amdgpu-si-cik-default.patch
+Patch207: acso.patch
 
 # device specific patches
 Patch300: linux-surface.patch
 Patch301: steam-deck.patch
+
+# temporary patches
+Patch400: v6-ACPI-skip-IRQ-override-on-AMD-Zen-platforms.patch
 
 %endif
 
@@ -1411,10 +1415,14 @@ ApplyOptionalPatch tkg.patch
 ApplyOptionalPatch fsync.patch
 ApplyOptionalPatch OpenRGB.patch
 ApplyOptionalPatch amdgpu-si-cik-default.patch
+ApplyOptionalPatch acso.patch
 
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
 ApplyOptionalPatch steam-deck.patch
+
+# temporary patches
+ApplyOptionalPatch v6-ACPI-skip-IRQ-override-on-AMD-Zen-platforms.patch
 
 %endif
 
@@ -3056,8 +3064,11 @@ fi
 #
 #
 %changelog
-* Sat Jul 23 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.13-201.fsync
-- Linux v5.18.13 futex2 zen openrgb
+* Thu Aug 04 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.15-201.fsync
+- Linux v5.18.15 futex2 zen openrgb
+
+* Sat Jul 30 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.15-0]
+- fedora: armv7: enable MMC_STM32_SDMMC (Peter Robinson)
 
 * Fri Jul 22 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.13-0]
 - um: Add missing apply_returns() (Peter Zijlstra)
