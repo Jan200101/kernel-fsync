@@ -122,11 +122,11 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.18.15
+%define specversion 5.18.16
 %define patchversion 5.18
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.18.15
+%define tarfile_release 5.18.16
 # This is needed to do merge window version magic
 %define patchlevel 18
 # allow pkg_release to have configurable %%{?dist} tag
@@ -3064,8 +3064,14 @@ fi
 #
 #
 %changelog
-* Thu Aug 04 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.15-201.fsync
-- Linux v5.18.15 futex2 zen openrgb
+* Fri Aug 05 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.16-201.fsync
+- Linux v5.18.16 futex2 zen openrgb
+
+* Wed Aug 03 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.16-200]
+- Linux v5.18.16 (Justin M. Forbes)
+
+* Wed Aug 03 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.16-0]
+- Linux v5.18.16
 
 * Sat Jul 30 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.15-0]
 - fedora: armv7: enable MMC_STM32_SDMMC (Peter Robinson)
