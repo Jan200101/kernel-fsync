@@ -122,11 +122,11 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.18.17
+%define specversion 5.18.18
 %define patchversion 5.18
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.18.17
+%define tarfile_release 5.18.18
 # This is needed to do merge window version magic
 %define patchlevel 18
 # allow pkg_release to have configurable %%{?dist} tag
@@ -3064,8 +3064,13 @@ fi
 #
 #
 %changelog
-* Sun Aug 14 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.17-201.fsync
-- Linux v5.18.17 futex2 zen openrgb
+* Sat Aug 20 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.18-201.fsync
+- Linux v5.18.18 futex2 zen openrgb
+
+* Wed Aug 17 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.18-0]
+- Config updates for 5.19.2 (Justin M. Forbes)
+- Bluetooth: hci_event: Fix vendor (unknown) opcode status handling (Hans de Goede)
+- Bluetooth: hci_sync: Fix resuming scan after suspend resume (Zhengping Jiang)
 
 * Thu Aug 11 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.17-0]
 - netfilter: nf_tables: do not allow RULE_ID to refer to another chain (Thadeu Lima de Souza Cascardo)
