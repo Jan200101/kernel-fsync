@@ -1,4 +1,4 @@
-From c6e3f1bc77076f24fd65fabf5daedc27d113c547 Mon Sep 17 00:00:00 2001
+From 8136a73d16f53a779e97c368ab80d26885205d4b Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 18 Oct 2020 16:42:44 +0900
 Subject: [PATCH] (surface3-oemb) add DMI matches for Surface 3 with broken DMI
@@ -58,7 +58,7 @@ index ca4602bcc7de..490b9731068a 100644
  	{ }
  };
 diff --git a/sound/soc/codecs/rt5645.c b/sound/soc/codecs/rt5645.c
-index 4b2e027c1033..dc96ec7bcbd5 100644
+index 507aba8de3cc..1f8570e04083 100644
 --- a/sound/soc/codecs/rt5645.c
 +++ b/sound/soc/codecs/rt5645.c
 @@ -3718,6 +3718,15 @@ static const struct dmi_system_id dmi_platform_data[] = {
@@ -99,7 +99,7 @@ index 6beb00858c33..d82d77387a0a 100644
 -- 
 2.37.2
 
-From 5fd4fa4e0125e6047deecd25e5bcfb267e803af6 Mon Sep 17 00:00:00 2001
+From 6089531f7c51fe0cea3bd6a8f0771e6e53ed4068 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Tue, 29 Sep 2020 17:32:22 +0900
 Subject: [PATCH] mwifiex: pcie: add reset_wsid quirk for Surface 3
@@ -284,7 +284,7 @@ index 8ec4176d698f..25370c5a4f59 100644
 -- 
 2.37.2
 
-From e8938ddf37c21a79376be890bc7898e6c39351e0 Mon Sep 17 00:00:00 2001
+From 049a6554fbbc067d9868381304fe31eafec54e78 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Wed, 30 Sep 2020 18:08:24 +0900
 Subject: [PATCH] mwifiex: pcie: (OEMB) add quirk for Surface 3 with broken DMI
@@ -346,7 +346,7 @@ index 563dd0d5ac79..32e2f000e57b 100644
 -- 
 2.37.2
 
-From fa33af74c0ab3047b79a0c7f4c00bf9f277d29de Mon Sep 17 00:00:00 2001
+From e57e1aaeb600e6ac0ada3d73083ba11369d37734 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 4 Oct 2020 00:11:49 +0900
 Subject: [PATCH] mwifiex: pcie: disable bridge_d3 for Surface gen4+
@@ -501,7 +501,7 @@ index 25370c5a4f59..a1de111ad1db 100644
 -- 
 2.37.2
 
-From ada9adf937ff19d9eaaf43980f88715e8543480c Mon Sep 17 00:00:00 2001
+From 789551567a6cf98e8ad0ffabcc70570e77919cf0 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Tue, 3 Nov 2020 13:28:04 +0100
 Subject: [PATCH] mwifiex: Add quirk resetting the PCI bridge on MS Surface
@@ -668,7 +668,7 @@ index a1de111ad1db..0e429779bb04 100644
 -- 
 2.37.2
 
-From 18ba817428297818c766791748efb3c54b588476 Mon Sep 17 00:00:00 2001
+From f22fcdf3ebd08bb02727db9dbb101199486b72fe Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 25 Mar 2021 11:33:02 +0100
 Subject: [PATCH] Bluetooth: btusb: Lower passive lescan interval on Marvell
@@ -704,7 +704,7 @@ Patchset: mwifiex
  1 file changed, 15 insertions(+)
 
 diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index d789c077d95d..feda593a8a83 100644
+index aaba2d737178..5d29e592cd34 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
 @@ -63,6 +63,7 @@ static struct usb_driver btusb_driver;
@@ -715,7 +715,7 @@ index d789c077d95d..feda593a8a83 100644
  
  static const struct usb_device_id btusb_table[] = {
  	/* Generic Bluetooth USB device */
-@@ -377,6 +378,7 @@ static const struct usb_device_id blacklist_table[] = {
+@@ -382,6 +383,7 @@ static const struct usb_device_id blacklist_table[] = {
  	{ USB_DEVICE(0x1286, 0x2044), .driver_info = BTUSB_MARVELL },
  	{ USB_DEVICE(0x1286, 0x2046), .driver_info = BTUSB_MARVELL },
  	{ USB_DEVICE(0x1286, 0x204e), .driver_info = BTUSB_MARVELL },
@@ -723,7 +723,7 @@ index d789c077d95d..feda593a8a83 100644
  
  	/* Intel Bluetooth devices */
  	{ USB_DEVICE(0x8087, 0x0025), .driver_info = BTUSB_INTEL_COMBINED },
-@@ -3790,6 +3792,19 @@ static int btusb_probe(struct usb_interface *intf,
+@@ -3803,6 +3805,19 @@ static int btusb_probe(struct usb_interface *intf,
  	if (id->driver_info & BTUSB_MARVELL)
  		hdev->set_bdaddr = btusb_set_bdaddr_marvell;
  
@@ -746,7 +746,7 @@ index d789c077d95d..feda593a8a83 100644
 -- 
 2.37.2
 
-From 002a63959850db74750e3f7323ca39fd83ea9436 Mon Sep 17 00:00:00 2001
+From ba89cc0544c937b4429cbe410f5285beefb7c33c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Tue, 10 Nov 2020 12:49:56 +0100
 Subject: [PATCH] mwifiex: Use non-posted PCI register writes
@@ -803,7 +803,7 @@ index 24bcd22a2618..b4ad0113a035 100644
 -- 
 2.37.2
 
-From 3934eee36afb9f84434891352cb2c8a2b124d9a1 Mon Sep 17 00:00:00 2001
+From 30632c24ae7c8839dce9174016895849acd1f31a Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 27 Feb 2021 00:45:52 +0100
 Subject: [PATCH] ath10k: Add module parameters to override board files
@@ -825,7 +825,7 @@ Patchset: ath10k
  1 file changed, 58 insertions(+)
 
 diff --git a/drivers/net/wireless/ath/ath10k/core.c b/drivers/net/wireless/ath/ath10k/core.c
-index 9e1f483e1362..34cfce241e4a 100644
+index 688177453b07..e400a0318838 100644
 --- a/drivers/net/wireless/ath/ath10k/core.c
 +++ b/drivers/net/wireless/ath/ath10k/core.c
 @@ -36,6 +36,9 @@ static bool skip_otp;
@@ -858,7 +858,7 @@ index 9e1f483e1362..34cfce241e4a 100644
  static const struct ath10k_hw_params ath10k_hw_params_list[] = {
  	{
  		.id = QCA988X_HW_2_0_VERSION,
-@@ -860,6 +869,42 @@ static int ath10k_init_configure_target(struct ath10k *ar)
+@@ -876,6 +885,42 @@ static int ath10k_init_configure_target(struct ath10k *ar)
  	return 0;
  }
  
@@ -901,7 +901,7 @@ index 9e1f483e1362..34cfce241e4a 100644
  static const struct firmware *ath10k_fetch_fw_file(struct ath10k *ar,
  						   const char *dir,
  						   const char *file)
-@@ -874,6 +919,19 @@ static const struct firmware *ath10k_fetch_fw_file(struct ath10k *ar,
+@@ -890,6 +935,19 @@ static const struct firmware *ath10k_fetch_fw_file(struct ath10k *ar,
  	if (dir == NULL)
  		dir = ".";
  
@@ -924,7 +924,7 @@ index 9e1f483e1362..34cfce241e4a 100644
 -- 
 2.37.2
 
-From 343bbe8435d603e410c1f2d2756757d39ca20295 Mon Sep 17 00:00:00 2001
+From 008ca80c4bb8eff2cfc4dd3f35398c7c268be04b Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 30 Jul 2020 13:21:53 +0200
 Subject: [PATCH] misc: mei: Add missing IPTS device IDs
@@ -962,7 +962,7 @@ index 5435604327a7..1165ee4f5928 100644
 -- 
 2.37.2
 
-From c53f690f596e9009c18e1677337983b21b15f83e Mon Sep 17 00:00:00 2001
+From 1a47efd83fd677ac0c7cae35b07bdb172e87cee3 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 6 Aug 2020 11:20:41 +0200
 Subject: [PATCH] misc: Add support for Intel Precise Touch & Stylus
@@ -2427,7 +2427,7 @@ index 000000000000..53fb86a88f97
 -- 
 2.37.2
 
-From ba3d78eac41ed4d6be1de1f235e97bd932864162 Mon Sep 17 00:00:00 2001
+From 19ab90bc51c085bc71e899446a67b62b91d42050 Mon Sep 17 00:00:00 2001
 From: Liban Hannan <liban.p@gmail.com>
 Date: Tue, 12 Apr 2022 23:31:12 +0100
 Subject: [PATCH] iommu: ipts: use IOMMU passthrough mode for IPTS
@@ -2449,7 +2449,7 @@ Patchset: ipts
  1 file changed, 24 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index c7ec5177cf78..7f3699e19270 100644
+index 5c0dce78586a..825b524e81f3 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
 @@ -37,6 +37,8 @@
@@ -2476,7 +2476,7 @@ index c7ec5177cf78..7f3699e19270 100644
  
  int intel_iommu_gfx_mapped;
  EXPORT_SYMBOL_GPL(intel_iommu_gfx_mapped);
-@@ -2700,6 +2704,9 @@ static int device_def_domain_type(struct device *dev)
+@@ -2659,6 +2663,9 @@ static int device_def_domain_type(struct device *dev)
  
  		if ((iommu_identity_mapping & IDENTMAP_GFX) && IS_GFX_DEVICE(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
@@ -2486,7 +2486,7 @@ index c7ec5177cf78..7f3699e19270 100644
  	}
  
  	return 0;
-@@ -3136,6 +3143,9 @@ static int __init init_dmars(void)
+@@ -3095,6 +3102,9 @@ static int __init init_dmars(void)
  	if (!dmar_map_gfx)
  		iommu_identity_mapping |= IDENTMAP_GFX;
  
@@ -2496,7 +2496,7 @@ index c7ec5177cf78..7f3699e19270 100644
  	check_tylersburg_isoch();
  
  	ret = si_domain_init(hw_pass_through);
-@@ -4907,6 +4917,17 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
+@@ -4923,6 +4933,17 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
  	dmar_map_gfx = 0;
  }
  
@@ -2514,7 +2514,7 @@ index c7ec5177cf78..7f3699e19270 100644
  /* G4x/GM45 integrated gfx dmar support is totally busted. */
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
-@@ -4942,6 +4963,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
+@@ -4958,6 +4979,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163A, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
  
@@ -2527,7 +2527,7 @@ index c7ec5177cf78..7f3699e19270 100644
 -- 
 2.37.2
 
-From 17f1e21d9b782aa7d25a446b3663b72c055fd7d7 Mon Sep 17 00:00:00 2001
+From cf92a4b7a1b832df52b7eeb0dda93301585f1c48 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:36 +0200
 Subject: [PATCH] platform/surface: aggregator: Allow is_ssam_device() to be
@@ -2584,7 +2584,7 @@ index cc257097eb05..62b38b4487eb 100644
 -- 
 2.37.2
 
-From 64ea57d5ed105ab1a046ed0ca5f0ad3f29470101 Mon Sep 17 00:00:00 2001
+From 2c8f02e379bb72001844a5b28cf64d12422ace76 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:37 +0200
 Subject: [PATCH] platform/surface: aggregator: Allow devices to be marked as
@@ -2693,7 +2693,7 @@ index 62b38b4487eb..6df7c8d4e50e 100644
 -- 
 2.37.2
 
-From 66750927a15616256b0e57fad5952d857ceea0cc Mon Sep 17 00:00:00 2001
+From 868fe0887d5a461e122d4de8ab5e3c1a46b48f8e Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:38 +0200
 Subject: [PATCH] platform/surface: aggregator: Allow notifiers to avoid
@@ -2989,7 +2989,7 @@ index 6df7c8d4e50e..c418f7f2732d 100644
 -- 
 2.37.2
 
-From 6418fed20ac4e1540a8747b3799f48b69ec86c8c Mon Sep 17 00:00:00 2001
+From 7fa57f0161f316e0bae747d6005df8fd32559ed6 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:39 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Use client device
@@ -3041,7 +3041,7 @@ index ce2bd88feeaa..9f630e890ff7 100644
 -- 
 2.37.2
 
-From 7c680b78726f4dcfb1d2714d55d68fc6ea4ac0b8 Mon Sep 17 00:00:00 2001
+From c853aceabb717313981ae67332720018ab6ae9e6 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:40 +0200
 Subject: [PATCH] power/supply: surface_charger: Use client device wrappers for
@@ -3085,7 +3085,7 @@ index a060c36c7766..59182d55742d 100644
 -- 
 2.37.2
 
-From c4a286e4b15803af7d9b7e893ba3ce86d785ad86 Mon Sep 17 00:00:00 2001
+From 1a00379b51768213cf69ff8bba0fc556396b3cb7 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:41 +0200
 Subject: [PATCH] power/supply: surface_battery: Use client device wrappers for
@@ -3129,7 +3129,7 @@ index 5ec2e6bb2465..540707882bb0 100644
 -- 
 2.37.2
 
-From a76ab65a0845e951c6614ff9ab78ced2488e49b1 Mon Sep 17 00:00:00 2001
+From 8854eca00edf1d846266f5a70911206b95116ebf Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:42 +0200
 Subject: [PATCH] HID: surface-hid: Add support for hot-removal
@@ -3243,7 +3243,7 @@ index e46330b2e561..87637f813de2 100644
 -- 
 2.37.2
 
-From 65dd92ca9f5b7871e5c49040c2155d2e341e1039 Mon Sep 17 00:00:00 2001
+From aae8af660b8ddf8cf1b9d91f02fddbaf12b27618 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:43 +0200
 Subject: [PATCH] platform/surface: aggregator: Add comment for KIP subsystem
@@ -3284,7 +3284,7 @@ index c3de43edcffa..26b95ec12733 100644
 -- 
 2.37.2
 
-From c46d674b2876bb2ad81c649ac4d6c2fe182cc262 Mon Sep 17 00:00:00 2001
+From c1180e31fe064fe3e45054cc722c3a4260c5a3db Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:44 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Generify subsystem hub
@@ -3674,7 +3674,7 @@ index 9f630e890ff7..09cbeee2428b 100644
 -- 
 2.37.2
 
-From d293378f454cb71b55886aeec00c58088e529ca7 Mon Sep 17 00:00:00 2001
+From ae1e677f6babe2ca05a4262115f89d00f041eba7 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:45 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Change device ID for
@@ -3718,7 +3718,7 @@ index 09cbeee2428b..b11ce87c7184 100644
 -- 
 2.37.2
 
-From c4bdb8393081ba9121aadc7d6643a42613fbcbd0 Mon Sep 17 00:00:00 2001
+From 581483b9438c2f548d2d9aa42db0b1b9886412f0 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:46 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add KIP device hub
@@ -3883,7 +3883,7 @@ index b11ce87c7184..f15cef60630f 100644
 -- 
 2.37.2
 
-From f4c22cd50fb6eba94141a7823be1d4d4db06eb92 Mon Sep 17 00:00:00 2001
+From 6113e8deb4c9d72a7fb809cd17c05b6db18854c0 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:47 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add support for
@@ -3984,9 +3984,88 @@ index f15cef60630f..bf3303f1aa71 100644
 -- 
 2.37.2
 
-From 9fbb688836c42161b6389da82442a12ff2346e44 Mon Sep 17 00:00:00 2001
+From ffb7b4cfe0e1ae0f3d8de827e9b699abd8b43352 Mon Sep 17 00:00:00 2001
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Date: Fri, 10 Jun 2022 14:41:58 +0900
+Subject: [PATCH] platform/surface: avoid flush_scheduled_work() usage
+
+Use local wq in order to avoid flush_scheduled_work() usage.
+
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Reviewed-by: Maximilian Luz <luzmaximilian@gmail.com>
+Tested-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/63ec2d45-c67c-1134-f6d3-490c8ba67a01@I-love.SAKURA.ne.jp
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Patchset: surface-sam
+---
+ .../platform/surface/surface_acpi_notify.c    | 27 ++++++++++++++++---
+ 1 file changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/platform/surface/surface_acpi_notify.c b/drivers/platform/surface/surface_acpi_notify.c
+index 7b758f8cc137..c0e12f0b9b79 100644
+--- a/drivers/platform/surface/surface_acpi_notify.c
++++ b/drivers/platform/surface/surface_acpi_notify.c
+@@ -37,6 +37,7 @@ struct san_data {
+ #define to_san_data(ptr, member) \
+ 	container_of(ptr, struct san_data, member)
+ 
++static struct workqueue_struct *san_wq;
+ 
+ /* -- dGPU notifier interface. ---------------------------------------------- */
+ 
+@@ -356,7 +357,7 @@ static u32 san_evt_bat_nf(struct ssam_event_notifier *nf,
+ 
+ 	memcpy(&work->event, event, sizeof(struct ssam_event) + event->length);
+ 
+-	schedule_delayed_work(&work->work, delay);
++	queue_delayed_work(san_wq, &work->work, delay);
+ 	return SSAM_NOTIF_HANDLED;
+ }
+ 
+@@ -861,7 +862,7 @@ static int san_remove(struct platform_device *pdev)
+ 	 * We have unregistered our event sources. Now we need to ensure that
+ 	 * all delayed works they may have spawned are run to completion.
+ 	 */
+-	flush_scheduled_work();
++	flush_workqueue(san_wq);
+ 
+ 	return 0;
+ }
+@@ -881,7 +882,27 @@ static struct platform_driver surface_acpi_notify = {
+ 		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
+ 	},
+ };
+-module_platform_driver(surface_acpi_notify);
++
++static int __init san_init(void)
++{
++	int ret;
++
++	san_wq = alloc_workqueue("san_wq", 0, 0);
++	if (!san_wq)
++		return -ENOMEM;
++	ret = platform_driver_register(&surface_acpi_notify);
++	if (ret)
++		destroy_workqueue(san_wq);
++	return ret;
++}
++module_init(san_init);
++
++static void __exit san_exit(void)
++{
++	platform_driver_unregister(&surface_acpi_notify);
++	destroy_workqueue(san_wq);
++}
++module_exit(san_exit);
+ 
+ MODULE_AUTHOR("Maximilian Luz <luzmaximilian@gmail.com>");
+ MODULE_DESCRIPTION("Surface ACPI Notify driver for Surface System Aggregator Module");
+-- 
+2.37.2
+
+From c61fe02172d405255e1ee652d192ff2362219790 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Tue, 14 Jun 2022 13:17:49 +0200
+Date: Tue, 14 Jun 2022 21:41:17 +0200
 Subject: [PATCH] platform/surface: aggregator: Reserve more event- and
  target-categories
 
@@ -3996,6 +4075,9 @@ reserved events and extend the enum of know target categories to
 accommodate this.
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220614194117.4118897-1-luzmaximilian@gmail.com
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Patchset: surface-sam
 ---
  drivers/platform/surface/aggregator/trace.h   | 80 +++++++++++--------
@@ -4203,9 +4285,9 @@ index 26b95ec12733..45501b6e54e8 100644
 -- 
 2.37.2
 
-From f26c891671fde07b2b198bc69d36b2c372a0ac55 Mon Sep 17 00:00:00 2001
+From f7d73074c25fe126d1f92aab16613f333dcfb443 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Thu, 16 Jun 2022 01:50:12 +0200
+Date: Fri, 24 Jun 2022 20:36:39 +0200
 Subject: [PATCH] platform/surface: aggregator: Add helper macros for requests
  with argument and return value
 
@@ -4214,6 +4296,9 @@ request with both argument and return value, similar to the current
 argument-only and return-value-only ones.
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220624183642.910893-2-luzmaximilian@gmail.com
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Patchset: surface-sam
 ---
  include/linux/surface_aggregator/controller.h | 125 ++++++++++++++++++
@@ -4413,40 +4498,138 @@ index c418f7f2732d..6cf7e80312d5 100644
 -- 
 2.37.2
 
-From b89f2ac538abd4dd449bd9bd84d86e93b5567b38 Mon Sep 17 00:00:00 2001
+From 18696529f9b2326722e395ba0219b70c6b63f14f Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Tue, 8 Jun 2021 03:19:20 +0200
-Subject: [PATCH] platform/surface: Add KIP tablet-mode switch
+Date: Fri, 24 Jun 2022 20:36:40 +0200
+Subject: [PATCH] platform/surface: Add KIP/POS tablet-mode switch driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-Add a driver providing a tablet-mode switch input device for Surface
-models using the KIP subsystem to manage detachable peripherals.
+Add a driver providing a tablet-mode switch input device for Microsoft
+Surface devices using the Surface Aggregator KIP subsystem (to manage
+detachable peripherals) or POS subsystem (to obtain device posture
+information).
 
-The Surface Pro 8 has a detachable keyboard cover. Unlike the keyboard
-covers of previous generation Surface Pro models, this cover is fully
-handled by the Surface System Aggregator Module (SSAM). The SSAM KIP
-subsystem (full name unknown, abbreviation found through reverse
-engineering) provides notifications for mode changes of the cover.
-Specifically, it allows us to know when the cover has been folded back,
-detached, or whether it is in laptop mode.
+The KIP (full name unknown, abbreviation found through reverse
+engineering) subsystem is used on the Surface Pro 8 and Surface Pro X to
+manage the keyboard cover. Among other things, it provides information
+on the positioning (posture) of the cover (closed, laptop-style,
+detached, folded-back, ...), which can be used to implement an input
+device providing the SW_TABLET_MODE event. Similarly, the POS (posture
+information) subsystem provides such information on the Surface Laptop
+Studio, with the difference being that the keyboard is not detachable.
 
-The driver introduced with this change captures these events and
-translates them to standard SW_TABLET_MODE input events.
+As implementing the tablet-mode switch for both subsystems is largely
+similar, the driver proposed in this commit, in large, acts as a generic
+tablet mode switch driver framework for the Surface Aggregator Module.
+Specific implementations using this framework are provided for the KIP
+and POS subsystems, adding tablet-mode switch support to the
+aforementioned devices.
+
+A few more notes on the Surface Laptop Studio:
+
+A peculiarity of the Surface Laptop Studio is its "slate/tent" mode
+(symbolized: user> _/\). In this mode, the screen covers the keyboard
+but leaves the touchpad exposed. This is essentially a mode in-between
+tablet and laptop, and it is debatable whether tablet-mode should be
+enabled in this mode. We therefore let the user decide this via a module
+parameter.
+
+In particular, tablet-mode may bring up the on-screen touch keyboard
+more easily, which would be desirable in this mode. However, some
+user-space software currently also decides to disable keyboard and, more
+importantly, touchpad input, while the touchpad is still accessible in
+the "slate/tent" mode. Furthermore, this mode shares its identifier with
+"slate/flipped" mode where the screen is flipped 180° and the keyboard
+points away from the user (symbolized: user> /_). In this mode we would
+like to enable auto-rotation, something that user-space software may
+only do when tablet-mode is enabled. We therefore default to the
+slate-mode enabling the tablet-mode switch.
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220624183642.910893-3-luzmaximilian@gmail.com
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Patchset: surface-sam
 ---
+ .../sysfs-bus-surface_aggregator-tabletsw     |  57 ++
  MAINTAINERS                                   |   6 +
  drivers/platform/surface/Kconfig              |  23 +
  drivers/platform/surface/Makefile             |   1 +
- .../surface/surface_aggregator_tabletsw.c     | 535 ++++++++++++++++++
- 4 files changed, 565 insertions(+)
+ .../surface/surface_aggregator_tabletsw.c     | 533 ++++++++++++++++++
+ 5 files changed, 620 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-surface_aggregator-tabletsw
  create mode 100644 drivers/platform/surface/surface_aggregator_tabletsw.c
 
+diff --git a/Documentation/ABI/testing/sysfs-bus-surface_aggregator-tabletsw b/Documentation/ABI/testing/sysfs-bus-surface_aggregator-tabletsw
+new file mode 100644
+index 000000000000..74cd9d754e60
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-bus-surface_aggregator-tabletsw
+@@ -0,0 +1,57 @@
++What:		/sys/bus/surface_aggregator/devices/01:0e:01:00:01/state
++Date:		July 2022
++KernelVersion:	5.20
++Contact:	Maximilian Luz <luzmaximilian@gmail.com>
++Description:
++		This attribute returns a string with the current type-cover
++		or device posture, as indicated by the embedded controller.
++		Currently returned posture states are:
++
++		- "disconnected": The type-cover has been disconnected.
++
++		- "closed": The type-cover has been folded closed and lies on
++		  top of the display.
++
++		- "laptop": The type-cover is open and in laptop-mode, i.e.,
++		  ready for normal use.
++
++		- "folded-canvas": The type-cover has been folded back
++		  part-ways, but does not lie flush with the back side of the
++		  device. In general, this means that the kick-stand is used
++		  and extended atop of the cover.
++
++		- "folded-back": The type cover has been fully folded back and
++		  lies flush with the back side of the device.
++
++		- "<unknown>": The current state is unknown to the driver, for
++		  example due to newer as-of-yet unsupported hardware.
++
++		New states may be introduced with new hardware. Users therefore
++		must not rely on this list of states being exhaustive and
++		gracefully handle unknown states.
++
++What:		/sys/bus/surface_aggregator/devices/01:26:01:00:01/state
++Date:		July 2022
++KernelVersion:	5.20
++Contact:	Maximilian Luz <luzmaximilian@gmail.com>
++Description:
++		This attribute returns a string with the current device posture, as indicated by the embedded controller. Currently
++		returned posture states are:
++
++		- "closed": The lid of the device is closed.
++
++		- "laptop": The lid of the device is opened and the device
++		  operates as a normal laptop.
++
++		- "slate": The screen covers the keyboard or has been flipped
++		  back and the device operates mainly based on touch input.
++
++		- "tablet": The device operates as tablet and exclusively
++		  relies on touch input (or external peripherals).
++
++		- "<unknown>": The current state is unknown to the driver, for
++		  example due to newer as-of-yet unsupported hardware.
++
++		New states may be introduced with new hardware. Users therefore
++		must not rely on this list of states being exhaustive and
++		gracefully handle unknown states.
 diff --git a/MAINTAINERS b/MAINTAINERS
-index c7c7a96b62a8..852231f4e469 100644
+index 08620b9a44fc..773eb8387f4a 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -13030,6 +13030,12 @@ F:	drivers/scsi/smartpqi/smartpqi*.[ch]
+@@ -13299,6 +13299,12 @@ F:	drivers/scsi/smartpqi/smartpqi*.[ch]
  F:	include/linux/cciss*.h
  F:	include/uapi/linux/cciss*.h
  
@@ -4507,10 +4690,10 @@ index 0fc9cd3e4dd9..18b27898543e 100644
  obj-$(CONFIG_SURFACE_HOTPLUG)		+= surface_hotplug.o
 diff --git a/drivers/platform/surface/surface_aggregator_tabletsw.c b/drivers/platform/surface/surface_aggregator_tabletsw.c
 new file mode 100644
-index 000000000000..6f402d2ca894
+index 000000000000..596ca6c80681
 --- /dev/null
 +++ b/drivers/platform/surface/surface_aggregator_tabletsw.c
-@@ -0,0 +1,535 @@
+@@ -0,0 +1,533 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * Surface System Aggregator Module (SSAM) tablet mode switch driver.
@@ -4716,7 +4899,7 @@ index 000000000000..6f402d2ca894
 +	SSAM_KIP_COVER_STATE_FOLDED_BACK   = 0x05,
 +};
 +
-+static const char* ssam_kip_cover_state_name(struct ssam_tablet_sw *sw, u32 state)
++static const char *ssam_kip_cover_state_name(struct ssam_tablet_sw *sw, u32 state)
 +{
 +	switch (state) {
 +	case SSAM_KIP_COVER_STATE_DISCONNECTED:
@@ -4787,9 +4970,8 @@ index 000000000000..6f402d2ca894
 +	if (event->command_id != SSAM_EVENT_KIP_CID_COVER_STATE_CHANGED)
 +		return 0;	/* Return "unhandled". */
 +
-+	if (event->length < 1) {
++	if (event->length < 1)
 +		dev_warn(&sw->sdev->dev, "unexpected payload size: %u\n", event->length);
-+	}
 +
 +	schedule_work(&sw->update_work);
 +	return SSAM_NOTIF_HANDLED;
@@ -4820,11 +5002,11 @@ index 000000000000..6f402d2ca894
 +/* -- SSAM POS tablet switch implementation. -------------------------------- */
 +
 +static bool tablet_mode_in_slate_state = true;
-+module_param(tablet_mode_in_slate_state, bool, S_IRUGO);
++module_param(tablet_mode_in_slate_state, bool, 0644);
 +MODULE_PARM_DESC(tablet_mode_in_slate_state, "Enable tablet mode in slate device posture, default is 'true'");
 +
 +#define SSAM_EVENT_POS_CID_POSTURE_CHANGED	0x03
-+#define SSAM_POS_MAX_SOURCES 			4
++#define SSAM_POS_MAX_SOURCES			4
 +
 +enum ssam_pos_state {
 +	SSAM_POS_POSTURE_LID_CLOSED = 0x00,
@@ -4838,7 +5020,7 @@ index 000000000000..6f402d2ca894
 +	__le32 id[SSAM_POS_MAX_SOURCES];
 +} __packed;
 +
-+static const char* ssam_pos_state_name(struct ssam_tablet_sw *sw, u32 state)
++static const char *ssam_pos_state_name(struct ssam_tablet_sw *sw, u32 state)
 +{
 +	switch (state) {
 +	case SSAM_POS_POSTURE_LID_CLOSED:
@@ -4930,11 +5112,11 @@ index 000000000000..6f402d2ca894
 +	}
 +
 +	/*
-+	 * We currently don't know what to do with more than one posture souce.
-+	 * At the moment, only one source seems to be used/provided. The
-+	 * WARN_ON() here should hopefully let us know quickly once there is a
-+	 * device that provides multiple sources, at which point we can then
-+	 * try to figure out how to handle them.
++	 * We currently don't know what to do with more than one posture
++	 * source. At the moment, only one source seems to be used/provided.
++	 * The WARN_ON() here should hopefully let us know quickly once there
++	 * is a device that provides multiple sources, at which point we can
++	 * then try to figure out how to handle them.
 +	 */
 +	WARN_ON(sources.count > 1);
 +
@@ -4992,9 +5174,8 @@ index 000000000000..6f402d2ca894
 +	if (event->command_id != SSAM_EVENT_POS_CID_POSTURE_CHANGED)
 +		return 0;	/* Return "unhandled". */
 +
-+	if (event->length != sizeof(__le32) * 3) {
++	if (event->length != sizeof(__le32) * 3)
 +		dev_warn(&sw->sdev->dev, "unexpected payload size: %u\n", event->length);
-+	}
 +
 +	schedule_work(&sw->update_work);
 +	return SSAM_NOTIF_HANDLED;
@@ -5049,9 +5230,9 @@ index 000000000000..6f402d2ca894
 -- 
 2.37.2
 
-From 14f40e0eba6884c5eb7e71d0852463db08c9d3b1 Mon Sep 17 00:00:00 2001
+From 9fd7721c374ba1ca794373cc0e83e2bbd89c2e35 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Wed, 27 Oct 2021 22:33:03 +0200
+Date: Fri, 24 Jun 2022 20:36:41 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add support for tablet
  mode switch on Surface Pro 8
 
@@ -5061,6 +5242,9 @@ events for user-space based on the state of the keyboard cover (e.g.
 detached, folded-back, normal/laptop mode).
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220624183642.910893-4-luzmaximilian@gmail.com
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Patchset: surface-sam
 ---
  drivers/platform/surface/surface_aggregator_registry.c | 8 +++++++-
@@ -5099,9 +5283,9 @@ index bf3303f1aa71..8f249df673a4 100644
 -- 
 2.37.2
 
-From 41c17d879bc5f5d1700673e7cbb8f1bd4862cafc Mon Sep 17 00:00:00 2001
+From a5821fb95515a38add07abe5c38819b28e57a8ee Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Thu, 16 Jun 2022 02:30:16 +0200
+Date: Fri, 24 Jun 2022 20:36:42 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add support for tablet
  mode switch on Surface Laptop Studio
 
@@ -5110,6 +5294,9 @@ Studio. The respective driver for this device provides SW_TABLET_MODE
 input events for user-space based on the posture of the screen.
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220624183642.910893-5-luzmaximilian@gmail.com
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Patchset: surface-sam
 ---
  drivers/platform/surface/surface_aggregator_registry.c | 7 +++++++
@@ -5143,9 +5330,9 @@ index 8f249df673a4..f1c5905f1c16 100644
 -- 
 2.37.2
 
-From 7814ea13e040abe5f2e273865e28f6bd6bc51f17 Mon Sep 17 00:00:00 2001
+From 02165399da8dc82730cf6c94242dde36e0d34198 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Sat, 21 May 2022 00:30:46 +0200
+Date: Fri, 24 Jun 2022 22:57:58 +0200
 Subject: [PATCH] platform/surface: aggregator: Move device registry helper
  functions to core module
 
@@ -5154,18 +5341,23 @@ This simplifies addition of future DT/OF support and also allows us to
 split out the device hub drivers into their own module.
 
 At the same time, also improve device node validation a bit by not
-silently skipping devices with invalid device UID specifiers.
+silently skipping devices with invalid device UID specifiers. Further,
+ensure proper lifetime management for the firmware/software nodes
+associated with the added devices.
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220624205800.1355621-2-luzmaximilian@gmail.com
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Patchset: surface-sam
 ---
- drivers/platform/surface/aggregator/bus.c     | 176 ++++++++++++++++--
- .../surface/surface_aggregator_registry.c     |  75 +-------
- include/linux/surface_aggregator/device.h     |  37 ++++
- 3 files changed, 199 insertions(+), 89 deletions(-)
+ drivers/platform/surface/aggregator/bus.c     | 149 ++++++++++++++++--
+ .../surface/surface_aggregator_registry.c     |  75 +--------
+ include/linux/surface_aggregator/device.h     |  52 ++++++
+ 3 files changed, 187 insertions(+), 89 deletions(-)
 
 diff --git a/drivers/platform/surface/aggregator/bus.c b/drivers/platform/surface/aggregator/bus.c
-index abbbb5b08b07..4bba60884bb5 100644
+index abbbb5b08b07..e0b0381a2834 100644
 --- a/drivers/platform/surface/aggregator/bus.c
 +++ b/drivers/platform/surface/aggregator/bus.c
 @@ -6,6 +6,7 @@
@@ -5186,7 +5378,15 @@ index abbbb5b08b07..4bba60884bb5 100644
  static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
  			     char *buf)
  {
-@@ -363,6 +367,162 @@ void ssam_device_driver_unregister(struct ssam_device_driver *sdrv)
+@@ -46,6 +50,7 @@ static void ssam_device_release(struct device *dev)
+ 	struct ssam_device *sdev = to_ssam_device(dev);
+ 
+ 	ssam_controller_put(sdev->ctrl);
++	fwnode_handle_put(sdev->dev.fwnode);
+ 	kfree(sdev);
+ }
+ 
+@@ -363,6 +368,134 @@ void ssam_device_driver_unregister(struct ssam_device_driver *sdrv)
  }
  EXPORT_SYMBOL_GPL(ssam_device_driver_unregister);
  
@@ -5232,7 +5432,7 @@ index abbbb5b08b07..4bba60884bb5 100644
 +
 +static int ssam_get_uid_for_node(struct fwnode_handle *node, struct ssam_device_uid *uid)
 +{
-+	const char* str = fwnode_get_name(node);
++	const char *str = fwnode_get_name(node);
 +
 +	/*
 +	 * To simplify definitions of firmware nodes, we set the device name
@@ -5261,7 +5461,7 @@ index abbbb5b08b07..4bba60884bb5 100644
 +		return -ENOMEM;
 +
 +	sdev->dev.parent = parent;
-+	sdev->dev.fwnode = node;
++	sdev->dev.fwnode = fwnode_handle_get(node);
 +
 +	status = ssam_device_add(sdev);
 +	if (status)
@@ -5318,38 +5518,10 @@ index abbbb5b08b07..4bba60884bb5 100644
 +}
 +EXPORT_SYMBOL_GPL(__ssam_register_clients);
 +
-+/**
-+ * ssam_register_clients() - Register all client devices defined under the
-+ * given parent device.
-+ * @dev: The parent device under which clients should be registered.
-+ * @ctrl: The controller with which client should be registered.
-+ *
-+ * Register all clients that have via firmware nodes been defined as children
-+ * of the given (parent) device. The respective child firmware nodes will be
-+ * associated with the correspondingly created child devices.
-+ *
-+ * The given controller will be used to instantiate the new devices. See
-+ * ssam_device_add() for details.
-+ *
-+ * Return: Returns zero on success, nonzero on failure.
-+ */
-+int ssam_register_clients(struct device *dev, struct ssam_controller *ctrl)
-+{
-+	struct fwnode_handle *node;
-+	int status;
-+
-+	node = fwnode_handle_get(dev_fwnode(dev));
-+	status = __ssam_register_clients(dev, ctrl, node);
-+	fwnode_handle_put(node);
-+
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(ssam_register_clients);
-+
  static int ssam_remove_device(struct device *dev, void *_data)
  {
  	struct ssam_device *sdev = to_ssam_device(dev);
-@@ -387,19 +547,3 @@ void ssam_remove_clients(struct device *dev)
+@@ -387,19 +520,3 @@ void ssam_remove_clients(struct device *dev)
  	device_for_each_child_reverse(dev, NULL, ssam_remove_device);
  }
  EXPORT_SYMBOL_GPL(ssam_remove_clients);
@@ -5477,17 +5649,24 @@ index f1c5905f1c16..c680792a037e 100644
  		set_secondary_fwnode(&pdev->dev, NULL);
  		software_node_unregister_node_group(nodes);
 diff --git a/include/linux/surface_aggregator/device.h b/include/linux/surface_aggregator/device.h
-index 6cf7e80312d5..6e75fb605479 100644
+index 6cf7e80312d5..46c45d1b6368 100644
 --- a/include/linux/surface_aggregator/device.h
 +++ b/include/linux/surface_aggregator/device.h
-@@ -375,11 +375,48 @@ void ssam_device_driver_unregister(struct ssam_device_driver *d);
+@@ -15,6 +15,7 @@
+ 
+ #include <linux/device.h>
+ #include <linux/mod_devicetable.h>
++#include <linux/property.h>
+ #include <linux/types.h>
+ 
+ #include <linux/surface_aggregator/controller.h>
+@@ -375,11 +376,62 @@ void ssam_device_driver_unregister(struct ssam_device_driver *d);
  /* -- Helpers for controller and hub devices. ------------------------------- */
  
  #ifdef CONFIG_SURFACE_AGGREGATOR_BUS
 +
 +int __ssam_register_clients(struct device *parent, struct ssam_controller *ctrl,
 +			    struct fwnode_handle *node);
-+int ssam_register_clients(struct device *dev, struct ssam_controller *ctrl);
  void ssam_remove_clients(struct device *dev);
 +
  #else /* CONFIG_SURFACE_AGGREGATOR_BUS */
@@ -5498,15 +5677,30 @@ index 6cf7e80312d5..6e75fb605479 100644
 +	return 0;
 +}
 +
-+static inline int ssam_register_clients(struct device *dev, struct ssam_controller *ctrl)
-+{
-+	return 0;
-+}
-+
  static inline void ssam_remove_clients(struct device *dev) {}
 +
  #endif /* CONFIG_SURFACE_AGGREGATOR_BUS */
  
++/**
++ * ssam_register_clients() - Register all client devices defined under the
++ * given parent device.
++ * @dev: The parent device under which clients should be registered.
++ * @ctrl: The controller with which client should be registered.
++ *
++ * Register all clients that have via firmware nodes been defined as children
++ * of the given (parent) device. The respective child firmware nodes will be
++ * associated with the correspondingly created child devices.
++ *
++ * The given controller will be used to instantiate the new devices. See
++ * ssam_device_add() for details.
++ *
++ * Return: Returns zero on success, nonzero on failure.
++ */
++static inline int ssam_register_clients(struct device *dev, struct ssam_controller *ctrl)
++{
++	return __ssam_register_clients(dev, ctrl, dev_fwnode(dev));
++}
++
 +/**
 + * ssam_device_register_clients() - Register all client devices defined under
 + * the given SSAM parent device.
@@ -5532,9 +5726,9 @@ index 6cf7e80312d5..6e75fb605479 100644
 -- 
 2.37.2
 
-From 446587a52772adcbdf620ec48d04414f062af173 Mon Sep 17 00:00:00 2001
+From db121ba08884dddbb98faeed98885e49deb97c32 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Sat, 21 May 2022 00:39:56 +0200
+Date: Fri, 24 Jun 2022 22:57:59 +0200
 Subject: [PATCH] platform/surface: aggregator: Move subsystem hub drivers to
  their own module
 
@@ -5545,6 +5739,9 @@ will help future DT/OF support.
 While doing so, also remove a small bit of code duplication.
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220624205800.1355621-3-luzmaximilian@gmail.com
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Patchset: surface-sam
 ---
  MAINTAINERS                                   |   6 +
@@ -5556,10 +5753,10 @@ Patchset: surface-sam
  create mode 100644 drivers/platform/surface/surface_aggregator_hub.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 852231f4e469..f96b3dba903a 100644
+index 773eb8387f4a..55e80354a097 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -13107,6 +13107,12 @@ F:	include/linux/surface_acpi_notify.h
+@@ -13376,6 +13376,12 @@ F:	include/linux/surface_acpi_notify.h
  F:	include/linux/surface_aggregator/
  F:	include/uapi/linux/surface_aggregator/
  
@@ -6419,14 +6616,17 @@ index c680792a037e..0cbb7f3a6b2d 100644
 -- 
 2.37.2
 
-From 19b914283b8e6567b0deb085053a8a781c1ad0fa Mon Sep 17 00:00:00 2001
+From dc12b0fce0c41cf44f77a2643c972409ae51e1d3 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Sat, 21 May 2022 00:57:40 +0200
+Date: Fri, 24 Jun 2022 22:58:00 +0200
 Subject: [PATCH] platform/surface: Update copyright year of various drivers
 
 Update the copyright of various Surface drivers to the current year.
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220624205800.1355621-4-luzmaximilian@gmail.com
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Patchset: surface-sam
 ---
  drivers/platform/surface/aggregator/Kconfig             | 2 +-
@@ -6476,7 +6676,7 @@ index c0d550eda5cd..fdf664a217f9 100644
  # For include/trace/define_trace.h to include trace.h
  CFLAGS_core.o = -I$(src)
 diff --git a/drivers/platform/surface/aggregator/bus.c b/drivers/platform/surface/aggregator/bus.c
-index 4bba60884bb5..96986042a257 100644
+index e0b0381a2834..de539938896e 100644
 --- a/drivers/platform/surface/aggregator/bus.c
 +++ b/drivers/platform/surface/aggregator/bus.c
 @@ -2,7 +2,7 @@
@@ -6645,7 +6845,7 @@ index cc9e73fbc18e..2a2c17771d01 100644
  
  #undef TRACE_SYSTEM
 diff --git a/drivers/platform/surface/surface_acpi_notify.c b/drivers/platform/surface/surface_acpi_notify.c
-index 7b758f8cc137..b0a83255d060 100644
+index c0e12f0b9b79..44e317970557 100644
 --- a/drivers/platform/surface/surface_acpi_notify.c
 +++ b/drivers/platform/surface/surface_acpi_notify.c
 @@ -8,7 +8,7 @@
@@ -6738,7 +6938,129 @@ index 6373d3b5eb7f..fbf2e11fd6ce 100644
 -- 
 2.37.2
 
-From 19a402021f13a0b2382271189e1dc017205ada1f Mon Sep 17 00:00:00 2001
+From 39bb758fc49805d68c4ad2a21b6011cc54179676 Mon Sep 17 00:00:00 2001
+From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Date: Wed, 13 Jul 2022 06:09:16 +0200
+Subject: [PATCH] MAINTAINERS: repair file entry in MICROSOFT SURFACE
+ AGGREGATOR TABLET-MODE SWITCH
+
+Commit 9f794056db5b ("platform/surface: Add KIP/POS tablet-mode switch
+driver") adds the section MICROSOFT SURFACE AGGREGATOR TABLET-MODE SWITCH
+with a file entry, but the file that is added with this commit is actually
+named slightly differently.
+
+  file entry name: drivers/platform/surface/surface_aggregator_tablet_switch.c
+  added file name: drivers/platform/surface/surface_aggregator_tabletsw.c
+
+Hence, ./scripts/get_maintainer.pl --self-test=patterns complains about a
+broken reference.
+
+Repair this file entry to the actual file name added with the commit above.
+
+Fixes: 9f794056db5b ("platform/surface: Add KIP/POS tablet-mode switch driver")
+Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Reviewed-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220713040916.1767-1-lukas.bulwahn@gmail.com
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Patchset: surface-sam
+---
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 55e80354a097..6772c9d0eccc 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -13303,7 +13303,7 @@ MICROSOFT SURFACE AGGREGATOR TABLET-MODE SWITCH
+ M:	Maximilian Luz <luzmaximilian@gmail.com>
+ L:	platform-driver-x86@vger.kernel.org
+ S:	Maintained
+-F:	drivers/platform/surface/surface_aggregator_tablet_switch.c
++F:	drivers/platform/surface/surface_aggregator_tabletsw.c
+ 
+ MICROSOFT SURFACE BATTERY AND AC DRIVERS
+ M:	Maximilian Luz <luzmaximilian@gmail.com>
+-- 
+2.37.2
+
+From 513b085315b459e555c4cc2d4b4202d232dd4b26 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Sun, 17 Jul 2022 14:07:35 +0200
+Subject: [PATCH] platform/surface: tabletsw: Fix __le32 integer access
+
+The sources.count field is a __le32 inside a packed struct. So use the
+proper functions to access it.
+
+Reported-by: kernel test robot <lkp@intel.com>
+Fixes: 9f794056db5b ("platform/surface: Add KIP/POS tablet-mode switch driver")
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220717120735.2052160-1-luzmaximilian@gmail.com
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Patchset: surface-sam
+---
+ drivers/platform/surface/surface_aggregator_tabletsw.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/platform/surface/surface_aggregator_tabletsw.c b/drivers/platform/surface/surface_aggregator_tabletsw.c
+index 596ca6c80681..27d95a6a7851 100644
+--- a/drivers/platform/surface/surface_aggregator_tabletsw.c
++++ b/drivers/platform/surface/surface_aggregator_tabletsw.c
+@@ -410,7 +410,7 @@ static int ssam_pos_get_source(struct ssam_tablet_sw *sw, u32 *source_id)
+ 	if (status)
+ 		return status;
+ 
+-	if (sources.count == 0) {
++	if (get_unaligned_le32(&sources.count) == 0) {
+ 		dev_err(&sw->sdev->dev, "no posture sources found\n");
+ 		return -ENODEV;
+ 	}
+@@ -422,7 +422,7 @@ static int ssam_pos_get_source(struct ssam_tablet_sw *sw, u32 *source_id)
+ 	 * is a device that provides multiple sources, at which point we can
+ 	 * then try to figure out how to handle them.
+ 	 */
+-	WARN_ON(sources.count > 1);
++	WARN_ON(get_unaligned_le32(&sources.count) > 1);
+ 
+ 	*source_id = get_unaligned_le32(&sources.id[0]);
+ 	return 0;
+-- 
+2.37.2
+
+From 3dfe5611833768dcceacd578f4c8a7e1efdc32e1 Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Fri, 8 Jul 2022 03:34:44 +0200
+Subject: [PATCH] platform/surface: aggregator_registry: Add support for
+ Surface Laptop Go 2
+
+The Surface Laptop Go 2 seems to have the same SAM client devices as the
+Surface Laptop Go 1, so re-use its node group.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: surface-sam
+---
+ drivers/platform/surface/surface_aggregator_registry.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
+index d5655f6a4a41..93ab62eb393d 100644
+--- a/drivers/platform/surface/surface_aggregator_registry.c
++++ b/drivers/platform/surface/surface_aggregator_registry.c
+@@ -325,6 +325,9 @@ static const struct acpi_device_id ssam_platform_hub_match[] = {
+ 	/* Surface Laptop Go 1 */
+ 	{ "MSHW0118", (unsigned long)ssam_node_group_slg1 },
+ 
++	/* Surface Laptop Go 2 */
++	{ "MSHW0290", (unsigned long)ssam_node_group_slg1 },
++
+ 	/* Surface Laptop Studio */
+ 	{ "MSHW0123", (unsigned long)ssam_node_group_sls },
+ 
+-- 
+2.37.2
+
+From 1135c744bf81e6b3528fcddf0b18fbc8353fe7ff Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jun 2022 20:42:00 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Rename HID device
@@ -6746,7 +7068,7 @@ Subject: [PATCH] platform/surface: aggregator_registry: Rename HID device
 
 Rename HID device nodes based on their function. In particular, these
 are nodes for firmware updates via the CFU mechanism (component firmware
-update), HID based sensors, and a USB-C USCI client.
+update), HID based sensors, and a USB-C UCSI client.
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
 Patchset: surface-sam
@@ -6755,7 +7077,7 @@ Patchset: surface-sam
  1 file changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index d5655f6a4a41..b325fa0c5ee0 100644
+index 93ab62eb393d..7d82398f55b1 100644
 --- a/drivers/platform/surface/surface_aggregator_registry.c
 +++ b/drivers/platform/surface/surface_aggregator_registry.c
 @@ -104,14 +104,14 @@ static const struct software_node ssam_node_hid_tid1_touchpad = {
@@ -6772,8 +7094,8 @@ index d5655f6a4a41..b325fa0c5ee0 100644
  
 -/* HID device instance 7 (TID1, unknown HID device). */
 -static const struct software_node ssam_node_hid_tid1_iid7 = {
-+/* HID device instance 7 (TID1, UCM USCI HID client). */
-+static const struct software_node ssam_node_hid_tid1_ucm_usci = {
++/* HID device instance 7 (TID1, UCM UCSI HID client). */
++static const struct software_node ssam_node_hid_tid1_ucm_ucsi = {
  	.name = "ssam:01:15:01:07:00",
  	.parent = &ssam_node_root,
  };
@@ -6795,7 +7117,7 @@ index d5655f6a4a41..b325fa0c5ee0 100644
 -	&ssam_node_hid_tid1_iid6,
 -	&ssam_node_hid_tid1_iid7,
 +	&ssam_node_hid_tid1_sensors,
-+	&ssam_node_hid_tid1_ucm_usci,
++	&ssam_node_hid_tid1_ucm_ucsi,
  	&ssam_node_hid_tid1_sysctrl,
  	NULL,
  };
@@ -6811,7 +7133,7 @@ index d5655f6a4a41..b325fa0c5ee0 100644
 -- 
 2.37.2
 
-From 20db0502d55279d6b4cca93ebd7ff1b2920f320c Mon Sep 17 00:00:00 2001
+From c6b04410f5383e56f768071a02811eec38027af5 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jun 2022 20:52:47 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Rename HID device
@@ -6828,7 +7150,7 @@ Patchset: surface-sam
  1 file changed, 18 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index b325fa0c5ee0..3aa825b5aa26 100644
+index 7d82398f55b1..9970f89b1411 100644
 --- a/drivers/platform/surface/surface_aggregator_registry.c
 +++ b/drivers/platform/surface/surface_aggregator_registry.c
 @@ -86,38 +86,38 @@ static const struct software_node ssam_node_bas_dtx = {
@@ -6867,10 +7189,10 @@ index b325fa0c5ee0..3aa825b5aa26 100644
  	.parent = &ssam_node_root,
  };
  
--/* HID device instance 7 (TID1, UCM USCI HID client). */
--static const struct software_node ssam_node_hid_tid1_ucm_usci = {
-+/* HID device instance 7 (SAM, TID=1, UCM USCI HID client). */
-+static const struct software_node ssam_node_hid_sam_ucm_usci = {
+-/* HID device instance 7 (TID1, UCM UCSI HID client). */
+-static const struct software_node ssam_node_hid_tid1_ucm_ucsi = {
++/* HID device instance 7 (SAM, TID=1, UCM UCSI HID client). */
++static const struct software_node ssam_node_hid_sam_ucm_ucsi = {
  	.name = "ssam:01:15:01:07:00",
  	.parent = &ssam_node_root,
  };
@@ -6890,13 +7212,13 @@ index b325fa0c5ee0..3aa825b5aa26 100644
 -	&ssam_node_hid_tid1_penstash,
 -	&ssam_node_hid_tid1_touchpad,
 -	&ssam_node_hid_tid1_sensors,
--	&ssam_node_hid_tid1_ucm_usci,
+-	&ssam_node_hid_tid1_ucm_ucsi,
 -	&ssam_node_hid_tid1_sysctrl,
 +	&ssam_node_hid_sam_keyboard,
 +	&ssam_node_hid_sam_penstash,
 +	&ssam_node_hid_sam_touchpad,
 +	&ssam_node_hid_sam_sensors,
-+	&ssam_node_hid_sam_ucm_usci,
++	&ssam_node_hid_sam_ucm_ucsi,
 +	&ssam_node_hid_sam_sysctrl,
  	NULL,
  };
@@ -6904,13 +7226,13 @@ index b325fa0c5ee0..3aa825b5aa26 100644
 -- 
 2.37.2
 
-From 4680063aaad14e3083227e1e66d16f2c8c46da33 Mon Sep 17 00:00:00 2001
+From 9aaa3d4912f9796d3658a8f035a23848dba33178 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jun 2022 20:54:59 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add HID devices for
- sensors and USCI client to SP8
+ sensors and UCSI client to SP8
 
-Add software nodes for the HID sensor collection and the UCM USCI HID
+Add software nodes for the HID sensor collection and the UCM UCSI HID
 client to the Surface Pro 8. In contrast to the type-cover devices,
 these devices are directly attached to the SAM controller, without any
 hub.
@@ -6925,7 +7247,7 @@ Patchset: surface-sam
  1 file changed, 2 insertions(+)
 
 diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index 3aa825b5aa26..4c2f9f789354 100644
+index 9970f89b1411..585911020cea 100644
 --- a/drivers/platform/surface/surface_aggregator_registry.c
 +++ b/drivers/platform/surface/surface_aggregator_registry.c
 @@ -279,6 +279,8 @@ static const struct software_node *ssam_node_group_sp8[] = {
@@ -6933,46 +7255,14 @@ index 3aa825b5aa26..4c2f9f789354 100644
  	&ssam_node_hid_kip_touchpad,
  	&ssam_node_hid_kip_fwupd,
 +	&ssam_node_hid_sam_sensors,
-+	&ssam_node_hid_sam_ucm_usci,
++	&ssam_node_hid_sam_ucm_ucsi,
  	NULL,
  };
  
 -- 
 2.37.2
 
-From 72f14fa3dd5b2a5dd209a696ee3fb7562720a5d0 Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Fri, 8 Jul 2022 03:34:44 +0200
-Subject: [PATCH] platform/surface: aggregator_registry: Add support for
- Surface Laptop Go 2
-
-The Surface Laptop Go 2 seems to have the same SAM client devices as the
-Surface Laptop Go 1, so re-use its node group.
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- drivers/platform/surface/surface_aggregator_registry.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index 4c2f9f789354..49426b6e6b19 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -327,6 +327,9 @@ static const struct acpi_device_id ssam_platform_hub_match[] = {
- 	/* Surface Laptop Go 1 */
- 	{ "MSHW0118", (unsigned long)ssam_node_group_slg1 },
- 
-+	/* Surface Laptop Go 2 */
-+	{ "MSHW0290", (unsigned long)ssam_node_group_slg1 },
-+
- 	/* Surface Laptop Studio */
- 	{ "MSHW0123", (unsigned long)ssam_node_group_sls },
- 
--- 
-2.37.2
-
-From b64a10b0bee51c89d31ce74c19332da29a649593 Mon Sep 17 00:00:00 2001
+From 2db7d4411f43d57e45672872465d05b091af1ca4 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jul 2020 17:19:53 +0200
 Subject: [PATCH] i2c: acpi: Implement RawBytes read access
@@ -7084,7 +7374,7 @@ index 08b561f0709d..d7c397bce0f0 100644
 -- 
 2.37.2
 
-From 3abe84a0aeaf48ba7989773d7174bf700b7079ac Mon Sep 17 00:00:00 2001
+From 1519f583848db6ea7fb0d648ef80c729760dd3f7 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 13 Feb 2021 16:41:18 +0100
 Subject: [PATCH] platform/surface: Add driver for Surface Book 1 dGPU switch
@@ -7307,7 +7597,7 @@ index 000000000000..8b816ed8f35c
 -- 
 2.37.2
 
-From 35879d4ed707cf91c40eecfcb30609359af6c78e Mon Sep 17 00:00:00 2001
+From 12ca17de985a65027d9264486f2fec28cfbf039b Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:05:09 +1100
 Subject: [PATCH] Input: soc_button_array - support AMD variant Surface devices
@@ -7384,7 +7674,7 @@ index 480476121c01..36e1bf7b7a01 100644
 -- 
 2.37.2
 
-From 627721b4b779ab79f86fc305b9680bc8ae3258d6 Mon Sep 17 00:00:00 2001
+From 038c419cb0686e9bc79e0d7117e6c0ab620ed083 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:22:57 +1100
 Subject: [PATCH] platform/surface: surfacepro3_button: don't load on amd
@@ -7456,7 +7746,7 @@ index 242fb690dcaf..30eea54dbb47 100644
 -- 
 2.37.2
 
-From 1129d8ed78f239a7d85929ae7c38f89ec51af8a1 Mon Sep 17 00:00:00 2001
+From 46cf30ad2214c8a50498d44c97fb0d98acdf31ed Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 5 Nov 2020 13:09:45 +0100
 Subject: [PATCH] hid/multitouch: Turn off Type Cover keyboard backlight when
@@ -7492,7 +7782,7 @@ Patchset: surface-typecover
  1 file changed, 98 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
-index 6bb3890b0f2c..c28349e90156 100644
+index 2e72922e36f5..15f5f11c4b85 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
 @@ -34,7 +34,10 @@
@@ -7539,7 +7829,7 @@ index 6bb3890b0f2c..c28349e90156 100644
  };
  
  static void mt_post_parse_default_settings(struct mt_device *td,
-@@ -211,6 +220,7 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app);
+@@ -212,6 +221,7 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app);
  #define MT_CLS_GOOGLE				0x0111
  #define MT_CLS_RAZER_BLADE_STEALTH		0x0112
  #define MT_CLS_SMART_TECH			0x0113
@@ -7547,7 +7837,7 @@ index 6bb3890b0f2c..c28349e90156 100644
  
  #define MT_DEFAULT_MAXCONTACT	10
  #define MT_MAX_MAXCONTACT	250
-@@ -386,6 +396,16 @@ static const struct mt_class mt_classes[] = {
+@@ -396,6 +406,16 @@ static const struct mt_class mt_classes[] = {
  			MT_QUIRK_CONTACT_CNT_ACCURATE |
  			MT_QUIRK_SEPARATE_APP_REPORT,
  	},
@@ -7564,7 +7854,7 @@ index 6bb3890b0f2c..c28349e90156 100644
  	{ }
  };
  
-@@ -1695,6 +1715,69 @@ static void mt_expired_timeout(struct timer_list *t)
+@@ -1706,6 +1726,69 @@ static void mt_expired_timeout(struct timer_list *t)
  	clear_bit(MT_IO_FLAGS_RUNNING, &td->mt_io_flags);
  }
  
@@ -7634,7 +7924,7 @@ index 6bb3890b0f2c..c28349e90156 100644
  static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
  {
  	int ret, i;
-@@ -1718,6 +1801,9 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
+@@ -1729,6 +1812,9 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
  	td->inputmode_value = MT_INPUTMODE_TOUCHSCREEN;
  	hid_set_drvdata(hdev, td);
  
@@ -7644,7 +7934,7 @@ index 6bb3890b0f2c..c28349e90156 100644
  	INIT_LIST_HEAD(&td->applications);
  	INIT_LIST_HEAD(&td->reports);
  
-@@ -1747,15 +1833,19 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
+@@ -1758,15 +1844,19 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
  	timer_setup(&td->release_timer, mt_expired_timeout, 0);
  
  	ret = hid_parse(hdev);
@@ -7666,7 +7956,7 @@ index 6bb3890b0f2c..c28349e90156 100644
  
  	ret = sysfs_create_group(&hdev->dev.kobj, &mt_attribute_group);
  	if (ret)
-@@ -1807,6 +1897,7 @@ static void mt_remove(struct hid_device *hdev)
+@@ -1818,6 +1908,7 @@ static void mt_remove(struct hid_device *hdev)
  {
  	struct mt_device *td = hid_get_drvdata(hdev);
  
@@ -7674,7 +7964,7 @@ index 6bb3890b0f2c..c28349e90156 100644
  	del_timer_sync(&td->release_timer);
  
  	sysfs_remove_group(&hdev->dev.kobj, &mt_attribute_group);
-@@ -2180,6 +2271,11 @@ static const struct hid_device_id mt_devices[] = {
+@@ -2191,6 +2282,11 @@ static const struct hid_device_id mt_devices[] = {
  		MT_USB_DEVICE(USB_VENDOR_ID_XIROKU,
  			USB_DEVICE_ID_XIROKU_CSR2) },
  
@@ -7689,7 +7979,7 @@ index 6bb3890b0f2c..c28349e90156 100644
 -- 
 2.37.2
 
-From 2efbc56c3ce4cd31a9ca25abd8ccb7de01c16616 Mon Sep 17 00:00:00 2001
+From 61e311a6ce7fc4c4005130e4b3cce203f7ded406 Mon Sep 17 00:00:00 2001
 From: PJungkamp <p.jungkamp@gmail.com>
 Date: Fri, 25 Feb 2022 12:04:25 +0100
 Subject: [PATCH] hid/multitouch: Add support for surface pro type cover tablet
@@ -7718,7 +8008,7 @@ Patchset: surface-typecover
  1 file changed, 122 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
-index c28349e90156..61142639be26 100644
+index 15f5f11c4b85..69202575ce19 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
 @@ -76,6 +76,7 @@ MODULE_LICENSE("GPL");
@@ -7738,7 +8028,7 @@ index c28349e90156..61142639be26 100644
  
  enum latency_mode {
  	HID_LATENCY_NORMAL = 0,
-@@ -398,6 +401,7 @@ static const struct mt_class mt_classes[] = {
+@@ -408,6 +411,7 @@ static const struct mt_class mt_classes[] = {
  	},
  	{ .name = MT_CLS_WIN_8_MS_SURFACE_TYPE_COVER,
  		.quirks = MT_QUIRK_HAS_TYPE_COVER_BACKLIGHT |
@@ -7746,7 +8036,7 @@ index c28349e90156..61142639be26 100644
  			MT_QUIRK_ALWAYS_VALID |
  			MT_QUIRK_IGNORE_DUPLICATES |
  			MT_QUIRK_HOVERING |
-@@ -1357,6 +1361,9 @@ static int mt_input_mapping(struct hid_device *hdev, struct hid_input *hi,
+@@ -1368,6 +1372,9 @@ static int mt_input_mapping(struct hid_device *hdev, struct hid_input *hi,
  	    field->application != HID_CP_CONSUMER_CONTROL &&
  	    field->application != HID_GD_WIRELESS_RADIO_CTLS &&
  	    field->application != HID_GD_SYSTEM_MULTIAXIS &&
@@ -7756,7 +8046,7 @@ index c28349e90156..61142639be26 100644
  	    !(field->application == HID_VD_ASUS_CUSTOM_MEDIA_KEYS &&
  	      application->quirks & MT_QUIRK_ASUS_CUSTOM_UP))
  		return -1;
-@@ -1384,6 +1391,21 @@ static int mt_input_mapping(struct hid_device *hdev, struct hid_input *hi,
+@@ -1395,6 +1402,21 @@ static int mt_input_mapping(struct hid_device *hdev, struct hid_input *hi,
  		return 1;
  	}
  
@@ -7778,7 +8068,7 @@ index c28349e90156..61142639be26 100644
  	if (rdata->is_mt_collection)
  		return mt_touch_input_mapping(hdev, hi, field, usage, bit, max,
  					      application);
-@@ -1405,6 +1427,7 @@ static int mt_input_mapped(struct hid_device *hdev, struct hid_input *hi,
+@@ -1416,6 +1438,7 @@ static int mt_input_mapped(struct hid_device *hdev, struct hid_input *hi,
  {
  	struct mt_device *td = hid_get_drvdata(hdev);
  	struct mt_report_data *rdata;
@@ -7786,7 +8076,7 @@ index c28349e90156..61142639be26 100644
  
  	rdata = mt_find_report_data(td, field->report);
  	if (rdata && rdata->is_mt_collection) {
-@@ -1412,6 +1435,19 @@ static int mt_input_mapped(struct hid_device *hdev, struct hid_input *hi,
+@@ -1423,6 +1446,19 @@ static int mt_input_mapped(struct hid_device *hdev, struct hid_input *hi,
  		return -1;
  	}
  
@@ -7806,7 +8096,7 @@ index c28349e90156..61142639be26 100644
  	/* let hid-core decide for the others */
  	return 0;
  }
-@@ -1421,11 +1457,21 @@ static int mt_event(struct hid_device *hid, struct hid_field *field,
+@@ -1432,11 +1468,21 @@ static int mt_event(struct hid_device *hid, struct hid_field *field,
  {
  	struct mt_device *td = hid_get_drvdata(hid);
  	struct mt_report_data *rdata;
@@ -7828,7 +8118,7 @@ index c28349e90156..61142639be26 100644
  	return 0;
  }
  
-@@ -1578,6 +1624,42 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app)
+@@ -1589,6 +1635,42 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app)
  		app->quirks &= ~MT_QUIRK_CONTACT_CNT_ACCURATE;
  }
  
@@ -7871,7 +8161,7 @@ index c28349e90156..61142639be26 100644
  static int mt_input_configured(struct hid_device *hdev, struct hid_input *hi)
  {
  	struct mt_device *td = hid_get_drvdata(hdev);
-@@ -1627,6 +1709,13 @@ static int mt_input_configured(struct hid_device *hdev, struct hid_input *hi)
+@@ -1638,6 +1720,13 @@ static int mt_input_configured(struct hid_device *hdev, struct hid_input *hi)
  		/* force BTN_STYLUS to allow tablet matching in udev */
  		__set_bit(BTN_STYLUS, hi->input->keybit);
  		break;
@@ -7885,7 +8175,7 @@ index c28349e90156..61142639be26 100644
  	default:
  		suffix = "UNKNOWN";
  		break;
-@@ -1715,30 +1804,6 @@ static void mt_expired_timeout(struct timer_list *t)
+@@ -1726,30 +1815,6 @@ static void mt_expired_timeout(struct timer_list *t)
  	clear_bit(MT_IO_FLAGS_RUNNING, &td->mt_io_flags);
  }
  
@@ -7916,7 +8206,7 @@ index c28349e90156..61142639be26 100644
  static void update_keyboard_backlight(struct hid_device *hdev, bool enabled)
  {
  	struct usb_device *udev = hid_to_usb_dev(hdev);
-@@ -1747,8 +1812,9 @@ static void update_keyboard_backlight(struct hid_device *hdev, bool enabled)
+@@ -1758,8 +1823,9 @@ static void update_keyboard_backlight(struct hid_device *hdev, bool enabled)
  	/* Wake up the device in case it's already suspended */
  	pm_runtime_get_sync(&udev->dev);
  
@@ -7928,7 +8218,7 @@ index c28349e90156..61142639be26 100644
  		hid_err(hdev, "couldn't find backlight field\n");
  		goto out;
  	}
-@@ -1874,13 +1940,24 @@ static int mt_suspend(struct hid_device *hdev, pm_message_t state)
+@@ -1885,13 +1951,24 @@ static int mt_suspend(struct hid_device *hdev, pm_message_t state)
  
  static int mt_reset_resume(struct hid_device *hdev)
  {
@@ -7953,7 +8243,7 @@ index c28349e90156..61142639be26 100644
  	/* Some Elan legacy devices require SET_IDLE to be set on resume.
  	 * It should be safe to send it to other devices too.
  	 * Tested on 3M, Stantum, Cypress, Zytronic, eGalax, and Elan panels. */
-@@ -1889,6 +1966,10 @@ static int mt_resume(struct hid_device *hdev)
+@@ -1900,6 +1977,10 @@ static int mt_resume(struct hid_device *hdev)
  
  	mt_set_modes(hdev, HID_LATENCY_NORMAL, true, true);
  
@@ -7964,7 +8254,7 @@ index c28349e90156..61142639be26 100644
  	return 0;
  }
  #endif
-@@ -1896,6 +1977,21 @@ static int mt_resume(struct hid_device *hdev)
+@@ -1907,6 +1988,21 @@ static int mt_resume(struct hid_device *hdev)
  static void mt_remove(struct hid_device *hdev)
  {
  	struct mt_device *td = hid_get_drvdata(hdev);
@@ -7989,92 +8279,9 @@ index c28349e90156..61142639be26 100644
 -- 
 2.37.2
 
-From 731a5eb141f0f579b74a9b0fe23b4af987c77a0b Mon Sep 17 00:00:00 2001
-From: Werner Sembach <wse@tuxedocomputers.com>
-Date: Wed, 27 Apr 2022 17:40:53 +0200
-Subject: [PATCH] ACPI: battery: Make "not-charging" the default on no charging
- or full info
-
-When the battery is neither charging or discharging and is not full,
-"not-charging" is a useful status description for the case in general.
-Currently this state is set as "unknown" by default, expect when this is
-explicitly replaced with "not-charging" on a per device or per vendor
-basis.
-
-A lot of devices have this state without a BIOS specification available
-explicitly describing it. e.g. some current Clevo barebones have a BIOS
-setting to stop charging at a user defined battery level.
-
-Signed-off-by: Werner Sembach <wse@tuxedocomputers.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Patchset: surface-battery
----
- drivers/acpi/battery.c | 24 +-----------------------
- 1 file changed, 1 insertion(+), 23 deletions(-)
-
-diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index dc208f5f5a1f..306513fec1e1 100644
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -52,7 +52,6 @@ static bool battery_driver_registered;
- static int battery_bix_broken_package;
- static int battery_notification_delay_ms;
- static int battery_ac_is_broken;
--static int battery_quirk_notcharging;
- static unsigned int cache_time = 1000;
- module_param(cache_time, uint, 0644);
- MODULE_PARM_DESC(cache_time, "cache time in milliseconds");
-@@ -216,10 +215,8 @@ static int acpi_battery_get_property(struct power_supply *psy,
- 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
- 		else if (acpi_battery_is_charged(battery))
- 			val->intval = POWER_SUPPLY_STATUS_FULL;
--		else if (battery_quirk_notcharging)
--			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		else
--			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
-+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		break;
- 	case POWER_SUPPLY_PROP_PRESENT:
- 		val->intval = acpi_battery_present(battery);
-@@ -1105,12 +1102,6 @@ battery_ac_is_broken_quirk(const struct dmi_system_id *d)
- 	return 0;
- }
- 
--static int __init battery_quirk_not_charging(const struct dmi_system_id *d)
--{
--	battery_quirk_notcharging = 1;
--	return 0;
--}
--
- static const struct dmi_system_id bat_dmi_table[] __initconst = {
- 	{
- 		/* NEC LZ750/LS */
-@@ -1139,19 +1130,6 @@ static const struct dmi_system_id bat_dmi_table[] __initconst = {
- 			DMI_MATCH(DMI_BIOS_DATE, "08/22/2014"),
- 		},
- 	},
--	{
--		/*
--		 * On Lenovo ThinkPads the BIOS specification defines
--		 * a state when the bits for charging and discharging
--		 * are both set to 0. That state is "Not Charging".
--		 */
--		.callback = battery_quirk_not_charging,
--		.ident = "Lenovo ThinkPad",
--		.matches = {
--			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
--			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad"),
--		},
--	},
- 	{
- 		/* Microsoft Surface Go 3 */
- 		.callback = battery_notification_delay_quirk,
--- 
-2.37.2
-
-From 21c2c2cd1985f6050f652a36f6025cc64fc2e7a7 Mon Sep 17 00:00:00 2001
+From a5bfc31f5a78d54ef1aad12ef12ec65242e539a4 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Thu, 21 Jul 2022 02:15:50 +0200
+Date: Thu, 21 Jul 2022 14:11:20 +0200
 Subject: [PATCH] platform/surface: gpe: Add support for 13" Intel version of
  Surface Laptop 4
 
@@ -8082,6 +8289,8 @@ The 13" Intel version of the Surface Laptop 4 uses the same GPE as the
 Surface Laptop Studio for wakeups via the lid. Set it up accordingly.
 
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Link: https://lore.kernel.org/r/20220721121120.2002430-1-luzmaximilian@gmail.com
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 Patchset: surface-gpe
 ---
  drivers/platform/surface/surface_gpe.c | 12 ++++++++++++
@@ -8113,7 +8322,7 @@ index 27365cbe1ee9..c219b840d491 100644
 -- 
 2.37.2
 
-From 5271cb0a99d23130806f0a4bd2b5440023163a62 Mon Sep 17 00:00:00 2001
+From 0a3646496fbd99f59d21a0f4624b9bed7c4579ce Mon Sep 17 00:00:00 2001
 From: Hans de Goede <hdegoede@redhat.com>
 Date: Sun, 10 Oct 2021 20:56:57 +0200
 Subject: [PATCH] ACPI: delay enumeration of devices with a _DEP pointing to an
@@ -8189,7 +8398,7 @@ index 762b61f67e6c..2c0f39a7f2a1 100644
 -- 
 2.37.2
 
-From 6596a99eddeeaa1167b7c3363036701cb5b0427c Mon Sep 17 00:00:00 2001
+From 04d11d2e49fd47c81ae37ee09acdbf2e485c0660 Mon Sep 17 00:00:00 2001
 From: zouxiaoh <xiaohong.zou@intel.com>
 Date: Fri, 25 Jun 2021 08:52:59 +0800
 Subject: [PATCH] iommu: intel-ipu: use IOMMU passthrough mode for Intel IPUs
@@ -8215,7 +8424,7 @@ Patchset: cameras
  1 file changed, 30 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index 7f3699e19270..0ee615daadeb 100644
+index 825b524e81f3..095d566c058f 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
 @@ -37,6 +37,12 @@
@@ -8246,7 +8455,7 @@ index 7f3699e19270..0ee615daadeb 100644
  #define IDENTMAP_IPTS		16
  
  int intel_iommu_gfx_mapped;
-@@ -2705,6 +2713,9 @@ static int device_def_domain_type(struct device *dev)
+@@ -2664,6 +2672,9 @@ static int device_def_domain_type(struct device *dev)
  		if ((iommu_identity_mapping & IDENTMAP_GFX) && IS_GFX_DEVICE(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
  
@@ -8256,7 +8465,7 @@ index 7f3699e19270..0ee615daadeb 100644
  		if ((iommu_identity_mapping & IDENTMAP_IPTS) && IS_IPTS(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
  	}
-@@ -3143,6 +3154,9 @@ static int __init init_dmars(void)
+@@ -3102,6 +3113,9 @@ static int __init init_dmars(void)
  	if (!dmar_map_gfx)
  		iommu_identity_mapping |= IDENTMAP_GFX;
  
@@ -8266,7 +8475,7 @@ index 7f3699e19270..0ee615daadeb 100644
  	if (!dmar_map_ipts)
  		iommu_identity_mapping |= IDENTMAP_IPTS;
  
-@@ -4917,6 +4931,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
+@@ -4933,6 +4947,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
  	dmar_map_gfx = 0;
  }
  
@@ -8285,7 +8494,7 @@ index 7f3699e19270..0ee615daadeb 100644
  static void quirk_iommu_ipts(struct pci_dev *dev)
  {
  	if (!IS_IPTS(dev))
-@@ -4928,6 +4954,7 @@ static void quirk_iommu_ipts(struct pci_dev *dev)
+@@ -4944,6 +4970,7 @@ static void quirk_iommu_ipts(struct pci_dev *dev)
  	pci_info(dev, "Passthrough IOMMU for IPTS\n");
  	dmar_map_ipts = 0;
  }
@@ -8293,7 +8502,7 @@ index 7f3699e19270..0ee615daadeb 100644
  /* G4x/GM45 integrated gfx dmar support is totally busted. */
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
-@@ -4963,6 +4990,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
+@@ -4979,6 +5006,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163A, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
  
@@ -8306,7 +8515,7 @@ index 7f3699e19270..0ee615daadeb 100644
 -- 
 2.37.2
 
-From c6e12368fc3a4610a28f66c3f6b6ba896df7bda4 Mon Sep 17 00:00:00 2001
+From 9b1976c703584ca8302935993890825ae565253f Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Sun, 10 Oct 2021 20:57:02 +0200
 Subject: [PATCH] platform/x86: int3472: Enable I2c daisy chain
@@ -8343,7 +8552,7 @@ index 22f61b47f9e5..e1de1ff40bba 100644
 -- 
 2.37.2
 
-From 03bc16d2ed07c397a051ee0f08058517e3c7e59a Mon Sep 17 00:00:00 2001
+From 5417703cd0d0c25b77ff62175cfa9f43d92aa10c Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 28 Oct 2021 21:55:16 +0100
 Subject: [PATCH] media: i2c: Add driver for DW9719 VCM
@@ -8362,10 +8571,10 @@ Patchset: cameras
  create mode 100644 drivers/media/i2c/dw9719.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index f96b3dba903a..03452d847a52 100644
+index 6772c9d0eccc..a639e7ff0402 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -6002,6 +6002,13 @@ T:	git git://linuxtv.org/media_tree.git
+@@ -6163,6 +6163,13 @@ T:	git git://linuxtv.org/media_tree.git
  F:	Documentation/devicetree/bindings/media/i2c/dongwoon,dw9714.txt
  F:	drivers/media/i2c/dw9714.c
  
@@ -8849,360 +9058,7 @@ index 000000000000..8451c75b696b
 -- 
 2.37.2
 
-From 8792b2fe58ecf2b5a4d7195d7846dac21a740c9c Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Fri, 15 Jul 2022 23:48:00 +0200
-Subject: [PATCH] drivers/media/i2c: Fix DW9719 dependencies
-
-It should depend on VIDEO_DEV instead of VIDEO_V4L2.
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: cameras
----
- drivers/media/i2c/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/media/i2c/Kconfig b/drivers/media/i2c/Kconfig
-index 5c245f642ae3..50ea62e63784 100644
---- a/drivers/media/i2c/Kconfig
-+++ b/drivers/media/i2c/Kconfig
-@@ -808,7 +808,7 @@ config VIDEO_DW9714
- 
- config VIDEO_DW9719
- 	tristate "DW9719 lens voice coil support"
--	depends on I2C && VIDEO_V4L2
-+	depends on I2C && VIDEO_DEV
- 	select MEDIA_CONTROLLER
- 	select VIDEO_V4L2_SUBDEV_API
- 	select V4L2_ASYNC
--- 
-2.37.2
-
-From 498ae9f4a0e000ab0ee3eb140466f54d22ebbbac Mon Sep 17 00:00:00 2001
-From: Daniel Scally <djrscally@gmail.com>
-Date: Mon, 13 Dec 2021 22:38:17 +0000
-Subject: [PATCH] media: entity: Skip non-data links in graph iteration
-
-When iterating over the media graph, don't follow links that are not
-data links.
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Signed-off-by: Daniel Scally <djrscally@gmail.com>
-Patchset: cameras
----
- drivers/media/mc/mc-entity.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/media/mc/mc-entity.c b/drivers/media/mc/mc-entity.c
-index 8ab0913d8d82..a8631f74dcee 100644
---- a/drivers/media/mc/mc-entity.c
-+++ b/drivers/media/mc/mc-entity.c
-@@ -295,6 +295,12 @@ static void media_graph_walk_iter(struct media_graph *graph)
- 
- 	link = list_entry(link_top(graph), typeof(*link), list);
- 
-+	/* If the link is not a data link, don't follow it */
-+	if ((link->flags & MEDIA_LNK_FL_LINK_TYPE) != MEDIA_LNK_FL_DATA_LINK) {
-+		link_top(graph) = link_top(graph)->next;
-+		return;
-+	}
-+
- 	/* The link is not enabled so we do not follow. */
- 	if (!(link->flags & MEDIA_LNK_FL_ENABLED)) {
- 		link_top(graph) = link_top(graph)->next;
--- 
-2.37.2
-
-From ab99732bedda2cd5e8c97c22b682fb95f3e1dc4a Mon Sep 17 00:00:00 2001
-From: Daniel Scally <djrscally@gmail.com>
-Date: Mon, 13 Dec 2021 22:53:09 +0000
-Subject: [PATCH] media: media.h: Add new media link type
-
-To describe in the kernel the connection between devices and their
-supporting peripherals (for example, a camera sensor and the vcm
-driving the focusing lens for it), add a new type of media link
-to introduce the concept of these ancillary links.
-
-Add some elements to the uAPI documentation to explain the new link
-type, their purpose and some aspects of their current implementation.
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Signed-off-by: Daniel Scally <djrscally@gmail.com>
-Patchset: cameras
----
- .../media/mediactl/media-controller-model.rst   |  6 ++++++
- .../media/mediactl/media-types.rst              | 17 ++++++++++++-----
- include/uapi/linux/media.h                      |  1 +
- 3 files changed, 19 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/userspace-api/media/mediactl/media-controller-model.rst b/Documentation/userspace-api/media/mediactl/media-controller-model.rst
-index 222cb99debb5..78bfdfb2a322 100644
---- a/Documentation/userspace-api/media/mediactl/media-controller-model.rst
-+++ b/Documentation/userspace-api/media/mediactl/media-controller-model.rst
-@@ -33,3 +33,9 @@ are:
- 
- -  An **interface link** is a point-to-point bidirectional control
-    connection between a Linux Kernel interface and an entity.
-+
-+- An **ancillary link** is a point-to-point connection denoting that two
-+  entities form a single logical unit. For example this could represent the
-+  fact that a particular camera sensor and lens controller form a single
-+  physical module, meaning this lens controller drives the lens for this
-+  camera sensor.
-\ No newline at end of file
-diff --git a/Documentation/userspace-api/media/mediactl/media-types.rst b/Documentation/userspace-api/media/mediactl/media-types.rst
-index 0a26397bd01d..60747251d409 100644
---- a/Documentation/userspace-api/media/mediactl/media-types.rst
-+++ b/Documentation/userspace-api/media/mediactl/media-types.rst
-@@ -412,14 +412,21 @@ must be set for every pad.
- 	  is set by drivers and is read-only for applications.
- 
-     *  -  ``MEDIA_LNK_FL_LINK_TYPE``
--       -  This is a bitmask that defines the type of the link. Currently,
--	  two types of links are supported:
-+       -  This is a bitmask that defines the type of the link. The following
-+	  link types are currently supported:
- 
- 	  .. _MEDIA-LNK-FL-DATA-LINK:
- 
--	  ``MEDIA_LNK_FL_DATA_LINK`` if the link is between two pads
-+	  ``MEDIA_LNK_FL_DATA_LINK`` for links that represent a data connection
-+     between two pads.
- 
- 	  .. _MEDIA-LNK-FL-INTERFACE-LINK:
- 
--	  ``MEDIA_LNK_FL_INTERFACE_LINK`` if the link is between an
--	  interface and an entity
-+	  ``MEDIA_LNK_FL_INTERFACE_LINK`` for links that associate an entity to its
-+     interface.
-+
-+	  .. _MEDIA-LNK-FL-ANCILLARY-LINK:
-+
-+	  ``MEDIA_LNK_FL_ANCILLARY_LINK`` for links that represent a physical
-+     relationship between two entities. The link may or may not be ummutable, so
-+     applications must not assume either case.
-\ No newline at end of file
-diff --git a/include/uapi/linux/media.h b/include/uapi/linux/media.h
-index 200fa8462b90..afbae7213d35 100644
---- a/include/uapi/linux/media.h
-+++ b/include/uapi/linux/media.h
-@@ -226,6 +226,7 @@ struct media_pad_desc {
- #define MEDIA_LNK_FL_LINK_TYPE			(0xf << 28)
- #  define MEDIA_LNK_FL_DATA_LINK		(0 << 28)
- #  define MEDIA_LNK_FL_INTERFACE_LINK		(1 << 28)
-+#  define MEDIA_LNK_FL_ANCILLARY_LINK		(2 << 28)
- 
- struct media_link_desc {
- 	struct media_pad_desc source;
--- 
-2.37.2
-
-From 512b2e9c2dddd2924c95d5d9548ca89db1edefd1 Mon Sep 17 00:00:00 2001
-From: Daniel Scally <djrscally@gmail.com>
-Date: Mon, 13 Dec 2021 22:36:31 +0000
-Subject: [PATCH] media: entity: Add link_type_name() helper
-
-Now we have three types of media link, printing the right name during
-debug output is slightly more complicated. Add a helper function to
-make it easier.
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Signed-off-by: Daniel Scally <djrscally@gmail.com>
-Patchset: cameras
----
- drivers/media/mc/mc-entity.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/media/mc/mc-entity.c b/drivers/media/mc/mc-entity.c
-index a8631f74dcee..4bd80ce1a33d 100644
---- a/drivers/media/mc/mc-entity.c
-+++ b/drivers/media/mc/mc-entity.c
-@@ -44,6 +44,20 @@ static inline const char *intf_type(struct media_interface *intf)
- 	}
- };
- 
-+static inline const char *link_type_name(struct media_link *link)
-+{
-+	switch (link->flags & MEDIA_LNK_FL_LINK_TYPE) {
-+	case MEDIA_LNK_FL_DATA_LINK:
-+		return "data";
-+	case MEDIA_LNK_FL_INTERFACE_LINK:
-+		return "interface";
-+	case MEDIA_LNK_FL_ANCILLARY_LINK:
-+		return "ancillary";
-+	default:
-+		return "unknown";
-+	}
-+}
-+
- __must_check int __media_entity_enum_init(struct media_entity_enum *ent_enum,
- 					  int idx_max)
- {
-@@ -89,9 +103,7 @@ static void dev_dbg_obj(const char *event_name,  struct media_gobj *gobj)
- 
- 		dev_dbg(gobj->mdev->dev,
- 			"%s id %u: %s link id %u ==> id %u\n",
--			event_name, media_id(gobj),
--			media_type(link->gobj0) == MEDIA_GRAPH_PAD ?
--				"data" : "interface",
-+			event_name, media_id(gobj), link_type_name(link),
- 			media_id(link->gobj0),
- 			media_id(link->gobj1));
- 		break;
--- 
-2.37.2
-
-From ab787dfcd33ab0d1d1bc9c8faaf7b3a4b9a9c2cc Mon Sep 17 00:00:00 2001
-From: Daniel Scally <djrscally@gmail.com>
-Date: Mon, 13 Dec 2021 22:54:10 +0000
-Subject: [PATCH] media: entity: Add support for ancillary links
-
-Add functions to create ancillary links, so that they don't need to
-be manually created by users.
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Signed-off-by: Daniel Scally <djrscally@gmail.com>
-Patchset: cameras
----
- drivers/media/mc/mc-entity.c | 22 ++++++++++++++++++++++
- include/media/media-entity.h | 19 +++++++++++++++++++
- 2 files changed, 41 insertions(+)
-
-diff --git a/drivers/media/mc/mc-entity.c b/drivers/media/mc/mc-entity.c
-index 4bd80ce1a33d..1ff60d411ea9 100644
---- a/drivers/media/mc/mc-entity.c
-+++ b/drivers/media/mc/mc-entity.c
-@@ -1025,3 +1025,25 @@ void media_remove_intf_links(struct media_interface *intf)
- 	mutex_unlock(&mdev->graph_mutex);
- }
- EXPORT_SYMBOL_GPL(media_remove_intf_links);
-+
-+struct media_link *media_create_ancillary_link(struct media_entity *primary,
-+					       struct media_entity *ancillary)
-+{
-+	struct media_link *link;
-+
-+	link = media_add_link(&primary->links);
-+	if (!link)
-+		return ERR_PTR(-ENOMEM);
-+
-+	link->gobj0 = &primary->graph_obj;
-+	link->gobj1 = &ancillary->graph_obj;
-+	link->flags = MEDIA_LNK_FL_IMMUTABLE | MEDIA_LNK_FL_ENABLED |
-+		      MEDIA_LNK_FL_ANCILLARY_LINK;
-+
-+	/* Initialize graph object embedded in the new link */
-+	media_gobj_create(primary->graph_obj.mdev, MEDIA_GRAPH_LINK,
-+			  &link->graph_obj);
-+
-+	return link;
-+}
-+EXPORT_SYMBOL_GPL(media_create_ancillary_link);
-diff --git a/include/media/media-entity.h b/include/media/media-entity.h
-index 742918962d46..1d13b8939a11 100644
---- a/include/media/media-entity.h
-+++ b/include/media/media-entity.h
-@@ -1121,4 +1121,23 @@ void media_remove_intf_links(struct media_interface *intf);
- 	(((entity)->ops && (entity)->ops->operation) ?			\
- 	 (entity)->ops->operation((entity) , ##args) : -ENOIOCTLCMD)
- 
-+/**
-+ * media_create_ancillary_link() - create an ancillary link between two
-+ *				   instances of &media_entity
-+ *
-+ * @primary:	pointer to the primary &media_entity
-+ * @ancillary:	pointer to the ancillary &media_entity
-+ *
-+ * Create an ancillary link between two entities, indicating that they
-+ * represent two connected pieces of hardware that form a single logical unit.
-+ * A typical example is a camera lens controller being linked to the sensor that
-+ * it is supporting.
-+ *
-+ * The function sets both MEDIA_LNK_FL_ENABLED and MEDIA_LNK_FL_IMMUTABLE for
-+ * the new link.
-+ */
-+struct media_link *
-+media_create_ancillary_link(struct media_entity *primary,
-+			    struct media_entity *ancillary);
-+
- #endif
--- 
-2.37.2
-
-From ddc66e6de51574fb41902754928996c210710a0e Mon Sep 17 00:00:00 2001
-From: Daniel Scally <djrscally@gmail.com>
-Date: Fri, 26 Nov 2021 22:55:50 +0000
-Subject: [PATCH] media: v4l2-async: Create links during
- v4l2_async_match_notify()
-
-Upon an async fwnode match, there's some typical behaviour that the
-notifier and matching subdev will want to do. For example, a notifier
-representing a sensor matching to an async subdev representing its
-VCM will want to create an ancillary link to expose that relationship
-to userspace.
-
-To avoid lots of code in individual drivers, try to build these links
-within v4l2 core.
-
-Signed-off-by: Daniel Scally <djrscally@gmail.com>
-Patchset: cameras
----
- drivers/media/v4l2-core/v4l2-async.c | 31 ++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
-
-diff --git a/drivers/media/v4l2-core/v4l2-async.c b/drivers/media/v4l2-core/v4l2-async.c
-index 0404267f1ae4..436bd6900fd8 100644
---- a/drivers/media/v4l2-core/v4l2-async.c
-+++ b/drivers/media/v4l2-core/v4l2-async.c
-@@ -275,6 +275,24 @@ v4l2_async_nf_try_complete(struct v4l2_async_notifier *notifier)
- static int
- v4l2_async_nf_try_all_subdevs(struct v4l2_async_notifier *notifier);
- 
-+static int v4l2_async_create_ancillary_links(struct v4l2_async_notifier *n,
-+					     struct v4l2_subdev *sd)
-+{
-+	struct media_link *link = NULL;
-+
-+#if IS_ENABLED(CONFIG_MEDIA_CONTROLLER)
-+
-+	if (sd->entity.function != MEDIA_ENT_F_LENS &&
-+	    sd->entity.function != MEDIA_ENT_F_FLASH)
-+		return 0;
-+
-+	link = media_create_ancillary_link(&n->sd->entity, &sd->entity);
-+
-+#endif
-+
-+	return IS_ERR(link) ? PTR_ERR(link) : 0;
-+}
-+
- static int v4l2_async_match_notify(struct v4l2_async_notifier *notifier,
- 				   struct v4l2_device *v4l2_dev,
- 				   struct v4l2_subdev *sd,
-@@ -293,6 +311,19 @@ static int v4l2_async_match_notify(struct v4l2_async_notifier *notifier,
- 		return ret;
- 	}
- 
-+	/*
-+	 * Depending of the function of the entities involved, we may want to
-+	 * create links between them (for example between a sensor and its lens
-+	 * or between a sensor's source pad and the connected device's sink
-+	 * pad).
-+	 */
-+	ret = v4l2_async_create_ancillary_links(notifier, sd);
-+	if (ret) {
-+		v4l2_async_nf_call_unbind(notifier, sd, asd);
-+		v4l2_device_unregister_subdev(sd);
-+		return ret;
-+	}
-+
- 	/* Remove from the waiting list */
- 	list_del(&asd->list);
- 	sd->asd = asd;
--- 
-2.37.2
-
-From 9265a11f92a688baa1f820936e217bc8490c57c3 Mon Sep 17 00:00:00 2001
+From b4539e8c7d09c19dac7d6622a3c31e4ee368b10f Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Wed, 4 May 2022 23:21:45 +0100
 Subject: [PATCH] media: ipu3-cio2: Move functionality from .complete() to
@@ -9221,10 +9077,10 @@ Patchset: cameras
  1 file changed, 23 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c b/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
-index 0e9b0503b62a..50682a7b2a07 100644
+index dbdbdb648a0d..d0715144bf3e 100644
 --- a/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
 +++ b/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
-@@ -1382,7 +1382,10 @@ static int cio2_notifier_bound(struct v4l2_async_notifier *notifier,
+@@ -1383,7 +1383,10 @@ static int cio2_notifier_bound(struct v4l2_async_notifier *notifier,
  {
  	struct cio2_device *cio2 = to_cio2_device(notifier);
  	struct sensor_async_subdev *s_asd = to_sensor_asd(asd);
@@ -9235,7 +9091,7 @@ index 0e9b0503b62a..50682a7b2a07 100644
  
  	if (cio2->queue[s_asd->csi2.port].sensor)
  		return -EBUSY;
-@@ -1393,7 +1396,26 @@ static int cio2_notifier_bound(struct v4l2_async_notifier *notifier,
+@@ -1394,7 +1397,26 @@ static int cio2_notifier_bound(struct v4l2_async_notifier *notifier,
  	q->sensor = sd;
  	q->csi_rx_base = cio2->base + CIO2_REG_PIPE_BASE(q->csi2.port);
  
@@ -9263,7 +9119,7 @@ index 0e9b0503b62a..50682a7b2a07 100644
  }
  
  /* The .unbind callback */
-@@ -1407,50 +1429,9 @@ static void cio2_notifier_unbind(struct v4l2_async_notifier *notifier,
+@@ -1408,50 +1430,9 @@ static void cio2_notifier_unbind(struct v4l2_async_notifier *notifier,
  	cio2->queue[s_asd->csi2.port].sensor = NULL;
  }
  
@@ -9317,7 +9173,7 @@ index 0e9b0503b62a..50682a7b2a07 100644
 -- 
 2.37.2
 
-From 54b2514cecc9cb79754586cfb1a716251f91b5e1 Mon Sep 17 00:00:00 2001
+From 97636fb45ffd69fdbe4106982169709bf03530fb Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 2 Jun 2022 22:15:56 +0100
 Subject: [PATCH] media: ipu3-cio2: Re-add .complete() to ipu3-cio2
@@ -9335,10 +9191,10 @@ Patchset: cameras
  1 file changed, 9 insertions(+)
 
 diff --git a/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c b/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
-index 50682a7b2a07..ff79582a583d 100644
+index d0715144bf3e..3a25dfc696b2 100644
 --- a/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
 +++ b/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
-@@ -1429,9 +1429,18 @@ static void cio2_notifier_unbind(struct v4l2_async_notifier *notifier,
+@@ -1430,9 +1430,18 @@ static void cio2_notifier_unbind(struct v4l2_async_notifier *notifier,
  	cio2->queue[s_asd->csi2.port].sensor = NULL;
  }
  
@@ -9360,7 +9216,36 @@ index 50682a7b2a07..ff79582a583d 100644
 -- 
 2.37.2
 
-From 8a7173b053bb41d26fade409d7c169fcfeb25914 Mon Sep 17 00:00:00 2001
+From 2045d2e3f30af8b3fe7a18030b2bc366f4b1c24f Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Fri, 15 Jul 2022 23:48:00 +0200
+Subject: [PATCH] drivers/media/i2c: Fix DW9719 dependencies
+
+It should depend on VIDEO_DEV instead of VIDEO_V4L2.
+
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: cameras
+---
+ drivers/media/i2c/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/media/i2c/Kconfig b/drivers/media/i2c/Kconfig
+index 5c245f642ae3..50ea62e63784 100644
+--- a/drivers/media/i2c/Kconfig
++++ b/drivers/media/i2c/Kconfig
+@@ -808,7 +808,7 @@ config VIDEO_DW9714
+ 
+ config VIDEO_DW9719
+ 	tristate "DW9719 lens voice coil support"
+-	depends on I2C && VIDEO_V4L2
++	depends on I2C && VIDEO_DEV
+ 	select MEDIA_CONTROLLER
+ 	select VIDEO_V4L2_SUBDEV_API
+ 	select V4L2_ASYNC
+-- 
+2.37.2
+
+From 73bf1e7fc5e71751a6b747d5de20e565604522e6 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Sat, 29 May 2021 17:47:38 +1000
 Subject: [PATCH] ACPI: Add quirk for Surface Laptop 4 AMD missing irq 7
@@ -9383,7 +9268,7 @@ Patchset: amd-gpio
  1 file changed, 17 insertions(+)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 0d01e7f5078c..2b06cf5f2b1f 100644
+index 907cc98b1938..0116d27b29ea 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
 @@ -22,6 +22,7 @@
@@ -9394,7 +9279,7 @@ index 0d01e7f5078c..2b06cf5f2b1f 100644
  
  #include <asm/e820/api.h>
  #include <asm/irqdomain.h>
-@@ -1152,6 +1153,17 @@ static void __init mp_config_acpi_legacy_irqs(void)
+@@ -1234,6 +1235,17 @@ static void __init mp_config_acpi_legacy_irqs(void)
  	}
  }
  
@@ -9412,7 +9297,7 @@ index 0d01e7f5078c..2b06cf5f2b1f 100644
  /*
   * Parse IOAPIC related entries in MADT
   * returns 0 on success, < 0 on error
-@@ -1207,6 +1219,11 @@ static int __init acpi_parse_madt_ioapic_entries(void)
+@@ -1289,6 +1301,11 @@ static int __init acpi_parse_madt_ioapic_entries(void)
  		acpi_sci_ioapic_setup(acpi_gbl_FADT.sci_interrupt, 0, 0,
  				      acpi_gbl_FADT.sci_interrupt);
  
@@ -9427,7 +9312,7 @@ index 0d01e7f5078c..2b06cf5f2b1f 100644
 -- 
 2.37.2
 
-From 4ee13359ba1a15044800b1451f3ab951cf5d462a Mon Sep 17 00:00:00 2001
+From 6bbad3dfd4d1a28db24ed3ce0a011a824fb2a2dd Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Thu, 3 Jun 2021 14:04:26 +0200
 Subject: [PATCH] ACPI: Add AMD 13" Surface Laptop 4 model to irq 7 override
@@ -9442,10 +9327,10 @@ Patchset: amd-gpio
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 2b06cf5f2b1f..caaec200bea2 100644
+index 0116d27b29ea..af102c6f8e5b 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -1155,12 +1155,19 @@ static void __init mp_config_acpi_legacy_irqs(void)
+@@ -1237,12 +1237,19 @@ static void __init mp_config_acpi_legacy_irqs(void)
  
  static const struct dmi_system_id surface_quirk[] __initconst = {
  	{

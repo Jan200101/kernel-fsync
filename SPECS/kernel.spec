@@ -122,15 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.18.19
-%define patchversion 5.18
+%define specversion 5.19.4
+%define patchversion 5.19
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.18.19
+%define tarfile_release 5.19.4
 # This is needed to do merge window version magic
-%define patchlevel 18
-# allow pkg_release to have configurable %%{?dist} tag
+%define patchlevel 19
+# This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
+# This defines the kabi tarball version
+%define kabiversion 5.19.4
 
 #
 # End of genspec.sh variables
@@ -608,6 +610,7 @@ BuildRequires: opencsd-devel >= 1.0.0
 %if %{with_tools}
 BuildRequires: gettext ncurses-devel
 BuildRequires: libcap-devel libcap-ng-devel
+BuildRequires: libtracefs-devel
 %ifnarch s390x
 BuildRequires: pciutils-devel
 %endif
@@ -813,6 +816,7 @@ Source81: process_configs.sh
 Source82: update_scripts.sh
 
 Source84: mod-internal.list
+Source85: mod-partner.list
 
 Source100: rheldup3.x509
 Source101: rhelkpatch1.x509
@@ -829,8 +833,8 @@ Source211: Module.kabi_dup_ppc64le
 Source212: Module.kabi_dup_s390x
 Source213: Module.kabi_dup_x86_64
 
-Source300: kernel-abi-stablelists-%{specversion}-%{pkgrelease}.tar.bz2
-Source301: kernel-kabi-dw-%{specversion}-%{pkgrelease}.tar.bz2
+Source300: kernel-abi-stablelists-%{kabiversion}.tar.bz2
+Source301: kernel-kabi-dw-%{kabiversion}.tar.bz2
 
 # Sources for kernel-tools
 Source2000: cpupower.service
@@ -882,14 +886,15 @@ The kernel meta package
 
 #
 # This macro does requires, provides, conflicts, obsoletes for a kernel package.
-#	%%kernel_reqprovconf <subpackage>
+#	%%kernel_reqprovconf [-o] <subpackage>
 # It uses any kernel_<subpackage>_conflicts and kernel_<subpackage>_obsoletes
 # macros defined above.
 #
-%define kernel_reqprovconf \
+%define kernel_reqprovconf(o) \
+%if %{-o:0}%{!-o:1}\
 Provides: kernel = %{specversion}-%{pkg_release}\
+%endif\
 Provides: kernel-%{_target_cpu} = %{specversion}-%{pkg_release}%{?1:+%{1}}\
-Provides: kernel-drm-nouveau = 16\
 Provides: kernel-uname-r = %{KVERREL}%{?1:+%{1}}\
 Requires(pre): %{kernel_prereq}\
 Requires(pre): %{initrd_prereq}\
@@ -1043,6 +1048,15 @@ This package provides debug information for package kernel-tools.
 # the leading .*, because of find-debuginfo.sh's buggy handling
 # of matching the pattern against the symlinks file.
 %{expand:%%global _find_debuginfo_opts %{?_find_debuginfo_opts} -p '.*%%{_bindir}/centrino-decode(\.debug)?|.*%%{_bindir}/powernow-k8-decode(\.debug)?|.*%%{_bindir}/cpupower(\.debug)?|.*%%{_libdir}/libcpupower.*|.*%%{_bindir}/turbostat(\.debug)?|.*%%{_bindir}/x86_energy_perf_policy(\.debug)?|.*%%{_bindir}/tmon(\.debug)?|.*%%{_bindir}/lsgpio(\.debug)?|.*%%{_bindir}/gpio-hammer(\.debug)?|.*%%{_bindir}/gpio-event-mon(\.debug)?|.*%%{_bindir}/gpio-watch(\.debug)?|.*%%{_bindir}/iio_event_monitor(\.debug)?|.*%%{_bindir}/iio_generic_buffer(\.debug)?|.*%%{_bindir}/lsiio(\.debug)?|.*%%{_bindir}/intel-speed-select(\.debug)?|.*%%{_bindir}/page_owner_sort(\.debug)?|.*%%{_bindir}/slabinfo(\.debug)?|.*%%{_sbindir}/intel_sdsi(\.debug)?|XXX' -o kernel-tools-debuginfo.list}
+
+%package -n rtla
+Summary: RTLA: Real-Time Linux Analysis tools 
+%description -n rtla
+The rtla tool is a meta-tool that includes a set of commands that
+aims to analyze the real-time properties of Linux. But, instead of
+testing Linux as a black box, rtla leverages kernel tracing
+capabilities to provide precise information about the properties
+and root causes of unexpected results.
 
 # with_tools
 %endif
@@ -1272,9 +1286,9 @@ The meta-package for the %{1} kernel\
 #
 # This macro creates a kernel-<subpackage> and its -devel and -debuginfo too.
 #	%%define variant_summary The Linux kernel compiled for <configuration>
-#	%%kernel_variant_package [-n <pretty-name>] [-m] <subpackage>
+#	%%kernel_variant_package [-n <pretty-name>] [-m] [-o] <subpackage>
 #
-%define kernel_variant_package(n:m) \
+%define kernel_variant_package(n:mo) \
 %package %{?1:%{1}-}core\
 Summary: %{variant_summary}\
 Provides: kernel-%{?1:%{1}-}core-uname-r = %{KVERREL}%{?1:+%{1}}\
@@ -1282,7 +1296,7 @@ Provides: installonlypkg(kernel)\
 %if %{-m:1}%{!-m:0}\
 Requires: kernel-core-uname-r = %{KVERREL}\
 %endif\
-%{expand:%%kernel_reqprovconf}\
+%{expand:%%kernel_reqprovconf %{?1:%{1}} %{-o:%{-o}}}\
 %if %{?1:1} %{!?1:0} \
 %{expand:%%kernel_meta_package %{?1:%{1}}}\
 %endif\
@@ -1292,8 +1306,32 @@ Requires: kernel-core-uname-r = %{KVERREL}\
 %{expand:%%kernel_modules_extra_package %{?1:%{1}} %{!?{-n}:%{1}}%{?{-n}:%{-n*}} %{-m:%{-m}}}\
 %if %{-m:0}%{!-m:1}\
 %{expand:%%kernel_modules_internal_package %{?1:%{1}} %{!?{-n}:%{1}}%{?{-n}:%{-n*}}}\
+%if 0%{!?fedora:1}\
+%{expand:%%kernel_modules_partner_package %{?1:%{1}} %{!?{-n}:%{1}}%{?{-n}:%{-n*}}}\
+%endif\
 %{expand:%%kernel_debuginfo_package %{?1:%{1}}}\
 %endif\
+%{nil}
+
+#
+# This macro creates a kernel-<subpackage>-modules-partner package.
+#	%%kernel_modules_partner_package <subpackage> <pretty-name>
+#
+%define kernel_modules_partner_package() \
+%package %{?1:%{1}-}modules-partner\
+Summary: Extra kernel modules to match the %{?2:%{2} }kernel\
+Group: System Environment/Kernel\
+Provides: kernel%{?1:-%{1}}-modules-partner-%{_target_cpu} = %{version}-%{release}\
+Provides: kernel%{?1:-%{1}}-modules-partner-%{_target_cpu} = %{version}-%{release}%{?1:+%{1}}\
+Provides: kernel%{?1:-%{1}}-modules-partner = %{version}-%{release}%{?1:+%{1}}\
+Provides: installonlypkg(kernel-module)\
+Provides: kernel%{?1:-%{1}}-modules-partner-uname-r = %{KVERREL}%{?1:+%{1}}\
+Requires: kernel-uname-r = %{KVERREL}%{?1:+%{1}}\
+Requires: kernel%{?1:-%{1}}-modules-uname-r = %{KVERREL}%{?1:+%{1}}\
+AutoReq: no\
+AutoProv: yes\
+%description %{?1:%{1}-}modules-partner\
+This package provides kernel modules for the %{?2:%{2} }kernel package for Red Hat partners usage.\
 %{nil}
 
 # Now, each variant package.
@@ -1308,7 +1346,7 @@ Cortex-A15 devices with LPAE and HW virtualisation support
 
 %if %{with_zfcpdump}
 %define variant_summary The Linux kernel compiled for zfcpdump usage
-%kernel_variant_package zfcpdump
+%kernel_variant_package -o zfcpdump
 %description zfcpdump-core
 The kernel package contains the Linux kernel (vmlinuz) for use by the
 zfcpdump infrastructure.
@@ -1883,10 +1921,10 @@ BuildKernel() {
     rm -f $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/scripts/spdxcheck.py
 
 %ifarch s390x
-    # CONFIG_EXPOLINE_EXTERN=y produces arch/s390/lib/expoline.o
+    # CONFIG_EXPOLINE_EXTERN=y produces arch/s390/lib/expoline/expoline.o
     # which is needed during external module build.
-    if [ -f arch/s390/lib/expoline.o ]; then
-      cp -a --parents arch/s390/lib/expoline.o $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
+    if [ -f arch/s390/lib/expoline/expoline.o ]; then
+      cp -a --parents arch/s390/lib/expoline/expoline.o $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
     fi
 %endif
 
@@ -2069,6 +2107,10 @@ BuildKernel() {
     %{SOURCE20} $RPM_BUILD_ROOT lib/modules/$KernelVer $(realpath configs/mod-extra.list)
     # Identify modules in the kernel-modules-extras package
     %{SOURCE20} $RPM_BUILD_ROOT lib/modules/$KernelVer %{SOURCE84} internal
+%if 0%{!?fedora:1}
+    # Identify modules in the kernel-modules-partner package
+    %{SOURCE20} $RPM_BUILD_ROOT lib/modules/$KernelVer %{SOURCE85} partner
+%endif
 
     #
     # Generate the kernel-core and kernel-modules files lists
@@ -2086,6 +2128,10 @@ BuildKernel() {
     xargs rm -rf < mod-extra.list
     # don't include anything going int kernel-modules-internal in the file lists
     xargs rm -rf < mod-internal.list
+%if 0%{!?fedora:1}
+    # don't include anything going int kernel-modules-partner in the file lists
+    xargs rm -rf < mod-partner.list
+%endif
 
     if [ $DoModules -eq 1 ]; then
 	# Find all the module files and filter them out into the core and
@@ -2141,6 +2187,9 @@ BuildKernel() {
     sed -e 's/^lib*/\/lib/' %{?zipsed} $RPM_BUILD_ROOT/modules.list >> ../kernel${Variant:+-${Variant}}-core.list
     sed -e 's/^lib*/\/lib/' %{?zipsed} $RPM_BUILD_ROOT/mod-extra.list >> ../kernel${Variant:+-${Variant}}-modules-extra.list
     sed -e 's/^lib*/\/lib/' %{?zipsed} $RPM_BUILD_ROOT/mod-internal.list >> ../kernel${Variant:+-${Variant}}-modules-internal.list
+%if 0%{!?fedora:1}
+    sed -e 's/^lib*/\/lib/' %{?zipsed} $RPM_BUILD_ROOT/mod-partner.list >> ../kernel${Variant:+-${Variant}}-modules-partner.list
+%endif
 
     # Cleanup
     rm -f $RPM_BUILD_ROOT/k-d.list
@@ -2148,6 +2197,9 @@ BuildKernel() {
     rm -f $RPM_BUILD_ROOT/module-dirs.list
     rm -f $RPM_BUILD_ROOT/mod-extra.list
     rm -f $RPM_BUILD_ROOT/mod-internal.list
+%if 0%{!?fedora:1}
+    rm -f $RPM_BUILD_ROOT/mod-partner.list
+%endif
 
 %if %{signmodules}
     if [ $DoModules -eq 1 ]; then
@@ -2258,7 +2310,7 @@ chmod +x tools/perf/check-headers.sh
 %endif
 
 %global tools_make \
-  %{make} CFLAGS="${RPM_OPT_FLAGS}" LDFLAGS="%{__global_ldflags}" %{?make_opts}
+  CFLAGS="${RPM_OPT_FLAGS}" LDFLAGS="%{__global_ldflags}" %{make} %{?make_opts}
 
 %if %{with_tools}
 %ifarch %{cpupowerarchs}
@@ -2279,10 +2331,10 @@ chmod +x tools/power/cpupower/utils/version-gen.sh
    %{tools_make}
    popd
    pushd tools/power/x86/intel-speed-select
-   %{make} CFLAGS+="-D_GNU_SOURCE -Iinclude -I/usr/include/libnl3"
+   %{tools_make}
    popd
    pushd tools/arch/x86/intel_sdsi
-   %{tools_make}
+   %{tools_make} CFLAGS="${RPM_OPT_FLAGS}"
    popd
 %endif
 %endif
@@ -2298,6 +2350,9 @@ popd
 # build VM tools
 pushd tools/vm/
 %{tools_make} slabinfo page_owner_sort
+popd
+pushd tools/tracing/rtla
+%{tools_make}
 popd
 %endif
 
@@ -2547,10 +2602,10 @@ install -m644 %{SOURCE2001} %{buildroot}%{_sysconfdir}/sysconfig/cpupower
    %{tools_make} DESTDIR=%{buildroot} install
    popd
    pushd tools/power/x86/intel-speed-select
-   %{tools_make} CFLAGS+="-D_GNU_SOURCE -Iinclude -I/usr/include/libnl3" DESTDIR=%{buildroot} install
+   %{tools_make} DESTDIR=%{buildroot} install
    popd
    pushd tools/arch/x86/intel_sdsi
-   %{tools_make} DESTDIR=%{buildroot} install
+   %{tools_make} CFLAGS="${RPM_OPT_FLAGS}" DESTDIR=%{buildroot} install
    popd
 %endif
 pushd tools/thermal/tmon
@@ -2572,6 +2627,16 @@ popd
 pushd tools/vm/
 install -m755 slabinfo %{buildroot}%{_bindir}/slabinfo
 install -m755 page_owner_sort %{buildroot}%{_bindir}/page_owner_sort
+popd
+pushd tools/tracing/rtla/
+%{tools_make} DESTDIR=%{buildroot} install
+rm -f %{buildroot}%{_bindir}/osnoise
+rm -f %{buildroot}%{_bindir}/timerlat
+(cd %{buildroot}
+
+        ln -sf rtla ./%{_bindir}/osnoise
+        ln -sf rtla ./%{_bindir}/timerlat
+)
 popd
 %endif
 
@@ -2679,6 +2744,10 @@ popd
 # a far more sophisticated hardlink implementation.
 # https://github.com/projectatomic/rpm-ostree/commit/58a79056a889be8814aa51f507b2c7a4dccee526
 #
+# The deletion of *.hardlink-temporary files is a temporary workaround
+# for this bug in the hardlink binary (fixed in util-linux 2.38):
+# https://github.com/util-linux/util-linux/issues/1602
+#
 %define kernel_devel_post() \
 %{expand:%%post %{?1:%{1}-}devel}\
 if [ -f /etc/sysconfig/kernel ]\
@@ -2690,7 +2759,9 @@ then\
     (cd /usr/src/kernels/%{KVERREL}%{?1:+%{1}} &&\
      /usr/bin/find . -type f | while read f; do\
        hardlink -c /usr/src/kernels/*%{?dist}.*/$f $f > /dev/null\
-     done)\
+     done;\
+     /usr/bin/find /usr/src/kernels -type f -name '*.hardlink-temporary' -delete\
+    )\
 fi\
 %{nil}
 
@@ -2717,6 +2788,19 @@ fi\
 /sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
 %{nil}\
 %{expand:%%postun %{?1:%{1}-}modules-internal}\
+/sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
+%{nil}
+
+#
+# This macro defines a %%post script for a kernel*-modules-partner package.
+# It also defines a %%postun script that does the same thing.
+#	%%kernel_modules_partner_post [<subpackage>]
+#
+%define kernel_modules_partner_post() \
+%{expand:%%post %{?1:%{1}-}modules-partner}\
+/sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
+%{nil}\
+%{expand:%%postun %{?1:%{1}-}modules-partner}\
 /sbin/depmod -a %{KVERREL}%{?1:+%{1}}\
 %{nil}
 
@@ -2770,6 +2854,9 @@ rm -f %{_localstatedir}/lib/rpm-state/%{name}/installing_core_%{KVERREL}%{?1:+%{
 %{expand:%%kernel_modules_post %{?-v*}}\
 %{expand:%%kernel_modules_extra_post %{?-v*}}\
 %{expand:%%kernel_modules_internal_post %{?-v*}}\
+%if 0%{!?fedora:1}\
+%{expand:%%kernel_modules_partner_post %{?-v*}}\
+%endif\
 %{expand:%%kernel_variant_posttrans %{?-v*}}\
 %{expand:%%post %{?-v*:%{-v*}-}core}\
 %{-r:\
@@ -2824,6 +2911,7 @@ fi
 %if %{with_headers}
 %files headers
 /usr/include/*
+%exclude %{_includedir}/cpufreq.h
 %endif
 
 %if %{with_cross_headers}
@@ -2928,6 +3016,19 @@ fi
 %{_libdir}/libcpupower.so
 %{_includedir}/cpufreq.h
 %endif
+
+%files -n rtla
+%{_bindir}/rtla
+%{_bindir}/osnoise
+%{_bindir}/timerlat
+%{_mandir}/man1/rtla-osnoise-hist.1.gz
+%{_mandir}/man1/rtla-osnoise-top.1.gz
+%{_mandir}/man1/rtla-osnoise.1.gz
+%{_mandir}/man1/rtla-timerlat-hist.1.gz
+%{_mandir}/man1/rtla-timerlat-top.1.gz
+%{_mandir}/man1/rtla-timerlat.1.gz
+%{_mandir}/man1/rtla.1.gz
+
 # with_tools
 %endif
 
@@ -3022,6 +3123,9 @@ fi
 %{expand:%%files -f kernel-%{?3:%{3}-}modules-extra.list %{?3:%{3}-}modules-extra}\
 %config(noreplace) /etc/modprobe.d/*-blacklist.conf\
 %{expand:%%files -f kernel-%{?3:%{3}-}modules-internal.list %{?3:%{3}-}modules-internal}\
+%if 0%{!?fedora:1}\
+%{expand:%%files -f kernel-%{?3:%{3}-}modules-partner.list %{?3:%{3}-}modules-partner}\
+%endif\
 %if %{with_debuginfo}\
 %ifnarch noarch\
 %{expand:%%files -f debuginfo%{?3}.list %{?3:%{3}-}debuginfo}\
@@ -3064,150 +3168,217 @@ fi
 #
 #
 %changelog
-* Tue Aug 23 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.18.19-201.fsync
-- Linux v5.18.19 futex2 zen openrgb
+* Sat Aug 27 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.4-201.fsync
+- Linux v5.19.4 futex2 zen openrgb
 
+* Thu Aug 25 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.4-0]
+- Linux v5.19.4
 
-* Sun Aug 21 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.19-200]
-- v5.18.19 rebase
-* Wed Aug 17 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.18-0]
-- Config updates for 5.19.2 (Justin M. Forbes)
-- Bluetooth: hci_event: Fix vendor (unknown) opcode status handling (Hans de Goede)
-- Bluetooth: hci_sync: Fix resuming scan after suspend resume (Zhengping Jiang)
+* Sun Aug 21 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.3-0]
+- v5.19.3 rebase
 
-* Thu Aug 11 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.17-0]
-- netfilter: nf_tables: do not allow RULE_ID to refer to another chain (Thadeu Lima de Souza Cascardo)
-- netfilter: nf_tables: do not allow CHAIN_ID to refer to another table (Thadeu Lima de Souza Cascardo)
-- netfilter: nf_tables: do not allow SET_ID to refer to another table (Thadeu Lima de Souza Cascardo)
-- net_sched: cls_route: remove from list when handle is 0 (Thadeu Lima de Souza Cascardo)
-- posix-cpu-timers: Cleanup CPU timers before freeing them during exec (Thadeu Lima de Souza Cascardo)
-- Linux v5.18.16 (Justin M. Forbes)
+* Wed Aug 17 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.2-0]
+- v5.19.2 rebase
 
-* Wed Aug 03 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.16-0]
-- Linux v5.18.16
+* Thu Aug 11 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.1-0]
+- v5.19.1 rebase
 
-* Sat Jul 30 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.15-0]
+* Tue Aug 02 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-65]
+- redhat/configs: Fix rm warning on config warnings (Eric Chanudet)
+- redhat/Makefile: Deprecate PREBUILD_GIT_ONLY variable (Prarit Bhargava)
+- redhat/Makefile: Deprecate SINGLE_TARBALL variable (Prarit Bhargava)
+- redhat/Makefile: Deprecate GIT variable (Prarit Bhargava)
+- Update CONFIG_LOCKDEP_CHAINS_BITS to 18 (cmurf)
+- Add new FIPS module name and version configs (Vladis Dronov)
+- redhat/configs/fedora: Make PowerPC's nx-gzip buildin (Jakub Čajka)
+
+* Fri Jul 29 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc8.6e2c0490769e.61]
+- omit unused Provides (Dan Horák)
+- self-test: Add test for DIST=".eln" (Prarit Bhargava)
+
+* Wed Jul 27 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc8.39c3c396f813.59]
+- redhat: Enable CONFIG_LZ4_COMPRESS on Fedora (Prarit Bhargava)
+
+* Mon Jul 25 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc8.58]
 - fedora: armv7: enable MMC_STM32_SDMMC (Peter Robinson)
 
-* Fri Jul 22 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.13-0]
-- um: Add missing apply_returns() (Peter Zijlstra)
-- x86/bugs: Remove apostrophe typo (Kim Phillips)
-- tools headers cpufeatures: Sync with the kernel sources (Arnaldo Carvalho de Melo)
-- tools arch x86: Sync the msr-index.h copy with the kernel sources (Arnaldo Carvalho de Melo)
-- KVM: emulate: do not adjust size of fastop and setcc subroutines (Paolo Bonzini)
-- x86/kvm: fix FASTOP_SIZE when return thunks are enabled (Thadeu Lima de Souza Cascardo)
-- efi/x86: use naked RET on mixed mode call wrapper (Thadeu Lima de Souza Cascardo)
-- x86/speculation: Use DECLARE_PER_CPU for x86_spec_ctrl_current (Nathan Chancellor)
-- x86/asm/32: Fix ANNOTATE_UNRET_SAFE use on 32-bit (Jiri Slaby)
-- fedora: Also enable efifb on aarch64 for Nvidia (Javier Martinez Canillas)
-- Turn on configs for retbleed (Justin M. Forbes)
+* Sat Jul 23 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc7.70664fc10c0d.56]
+- .gitlab-ci.yaml: Add test for dist-get-buildreqs target (Prarit Bhargava)
+- redhat/docs: Add information on build dependencies (Prarit Bhargava)
+- redhat/Makefile: Add better pass message for dist-get-buildreqs (Prarit Bhargava)
+- redhat/Makefile: Provide a better message for system-sb-certs (Prarit Bhargava)
+- redhat/Makefile: Change dist-buildreq-check to a non-blocking target (Prarit Bhargava)
 
-* Tue Jul 12 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.11-0]
-- x86/static_call: Serialize __static_call_fixup() properly (Thomas Gleixner)
-- x86/speculation: Disable RRSBA behavior (Pawan Gupta)
-- x86/kexec: Disable RET on kexec (Konrad Rzeszutek Wilk)
-- x86/bugs: Do not enable IBPB-on-entry when IBPB is not supported (Thadeu Lima de Souza Cascardo)
-- x86/entry: Move PUSH_AND_CLEAR_REGS() back into error_entry (Peter Zijlstra)
-- x86/bugs: Add Cannon lake to RETBleed affected CPU list (Pawan Gupta)
-- x86/retbleed: Add fine grained Kconfig knobs (Peter Zijlstra)
-- x86/cpu/amd: Enumerate BTC_NO (Andrew Cooper)
-- x86/common: Stamp out the stepping madness (Peter Zijlstra)
-- KVM: VMX: Prevent RSB underflow before vmenter (Josh Poimboeuf)
-- x86/speculation: Fill RSB on vmexit for IBRS (Josh Poimboeuf)
-- KVM: VMX: Fix IBRS handling after vmexit (Josh Poimboeuf)
-- KVM: VMX: Prevent guest RSB poisoning attacks with eIBRS (Josh Poimboeuf)
-- KVM: VMX: Convert launched argument to flags (Josh Poimboeuf)
-- KVM: VMX: Flatten __vmx_vcpu_run() (Josh Poimboeuf)
-- objtool: Re-add UNWIND_HINT_{SAVE_RESTORE} (Josh Poimboeuf)
-- x86/speculation: Remove x86_spec_ctrl_mask (Josh Poimboeuf)
-- x86/speculation: Use cached host SPEC_CTRL value for guest entry/exit (Josh Poimboeuf)
-- x86/speculation: Fix SPEC_CTRL write on SMT state change (Josh Poimboeuf)
-- x86/speculation: Fix firmware entry SPEC_CTRL handling (Josh Poimboeuf)
-- x86/speculation: Fix RSB filling with CONFIG_RETPOLINE=n (Josh Poimboeuf)
-- x86/cpu/amd: Add Spectral Chicken (Peter Zijlstra)
-- objtool: Add entry UNRET validation (Thadeu Lima de Souza Cascardo)
-- x86/bugs: Do IBPB fallback check only once (Josh Poimboeuf)
-- x86/bugs: Add retbleed=ibpb (Peter Zijlstra)
-- x86/xen: Add UNTRAIN_RET (Peter Zijlstra)
-- x86/xen: Rename SYS* entry points (Peter Zijlstra)
-- objtool: Update Retpoline validation (Peter Zijlstra)
-- intel_idle: Disable IBRS during long idle (Peter Zijlstra)
-- x86/bugs: Report Intel retbleed vulnerability (Peter Zijlstra)
-- x86/bugs: Split spectre_v2_select_mitigation() and spectre_v2_user_select_mitigation() (Peter Zijlstra)
-- x86/speculation: Add spectre_v2=ibrs option to support Kernel IBRS (Pawan Gupta)
-- x86/bugs: Optimize SPEC_CTRL MSR writes (Peter Zijlstra)
-- x86/entry: Add kernel IBRS implementation (Thadeu Lima de Souza Cascardo)
-- x86/bugs: Keep a per-CPU IA32_SPEC_CTRL value (Peter Zijlstra)
-- x86/bugs: Enable STIBP for JMP2RET (Kim Phillips)
-- x86/bugs: Add AMD retbleed= boot parameter (Alexandre Chartre)
-- x86/bugs: Report AMD retbleed vulnerability (Alexandre Chartre)
-- x86: Add magic AMD return-thunk (Thadeu Lima de Souza Cascardo)
-- objtool: Treat .text.__x86.* as noinstr (Peter Zijlstra)
-- x86/entry: Avoid very early RET (Peter Zijlstra)
-- x86: Use return-thunk in asm code (Peter Zijlstra)
-- x86/sev: Avoid using __x86_return_thunk (Kim Phillips)
-- x86/vsyscall_emu/64: Don't use RET in vsyscall emulation (Peter Zijlstra)
-- x86/kvm: Fix SETcc emulation for return thunks (Peter Zijlstra)
-- x86/bpf: Use alternative RET encoding (Peter Zijlstra)
-- x86/ftrace: Use alternative RET encoding (Peter Zijlstra)
-- x86,static_call: Use alternative RET encoding (Peter Zijlstra)
-- objtool: skip non-text sections when adding return-thunk sites (Thadeu Lima de Souza Cascardo)
-- x86,objtool: Create .return_sites (Peter Zijlstra)
-- x86: Undo return-thunk damage (Peter Zijlstra)
-- x86/retpoline: Use -mfunction-return (Peter Zijlstra)
-- x86/retpoline: Swizzle retpoline thunk (Peter Zijlstra)
-- x86/retpoline: Cleanup some #ifdefery (Peter Zijlstra)
-- x86/cpufeatures: Move RETPOLINE flags to word 11 (Peter Zijlstra)
-- x86/kvm/vmx: Make noinstr clean (Peter Zijlstra)
-- x86/entry: Remove skip_r11rcx (Peter Zijlstra)
-- x86/entry: Don't call error_entry() for XENPV (Lai Jiangshan)
-- x86/entry: Move PUSH_AND_CLEAR_REGS out of error_entry() (Lai Jiangshan)
-- x86/entry: Switch the stack after error_entry() returns (Lai Jiangshan)
-- x86/traps: Use pt_regs directly in fixup_bad_iret() (Lai Jiangshan)
+* Fri Jul 22 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc7.68e77ffbfd06.55]
+- create-data: Parallelize spec file data (Prarit Bhargava)
+- create-data.sh: Store SOURCES Makefile variable (Prarit Bhargava)
+- redhat/Makefile: Split up setup-source target (Prarit Bhargava)
+- create-data.sh: Redefine varfilename (Prarit Bhargava)
+- create-data.sh: Parallelize variable file creation (Prarit Bhargava)
+- redhat/configs: Enable CONFIG_LZ4_COMPRESS (Prarit Bhargava)
+- redhat/docs: Update brew information (Prarit Bhargava)
+- redhat/Makefile: Fix eln BUILD_TARGET (Prarit Bhargava)
+- redhat/Makefile: Set BUILD_TARGET for dist-brew (Prarit Bhargava)
+- kernel.spec.template: update (s390x) expoline.o path (Joe Lawrence)
 
-* Thu Jul 07 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.10-0]
-- netfilter: nf_tables: stricter validation of element data (Pablo Neira Ayuso)
-- Revert "Revert "smb3: use netname when available on secondary channels"" (Justin M. Forbes)
-- Revert "Revert "smb3: fix empty netname context on secondary channels"" (Justin M. Forbes)
+* Tue Jul 19 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc7.ca85855bdcae.53]
+- arm64: config: Enable DRM_V3D (Nicolas Saenz Julienne)
+- ARM: configs: Enable DRM_V3D (Peter Robinson)
+- ARM: dts: bcm2711: Enable V3D (Peter Robinson)
+- drm/v3d: Add support for bcm2711 (Peter Robinson)
+- drm/v3d: Get rid of pm code (Peter Robinson)
+- dt-bindings: gpu: v3d: Add BCM2711's compatible (Peter Robinson)
+- soc: bcm: bcm2835-power: Bypass power_on/off() calls (Nicolas Saenz Julienne)
+- soc: bcm: bcm2835-power: Add support for BCM2711's RPiVid ASB (Stefan Wahren)
+- soc: bcm: bcm2835-power: Resolve ASB register macros (Stefan Wahren)
+- soc: bcm: bcm2835-power: Refactor ASB control (Stefan Wahren)
+- mfd: bcm2835-pm: Add support for BCM2711 (Stefan Wahren)
+- mfd: bcm2835-pm: Use 'reg-names' to get resources (Nicolas Saenz Julienne)
+- ARM: dts: bcm2711: Use proper compatible in PM/Watchdog node (Nicolas Saenz Julienne)
+- ARM: dts: bcm2835/bcm2711: Introduce reg-names in watchdog node (Nicolas Saenz Julienne)
+- dt-bindings: soc: bcm: bcm2835-pm: Add support for bcm2711 (Stefan Wahren)
+- dt-bindings: soc: bcm: bcm2835-pm: Introduce reg-names (Nicolas Saenz Julienne)
+- dt-bindings: soc: bcm: bcm2835-pm: Convert bindings to DT schema (Nicolas Saenz Julienne)
+- drm: Prevent drm_copy_field() to attempt copying a NULL pointer (Javier Martinez Canillas)
+- drm: Use size_t type for len variable in drm_copy_field() (Javier Martinez Canillas)
+- fedora: enable BCM_NET_PHYPTP (Peter Robinson)
+- net: phy: Add support for 1PPS out and external timestamps (Jonathan Lemon)
+- net: phy: broadcom: Add PTP support for some Broadcom PHYs. (Jonathan Lemon)
+- net: phy: broadcom: Add Broadcom PTP hooks to bcm-phy-lib (Jonathan Lemon)
+- Fedora 5.19 configs update part 2 (Justin M. Forbes)
+- redhat/Makefile: Change fedora BUILD_TARGET (Prarit Bhargava)
+- New configs in security/keys (Fedora Kernel Team)
+- Fedora: arm: enable a pair of drivers (Peter Robinson)
 
-* Sat Jul 02 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.9-0]
-- Revert "smb3: fix empty netname context on secondary channels" (Justin M. Forbes)
-- Revert "smb3: use netname when available on secondary channels" (Justin M. Forbes)
+* Mon Jul 18 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc7.52]
+- redhat: make kernel-zfcpdump-core to not provide kernel-core/kernel (Herton R. Krzesinski)
+
+* Tue Jul 12 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc6.5a29232d870d.46]
+- redhat/configs: Enable QAT devices for arches other than x86 (Vladis Dronov)
+
+* Thu Jul 07 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc5.9f09069cde34.41]
+- Fedora 5.19 configs pt 1 (Justin M. Forbes)
+- redhat: Exclude cpufreq.h from kernel-headers (Patrick Talbert)
+- Add rtla subpackage for kernel-tools (Justin M. Forbes)
+
+* Sat Jul 02 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc4.089866061428.36]
 - fedora: arm: enable a couple of QCom drivers (Peter Robinson)
 
-* Wed Jun 29 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.8-0]
-- Remove RHJOBS define from fedora-stable-release.sh (Justin M. Forbes)
+* Thu Jun 30 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc4.d9b2ba67917c.34]
+- redhat/Makefile: Deprecate BUILD_SCRATCH_TARGET (Prarit Bhargava)
+- redhat: enable CONFIG_DEVTMPFS_SAFE (Mark Langsdorf)
+- redhat/Makefile: Remove deprecated variables and targets (Prarit Bhargava)
+- Split partner modules into a sub-package (Alice Mitchell)
+- Enable kAFS and it's dependancies in RHEL (Alice Mitchell)
 
-* Wed Jun 22 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.6-0]
-- drm/i915: Temporarily disable selective fetch for PSR2 on ADL-P (Mark Pearson) [2065794]
-- Turn E1000 back on correctly (Justin M. Forbes)
-- Turn E1000 back on (Justin M. Forbes)
-- Changelog update for rebase (Justin M. Forbes)
+* Tue Jun 28 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc4.941e3e791269.33]
+- Enable Marvell OcteonTX2 crypto device in ARK (Vladis Dronov)
+- redhat/Makefile: Remove --scratch from BUILD_TARGET (Prarit Bhargava)
+- redhat/Makefile: Fix dist-brew and distg-brew targets (Prarit Bhargava)
+- fedora: arm64: Initial support for TI Keystone 3 (ARCH_K3) (Peter Robinson)
+- fedora: arm: enable Hardware Timestamping Engine support (Peter Robinson)
 
-* Tue Jun 14 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.4-0]
-- Linux v5.18.4 rebase
-- Enable CKI on os-build MRs only (Don Zickus)
-- drm/amd/display: Cap OLED brightness per max frame-average luminance (Roman Li) [2095858]
-- redhat/configs/fedora: Enable a set of modules used on some x86 tablets (Hans de Goede)
-- redhat/configs/fedora: enable missing modules modules for Intel IPU3 camera support (Hans de Goede)
-- redhat/configs: Make INTEL_SOC_PMIC_CHTDC_TI builtin (Hans de Goede)
+* Mon Jun 27 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc4.32]
+- fedora: wireless: disable SiLabs and PureLiFi (Peter Robinson)
+- fedora: updates for 5.19 (Peter Robinson)
+
+* Fri Jun 24 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc3.92f20ff72066.29]
+- fedora: minor updates for Fedora configs (Peter Robinson)
+
+* Thu Jun 23 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc3.de5c208d533a.28]
+- configs/fedora: Enable the pinctrl SC7180 driver built-in (Enric Balletbo i Serra)
+
+* Sat Jun 18 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc2.4b35035bcf80.24]
+- redhat/configs: enable CONFIG_DEBUG_NET for debug kernel (Hangbin Liu)
+
+* Fri Jun 17 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc2.47700948a4ab.23]
+- redhat/Makefile: Add SPECKABIVERSION variable (Prarit Bhargava)
+- redhat/self-test: Provide better failure output (Prarit Bhargava)
+- redhat/self-test: Reformat tests to kernel standard (Prarit Bhargava)
+- redhat/self-test: Add purpose and header to each test (Prarit Bhargava)
+- Drop outdated CRYPTO_ECDH configs (Vladis Dronov)
+- Brush up crypto SHA512 and USER configs (Vladis Dronov)
+- Brush up crypto ECDH and ECDSA configs (Vladis Dronov)
+
+* Wed Jun 15 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc2.018ab4fabddd.21]
+- redhat/self-test: Update data set (Prarit Bhargava)
+- create-data.sh: Reduce specfile data output (Prarit Bhargava)
 - redhat/configs: restore/fix core INTEL_LPSS configs to be builtin again (Hans de Goede)
+- Enable CKI on os-build MRs only (Don Zickus)
+- self-test: Fixup Makefile contents test (Prarit Bhargava)
+- redhat/self-test: self-test data update (Prarit Bhargava)
+- redhat/self-test: Fix up create-data.sh to not report local variables (Prarit Bhargava)
 
-* Thu Jun 09 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.3-0]
-- Config updates for stable backports (Justin M. Forbes)
-- Fix typo in Makefile for stable Fedora (Justin M. Forbes)
+* Sun Jun 12 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc1.7a68065eb9cd.19]
+- redhat/configs/fedora: Enable a set of modules used on some x86 tablets (Hans de Goede)
+- redhat/configs: Make INTEL_SOC_PMIC_CHTDC_TI builtin (Hans de Goede)
+- redhat/configs/fedora: enable missing modules modules for Intel IPU3 camera support (Hans de Goede)
 
-* Mon Jun 06 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.2-0]
-- Add the fedora-stable-release.sh script to generate stable dist-git (Justin M. Forbes)
-- Add the simpleDRM revert patch so that F35 can be maintained without it (Justin M. Forbes)
+* Fri Jun 10 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc1.874c8ca1e60b.17]
+- Common: minor cleanups (Peter Robinson)
+- fedora: some minor Fedora cleanups (Peter Robinson)
+- fedora: drop X86_PLATFORM_DRIVERS_DELL dupe (Peter Robinson)
+- redhat: change tools_make macro to avoid full override of variables in Makefile (Herton R. Krzesinski)
+- Fix typo in Makefile for Fedora Stable Versioning (Justin M. Forbes)
+- Remove duplicates from ark/generic/s390x/zfcpdump/ (Vladis Dronov)
+- Move common/debug/s390x/zfcpdump/ configs to ark/debug/s390x/zfcpdump/ (Vladis Dronov)
+- Move common/generic/s390x/zfcpdump/ configs to ark/generic/s390x/zfcpdump/ (Vladis Dronov)
 
-* Thu May 26 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.18.0-0]
-- Fix versioning for Stable Fedora (Justin M. Forbes)
-- Reset release to 0 for stable (Justin M. Forbes)
-- Add fedora-dist-git-test script (Justin M. Forbes)
-- fedora: Re-enable efifb and vesafb drivers (Javier Martinez Canillas)
-- drivers/firmware: skip simpledrm if nvidia-drm.modeset=1 is set (Javier Martinez Canillas)
-- Basic Fedora branch setup (Justin M. Forbes)
+* Thu Jun 09 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc1.6bfb56e93bce.16]
+- Drop RCU_EXP_CPU_STALL_TIMEOUT to 0, we are not really android (Justin M. Forbes)
+
+* Tue Jun 07 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc1.e71e60cd74df.14]
+- redhat/configs/README: Update the README (Prarit Bhargava)
+
+* Mon Jun 06 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc1.13]
+- redhat/docs: fix hyperlink typo (Patrick Talbert)
+- all: net: remove old NIC/ATM drivers that use virt_to_bus() (Peter Robinson)
+- Explicitly turn off CONFIG_KASAN_INLINE for ppc (Justin M. Forbes)
+
+* Sat Jun 04 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.032dcf09e2bf.11]
+- redhat/docs: Add a description of kernel naming (Prarit Bhargava)
+- Change CRYPTO_CHACHA_S390 from m to y (Justin M. Forbes)
+- enable CONFIG_NET_ACT_CTINFO in ark (Davide Caratti)
+
+* Thu Jun 02 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.d1dc87763f40.9]
+- redhat/configs: enable CONFIG_SP5100_TCO (David Arcari)
+- redhat/configs: Set CONFIG_VIRTIO_IOMMU on x86_64 (Eric Auger) [2089765]
+
+* Wed Jun 01 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.700170bf6b4d.8]
+- Turn off KASAN_INLINE for RHEL ppc in pending (Justin M. Forbes)
+
+* Tue May 31 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.8ab2afa23bd1.7]
+- redhat/kernel.spec.template: update selftest data via "make dist-self-test-data" (Denys Vlasenko)
+- redhat/kernel.spec.template: remove stray *.hardlink-temporary files, if any (Denys Vlasenko)
+
+* Mon May 30 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.b00ed48bb0a7.6]
+- Fix up ZSMALLOC config for s390 (Justin M. Forbes)
+- Turn on KASAN_OUTLINE for ppc debug (Justin M. Forbes)
+- Turn on KASAN_OUTLINE for PPC debug to avoid mismatch (Justin M. Forbes)
+
+* Sun May 29 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.664a393a2663.5]
+- Fix up crypto config mistmatches (Justin M. Forbes)
+
+* Sat May 28 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.9d004b2f4fea.4]
+- Fix up config mismatches (Justin M. Forbes)
+
+* Fri May 27 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.7e284070abe5.3]
+- generic/fedora: cleanup and disable Lightning Moutain SoC (Peter Robinson)
+- redhat: Set SND_SOC_SOF_HDA_PROBES to =m (Patrick Talbert)
+- Fix versioning on stable Fedora (Justin M. Forbes)
+- Revert "crypto: rng - Override drivers/char/random in FIPS mode" (Justin M. Forbes)
+- Revert random: Add hook to override device reads and getrandom(2) (Justin M. Forbes)
+
+* Thu May 26 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.babf0bb978e3.2]
+- Enable PAGE_POOL_STATS for arm only (Justin M. Forbes)
+- Revert "Merge branch 'fix-ci-20220523' into 'os-build'" (Patrick Talbert)
+- Fix changelog one more time post rebase (Justin M. Forbes)
+- Flip CONFIG_RADIO_ADAPTERS to module for Fedora (Justin M. Forbes)
+
+* Wed May 25 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.143a6252e1b8.0]
+- Reset Release for 5.19 (Justin M. Forbes)
+
+* Tue May 24 2022 Fedora Kernel Team <kernel-team@fedoraproject.org> [5.19.0-0.rc0.143a6252e1b8.59]
 - redhat/Makefile: Drop quotation marks around string definitions (Prarit Bhargava)
 - Fedora: arm: Updates for QCom devices (Peter Robinson)
 - Fedora arm and generic updates for 5.17 (Peter Robinson)

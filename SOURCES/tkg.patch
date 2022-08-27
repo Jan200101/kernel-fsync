@@ -41,16 +41,20 @@ diff --git a/kernel/sched/core.c b/kernel/sched/core.c
 index f788cd61df21..2bfbb4213707 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -77,7 +77,7 @@
+@@ -59,7 +59,7 @@ const_debug unsigned int sysctl_sched_features =
  #ifdef CONFIG_PREEMPT_RT
  const_debug unsigned int sysctl_sched_nr_migrate = 8;
  #else
 -const_debug unsigned int sysctl_sched_nr_migrate = 32;
 +const_debug unsigned int sysctl_sched_nr_migrate = 128;
  #endif
- 
- /*
-@@ -370,9 +370,9 @@
+
+ __read_mostly int scheduler_running;
+diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+index f788cd61df21..2bfbb4213707 100644
+--- a/kernel/sched/rt.c
++++ b/kernel/sched/rt.c
+@@ -15,9 +15,9 @@ __read_mostly int scheduler_running;
  
  /*
   * part of the period that we allow rt tasks to run in us.
@@ -60,8 +64,8 @@ index f788cd61df21..2bfbb4213707 100644
 -int sysctl_sched_rt_runtime = 950000;
 +int sysctl_sched_rt_runtime = 980000;
  
- 
- /*
+ #ifdef CONFIG_SYSCTL
+ static int sysctl_sched_rr_timeslice = (MSEC_PER_SEC / HZ) * RR_TIMESLICE;
 -- 
 2.28.0
 
@@ -138,7 +142,7 @@ index 6b3b59cc51d6..2a0072192c3d 100644
  
  /*
   * The initial- and re-scaling of tunables is configurable
-@@ -61,8 +61,13 @@
+@@ -58,21 +63,34 @@ enum sched_tunable_scaling sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_L
   *
   * (default: 0.75 msec * (1 + ilog(ncpus)), units: nanoseconds)
   */
@@ -152,7 +156,16 @@ index 6b3b59cc51d6..2a0072192c3d 100644
  
  /*
   * Minimal preemption granularity for CPU-bound SCHED_IDLE tasks.
-@@ -75,7 +80,11 @@
+  * Applies only when SCHED_IDLE tasks compete with normal tasks.
+  *
+  * (default: 0.75 msec)
+  */
++#ifdef CONFIG_ZENIFY
++unsigned int sysctl_sched_idle_min_granularity			= 300000ULL;
++#else
+ unsigned int sysctl_sched_idle_min_granularity			= 750000ULL;
++#endif
+
  /*
   * This value is kept at sysctl_sched_latency/sysctl_sched_min_granularity
   */
@@ -164,20 +177,19 @@ index 6b3b59cc51d6..2a0072192c3d 100644
  
  /*
   * After fork, child runs first. If set to 0 (default) then
-
 @@ -128,8 +149,12 @@ int __weak arch_asym_cpu_priority(int cpu)
   *
   * (default: 5 msec, units: microseconds)
   */
 +#ifdef CONFIG_ZENIFY
-+unsigned int sysctl_sched_cfs_bandwidth_slice		= 3000UL;
++static unsigned int sysctl_sched_cfs_bandwidth_slice		= 3000UL;
 +#else
- unsigned int sysctl_sched_cfs_bandwidth_slice		= 5000UL;
+ static unsigned int sysctl_sched_cfs_bandwidth_slice		= 5000UL;
  #endif
 +#endif
  
- static inline void update_load_add(struct load_weight *lw, unsigned long inc)
- {
+ #ifdef CONFIG_SYSCTL
+ static struct ctl_table sched_fair_sysctls[] = {
 diff --git a/mm/page-writeback.c b/mm/page-writeback.c
 index 28b3e7a67565..01a1aef2b9b1 100644
 --- a/mm/page-writeback.c
@@ -187,9 +199,9 @@ index 28b3e7a67565..01a1aef2b9b1 100644
   * Start background writeback (via writeback threads) at this percentage
   */
 +#ifdef CONFIG_ZENIFY
-+int dirty_background_ratio = 20;
++static int dirty_background_ratio = 20;
 +#else
- int dirty_background_ratio = 10;
+ static int dirty_background_ratio = 10;
 +#endif
  
  /*
@@ -199,9 +211,9 @@ index 28b3e7a67565..01a1aef2b9b1 100644
   * The generator of dirty data starts writeback at this percentage
   */
 +#ifdef CONFIG_ZENIFY
-+int vm_dirty_ratio = 50;
++static int vm_dirty_ratio = 50;
 +#else
- int vm_dirty_ratio = 20;
+ static int vm_dirty_ratio = 20;
 +#endif
  
  /*

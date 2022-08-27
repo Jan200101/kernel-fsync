@@ -2,9 +2,9 @@ diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 index 53abd553b842..5c42b99fe26d 100644
 --- a/drivers/platform/x86/Kconfig
 +++ b/drivers/platform/x86/Kconfig
-@@ -1138,6 +1138,20 @@ config SIEMENS_SIMATIC_IPC
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called simatic-ipc.
+@@ -1162,6 +1162,20 @@
+ 	  buttons below the display. This module adds an input device
+ 	  that delivers key events when these buttons are pressed.
  
 +config STEAMDECK
 +	tristate "Valve Steam Deck platform driver"
@@ -27,10 +27,10 @@ diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 index c12a9b044fd8..c3cc86b27350 100644
 --- a/drivers/platform/x86/Makefile
 +++ b/drivers/platform/x86/Makefile
-@@ -129,3 +129,6 @@ obj-$(CONFIG_PMC_ATOM)			+= pmc_atom.o
+@@ -133,3 +133,6 @@
  
- # Siemens Simatic Industrial PCs
- obj-$(CONFIG_SIEMENS_SIMATIC_IPC)	+= simatic-ipc.o
+ # Winmate
+ obj-$(CONFIG_WINMATE_FM07_KEYS)		+= winmate-fm07-keys.o
 +
 +# Steam Deck
 +obj-$(CONFIG_STEAMDECK)			+= steamdeck.o
