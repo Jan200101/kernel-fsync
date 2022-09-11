@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.19.6
+%define specversion 5.19.7
 %define patchversion 5.19
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.19.6
+%define tarfile_release 5.19.7
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 204%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 5.19.6
+%define kabiversion 5.19.7
 
 #
 # End of genspec.sh variables
@@ -870,9 +870,13 @@ Patch207: acso.patch
 # device specific patches
 Patch300: linux-surface.patch
 Patch301: steam-deck.patch
+Patch302: asus-linux.patch
+
 
 # temporary patches
 Patch400: v6-ACPI-skip-IRQ-override-on-AMD-Zen-platforms.patch
+Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
+Patch402: amdgpu-regression.patch
 
 %endif
 
@@ -1458,9 +1462,12 @@ ApplyOptionalPatch acso.patch
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
 ApplyOptionalPatch steam-deck.patch
+ApplyOptionalPatch asus-linux.patch
 
 # temporary patches
 ApplyOptionalPatch v6-ACPI-skip-IRQ-override-on-AMD-Zen-platforms.patch
+ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
+ApplyOptionalPatch amdgpu-regression.patch
 
 %endif
 
@@ -3168,8 +3175,12 @@ fi
 #
 #
 %changelog
-* Sat Sep 03 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.6-202.fsync
-- Linux v5.19.6 futex2 zen openrgb
+* Sun Sep 11 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.7-204.fsync
+- Linux v5.19.7 futex2 zen openrgb
+
+* Mon Sep 05 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.7-0]
+- New config item for 5.19.7 (Justin M. Forbes)
+- Linux v5.19.7
 
 * Wed Aug 31 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.6-0]
 - Revert "block: freeze the queue earlier in del_gendisk" (Justin M. Forbes)
