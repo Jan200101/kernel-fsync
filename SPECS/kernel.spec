@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.19.7
+%define specversion 5.19.8
 %define patchversion 5.19
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.19.7
+%define tarfile_release 5.19.8
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 204%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 5.19.7
+%define kabiversion 5.19.8
 
 #
 # End of genspec.sh variables
@@ -3175,12 +3175,15 @@ fi
 #
 #
 %changelog
-* Sun Sep 11 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.7-204.fsync
-- Linux v5.19.7 futex2 zen openrgb
+* Tue Sep 13 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.8-201.fsync
+- Linux v5.19.8 futex2 zen openrgb
 
-* Mon Sep 05 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.7-0]
-- New config item for 5.19.7 (Justin M. Forbes)
-- Linux v5.19.7
+* Thu Sep 08 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.8-200]
+- Config update for stable ARM64_ERRATUM_2441009 (Justin M. Forbes)
+
+* Thu Sep 08 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.8-0]
+- [PATCH] drm/i915/bios: Use hardcoded fp_timing size for generating  LFP data pointers (Mark Pearson)
+- Linux v5.19.8
 
 * Wed Aug 31 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.6-0]
 - Revert "block: freeze the queue earlier in del_gendisk" (Justin M. Forbes)
