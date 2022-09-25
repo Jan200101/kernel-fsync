@@ -1,4 +1,4 @@
-From 8136a73d16f53a779e97c368ab80d26885205d4b Mon Sep 17 00:00:00 2001
+From 15edbfd10d016c0003cccf20365043ab8dd7ed77 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 18 Oct 2020 16:42:44 +0900
 Subject: [PATCH] (surface3-oemb) add DMI matches for Surface 3 with broken DMI
@@ -97,9 +97,9 @@ index 6beb00858c33..d82d77387a0a 100644
  };
  
 -- 
-2.37.2
+2.37.3
 
-From 6089531f7c51fe0cea3bd6a8f0771e6e53ed4068 Mon Sep 17 00:00:00 2001
+From 09e192fcba3cb0f58014cbc37bbd24fdf0a0f6c7 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Tue, 29 Sep 2020 17:32:22 +0900
 Subject: [PATCH] mwifiex: pcie: add reset_wsid quirk for Surface 3
@@ -282,9 +282,9 @@ index 8ec4176d698f..25370c5a4f59 100644
  int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
 +int mwifiex_pcie_reset_wsid_quirk(struct pci_dev *pdev);
 -- 
-2.37.2
+2.37.3
 
-From 049a6554fbbc067d9868381304fe31eafec54e78 Mon Sep 17 00:00:00 2001
+From 7d7aa81c79552938fcab366108fd6cea0d4e1391 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Wed, 30 Sep 2020 18:08:24 +0900
 Subject: [PATCH] mwifiex: pcie: (OEMB) add quirk for Surface 3 with broken DMI
@@ -344,9 +344,9 @@ index 563dd0d5ac79..32e2f000e57b 100644
  };
  
 -- 
-2.37.2
+2.37.3
 
-From e57e1aaeb600e6ac0ada3d73083ba11369d37734 Mon Sep 17 00:00:00 2001
+From eac54025ccde2f859610996f4eff5c140551cc02 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 4 Oct 2020 00:11:49 +0900
 Subject: [PATCH] mwifiex: pcie: disable bridge_d3 for Surface gen4+
@@ -499,9 +499,9 @@ index 25370c5a4f59..a1de111ad1db 100644
  void mwifiex_initialize_quirks(struct pcie_service_card *card);
  int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
 -- 
-2.37.2
+2.37.3
 
-From 789551567a6cf98e8ad0ffabcc70570e77919cf0 Mon Sep 17 00:00:00 2001
+From 009a7560924e5e43ac5a196af1757cf38ae6644f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Tue, 3 Nov 2020 13:28:04 +0100
 Subject: [PATCH] mwifiex: Add quirk resetting the PCI bridge on MS Surface
@@ -666,9 +666,9 @@ index a1de111ad1db..0e429779bb04 100644
  void mwifiex_initialize_quirks(struct pcie_service_card *card);
  int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
 -- 
-2.37.2
+2.37.3
 
-From f22fcdf3ebd08bb02727db9dbb101199486b72fe Mon Sep 17 00:00:00 2001
+From 65831ef257597e8460c5597705a4f9fab4e40ff1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 25 Mar 2021 11:33:02 +0100
 Subject: [PATCH] Bluetooth: btusb: Lower passive lescan interval on Marvell
@@ -744,9 +744,9 @@ index aaba2d737178..5d29e592cd34 100644
  	    (id->driver_info & BTUSB_MEDIATEK)) {
  		hdev->setup = btusb_mtk_setup;
 -- 
-2.37.2
+2.37.3
 
-From ba89cc0544c937b4429cbe410f5285beefb7c33c Mon Sep 17 00:00:00 2001
+From c120646a78579db5f700103fc45631153885d055 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Tue, 10 Nov 2020 12:49:56 +0100
 Subject: [PATCH] mwifiex: Use non-posted PCI register writes
@@ -801,9 +801,9 @@ index 24bcd22a2618..b4ad0113a035 100644
  }
  
 -- 
-2.37.2
+2.37.3
 
-From 30632c24ae7c8839dce9174016895849acd1f31a Mon Sep 17 00:00:00 2001
+From 8d94818d00f7a3703981bf10a7b915e906d71c05 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 27 Feb 2021 00:45:52 +0100
 Subject: [PATCH] ath10k: Add module parameters to override board files
@@ -922,9 +922,9 @@ index 688177453b07..e400a0318838 100644
  	ret = firmware_request_nowarn(&fw, filename, ar->dev);
  	ath10k_dbg(ar, ATH10K_DBG_BOOT, "boot fw request '%s': %d\n",
 -- 
-2.37.2
+2.37.3
 
-From 008ca80c4bb8eff2cfc4dd3f35398c7c268be04b Mon Sep 17 00:00:00 2001
+From 6b96d12b88e324b0f3a69b3c10a1b9e148269729 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 30 Jul 2020 13:21:53 +0200
 Subject: [PATCH] misc: mei: Add missing IPTS device IDs
@@ -960,9 +960,9 @@ index 5435604327a7..1165ee4f5928 100644
  
  	{MEI_PCI_DEVICE(MEI_DEV_ID_TGP_LP, MEI_ME_PCH15_CFG)},
 -- 
-2.37.2
+2.37.3
 
-From 1a47efd83fd677ac0c7cae35b07bdb172e87cee3 Mon Sep 17 00:00:00 2001
+From 90a5b4768859cfa8beeedb10a3000eb17425171c Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 6 Aug 2020 11:20:41 +0200
 Subject: [PATCH] misc: Add support for Intel Precise Touch & Stylus
@@ -2425,9 +2425,9 @@ index 000000000000..53fb86a88f97
 +
 +#endif /* _IPTS_UAPI_H_ */
 -- 
-2.37.2
+2.37.3
 
-From 19ab90bc51c085bc71e899446a67b62b91d42050 Mon Sep 17 00:00:00 2001
+From 44d9467e52b85dfec0b7f18bae811813852b93ff Mon Sep 17 00:00:00 2001
 From: Liban Hannan <liban.p@gmail.com>
 Date: Tue, 12 Apr 2022 23:31:12 +0100
 Subject: [PATCH] iommu: ipts: use IOMMU passthrough mode for IPTS
@@ -2525,9 +2525,9 @@ index 5c0dce78586a..825b524e81f3 100644
  {
  	if (risky_device(dev))
 -- 
-2.37.2
+2.37.3
 
-From cf92a4b7a1b832df52b7eeb0dda93301585f1c48 Mon Sep 17 00:00:00 2001
+From 343924460b3a9020c8e118da7047eaae33043983 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:36 +0200
 Subject: [PATCH] platform/surface: aggregator: Allow is_ssam_device() to be
@@ -2582,9 +2582,9 @@ index cc257097eb05..62b38b4487eb 100644
   * to_ssam_device() - Casts the given device to a SSAM client device.
   * @d: The device to cast.
 -- 
-2.37.2
+2.37.3
 
-From 2c8f02e379bb72001844a5b28cf64d12422ace76 Mon Sep 17 00:00:00 2001
+From 81b69bf07ee898a7ad0f458e8310f322ac8606e1 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:37 +0200
 Subject: [PATCH] platform/surface: aggregator: Allow devices to be marked as
@@ -2691,9 +2691,9 @@ index 62b38b4487eb..6df7c8d4e50e 100644
   * ssam_device_get() - Increment reference count of SSAM client device.
   * @sdev: The device to increment the reference count of.
 -- 
-2.37.2
+2.37.3
 
-From 868fe0887d5a461e122d4de8ab5e3c1a46b48f8e Mon Sep 17 00:00:00 2001
+From 8541ae8819b1d7461fc970542261345446e82b7e Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:38 +0200
 Subject: [PATCH] platform/surface: aggregator: Allow notifiers to avoid
@@ -2987,9 +2987,9 @@ index 6df7c8d4e50e..c418f7f2732d 100644
 +
  #endif /* _LINUX_SURFACE_AGGREGATOR_DEVICE_H */
 -- 
-2.37.2
+2.37.3
 
-From 7fa57f0161f316e0bae747d6005df8fd32559ed6 Mon Sep 17 00:00:00 2001
+From 5327cf4cbc40cf7a654ed1d826634a565709c73f Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:39 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Use client device
@@ -3039,9 +3039,9 @@ index ce2bd88feeaa..9f630e890ff7 100644
  	ssam_remove_clients(&sdev->dev);
  }
 -- 
-2.37.2
+2.37.3
 
-From c853aceabb717313981ae67332720018ab6ae9e6 Mon Sep 17 00:00:00 2001
+From 7e1e2cbb7b039e420c6c55052404417c5bcb14df Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:40 +0200
 Subject: [PATCH] power/supply: surface_charger: Use client device wrappers for
@@ -3083,9 +3083,9 @@ index a060c36c7766..59182d55742d 100644
  
  static const struct spwr_psy_properties spwr_psy_props_adp1 = {
 -- 
-2.37.2
+2.37.3
 
-From 1a00379b51768213cf69ff8bba0fc556396b3cb7 Mon Sep 17 00:00:00 2001
+From 6f4e94f193ff0af818c95b26f6ff9fa2ba801480 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:41 +0200
 Subject: [PATCH] power/supply: surface_battery: Use client device wrappers for
@@ -3127,9 +3127,9 @@ index 5ec2e6bb2465..540707882bb0 100644
  }
  
 -- 
-2.37.2
+2.37.3
 
-From 8854eca00edf1d846266f5a70911206b95116ebf Mon Sep 17 00:00:00 2001
+From 895fb2dab19c9ab2fe25968f88afe9e250d25e40 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:42 +0200
 Subject: [PATCH] HID: surface-hid: Add support for hot-removal
@@ -3241,9 +3241,9 @@ index e46330b2e561..87637f813de2 100644
  		return shid->ops.output_report(shid, reportnum, buf, len);
  
 -- 
-2.37.2
+2.37.3
 
-From aae8af660b8ddf8cf1b9d91f02fddbaf12b27618 Mon Sep 17 00:00:00 2001
+From 2a2d9f4bd42194af647055b3e176ecb9ec7aeeec Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:43 +0200
 Subject: [PATCH] platform/surface: aggregator: Add comment for KIP subsystem
@@ -3282,9 +3282,9 @@ index c3de43edcffa..26b95ec12733 100644
  	SSAM_SSH_TC_BLD = 0x10,
  	SSAM_SSH_TC_BAS = 0x11,	/* Detachment system (Surface Book 2/3). */
 -- 
-2.37.2
+2.37.3
 
-From c1180e31fe064fe3e45054cc722c3a4260c5a3db Mon Sep 17 00:00:00 2001
+From a5c7fa614688bf6a42b2391d87f9709a30c62d45 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:44 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Generify subsystem hub
@@ -3672,9 +3672,9 @@ index 9f630e890ff7..09cbeee2428b 100644
  };
  
 -- 
-2.37.2
+2.37.3
 
-From ae1e677f6babe2ca05a4262115f89d00f041eba7 Mon Sep 17 00:00:00 2001
+From 914afdc9a4ddd402904039546ac2f1161a5535a2 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:45 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Change device ID for
@@ -3716,9 +3716,9 @@ index 09cbeee2428b..b11ce87c7184 100644
  };
  
 -- 
-2.37.2
+2.37.3
 
-From 581483b9438c2f548d2d9aa42db0b1b9886412f0 Mon Sep 17 00:00:00 2001
+From 07bb747d9ad79840bef5b2f922cc0691ffa3db7e Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:46 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add KIP device hub
@@ -3881,9 +3881,9 @@ index b11ce87c7184..f15cef60630f 100644
  	platform_driver_unregister(&ssam_platform_hub_driver);
  }
 -- 
-2.37.2
+2.37.3
 
-From 6113e8deb4c9d72a7fb809cd17c05b6db18854c0 Mon Sep 17 00:00:00 2001
+From 33f616b388ac8845bdd3aadb8c1a5e41e5eb86d8 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 27 May 2022 04:34:47 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add support for
@@ -3982,9 +3982,9 @@ index f15cef60630f..bf3303f1aa71 100644
  };
  
 -- 
-2.37.2
+2.37.3
 
-From ffb7b4cfe0e1ae0f3d8de827e9b699abd8b43352 Mon Sep 17 00:00:00 2001
+From e52704dc9d78c8c7bc2cb192063f0498a10e8655 Mon Sep 17 00:00:00 2001
 From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Date: Fri, 10 Jun 2022 14:41:58 +0900
 Subject: [PATCH] platform/surface: avoid flush_scheduled_work() usage
@@ -4061,9 +4061,9 @@ index 7b758f8cc137..c0e12f0b9b79 100644
  MODULE_AUTHOR("Maximilian Luz <luzmaximilian@gmail.com>");
  MODULE_DESCRIPTION("Surface ACPI Notify driver for Surface System Aggregator Module");
 -- 
-2.37.2
+2.37.3
 
-From c61fe02172d405255e1ee652d192ff2362219790 Mon Sep 17 00:00:00 2001
+From 23b3d5bdf836ab4e155c9c95d860e35822aabd7e Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Tue, 14 Jun 2022 21:41:17 +0200
 Subject: [PATCH] platform/surface: aggregator: Reserve more event- and
@@ -4283,9 +4283,9 @@ index 26b95ec12733..45501b6e54e8 100644
  
  
 -- 
-2.37.2
+2.37.3
 
-From f7d73074c25fe126d1f92aab16613f333dcfb443 Mon Sep 17 00:00:00 2001
+From c7d12cb78b2beb6cac2ccea84707dbcc4111b3d6 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 24 Jun 2022 20:36:39 +0200
 Subject: [PATCH] platform/surface: aggregator: Add helper macros for requests
@@ -4496,9 +4496,9 @@ index c418f7f2732d..6cf7e80312d5 100644
  /* -- Helpers for client-device notifiers. ---------------------------------- */
  
 -- 
-2.37.2
+2.37.3
 
-From 18696529f9b2326722e395ba0219b70c6b63f14f Mon Sep 17 00:00:00 2001
+From c133afbb407d272327b236ec809e025407335165 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 24 Jun 2022 20:36:40 +0200
 Subject: [PATCH] platform/surface: Add KIP/POS tablet-mode switch driver
@@ -5228,9 +5228,9 @@ index 000000000000..596ca6c80681
 +MODULE_DESCRIPTION("Tablet mode switch driver for Surface devices using the Surface Aggregator Module");
 +MODULE_LICENSE("GPL");
 -- 
-2.37.2
+2.37.3
 
-From 9fd7721c374ba1ca794373cc0e83e2bbd89c2e35 Mon Sep 17 00:00:00 2001
+From 4c7ffca61c7b8d0e61817a7b3b33a1de211e7fe0 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 24 Jun 2022 20:36:41 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add support for tablet
@@ -5281,9 +5281,9 @@ index bf3303f1aa71..8f249df673a4 100644
  };
  
 -- 
-2.37.2
+2.37.3
 
-From a5821fb95515a38add07abe5c38819b28e57a8ee Mon Sep 17 00:00:00 2001
+From 6ba6d1fcf6051cb53a77699f48c16eae657af1da Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 24 Jun 2022 20:36:42 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add support for tablet
@@ -5328,9 +5328,9 @@ index 8f249df673a4..f1c5905f1c16 100644
  	&ssam_node_hid_tid1_penstash,
  	&ssam_node_hid_tid1_touchpad,
 -- 
-2.37.2
+2.37.3
 
-From 02165399da8dc82730cf6c94242dde36e0d34198 Mon Sep 17 00:00:00 2001
+From cc428a2c4526883ee235656522c24e5db1a1ed0c Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 24 Jun 2022 22:57:58 +0200
 Subject: [PATCH] platform/surface: aggregator: Move device registry helper
@@ -5724,9 +5724,9 @@ index 6cf7e80312d5..46c45d1b6368 100644
  /* -- Helpers for client-device requests. ----------------------------------- */
  
 -- 
-2.37.2
+2.37.3
 
-From db121ba08884dddbb98faeed98885e49deb97c32 Mon Sep 17 00:00:00 2001
+From 27f8c2755977e980995a6c1a1fc4f310e7fd845d Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 24 Jun 2022 22:57:59 +0200
 Subject: [PATCH] platform/surface: aggregator: Move subsystem hub drivers to
@@ -6614,9 +6614,9 @@ index c680792a037e..0cbb7f3a6b2d 100644
  MODULE_AUTHOR("Maximilian Luz <luzmaximilian@gmail.com>");
  MODULE_DESCRIPTION("Device-registry for Surface System Aggregator Module");
 -- 
-2.37.2
+2.37.3
 
-From dc12b0fce0c41cf44f77a2643c972409ae51e1d3 Mon Sep 17 00:00:00 2001
+From 98864856924810e997eca629da2544485183a9ae Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 24 Jun 2022 22:58:00 +0200
 Subject: [PATCH] platform/surface: Update copyright year of various drivers
@@ -6936,9 +6936,9 @@ index 6373d3b5eb7f..fbf2e11fd6ce 100644
  
  #include <asm/unaligned.h>
 -- 
-2.37.2
+2.37.3
 
-From 39bb758fc49805d68c4ad2a21b6011cc54179676 Mon Sep 17 00:00:00 2001
+From af14813f2c2c1571196481fa564649e0e92dc503 Mon Sep 17 00:00:00 2001
 From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 Date: Wed, 13 Jul 2022 06:09:16 +0200
 Subject: [PATCH] MAINTAINERS: repair file entry in MICROSOFT SURFACE
@@ -6982,9 +6982,9 @@ index 55e80354a097..6772c9d0eccc 100644
  MICROSOFT SURFACE BATTERY AND AC DRIVERS
  M:	Maximilian Luz <luzmaximilian@gmail.com>
 -- 
-2.37.2
+2.37.3
 
-From 513b085315b459e555c4cc2d4b4202d232dd4b26 Mon Sep 17 00:00:00 2001
+From 799b65f7dd3e013e1b5cd57877cc08c0b8298504 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sun, 17 Jul 2022 14:07:35 +0200
 Subject: [PATCH] platform/surface: tabletsw: Fix __le32 integer access
@@ -7026,41 +7026,9 @@ index 596ca6c80681..27d95a6a7851 100644
  	*source_id = get_unaligned_le32(&sources.id[0]);
  	return 0;
 -- 
-2.37.2
+2.37.3
 
-From 3dfe5611833768dcceacd578f4c8a7e1efdc32e1 Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Fri, 8 Jul 2022 03:34:44 +0200
-Subject: [PATCH] platform/surface: aggregator_registry: Add support for
- Surface Laptop Go 2
-
-The Surface Laptop Go 2 seems to have the same SAM client devices as the
-Surface Laptop Go 1, so re-use its node group.
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- drivers/platform/surface/surface_aggregator_registry.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index d5655f6a4a41..93ab62eb393d 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -325,6 +325,9 @@ static const struct acpi_device_id ssam_platform_hub_match[] = {
- 	/* Surface Laptop Go 1 */
- 	{ "MSHW0118", (unsigned long)ssam_node_group_slg1 },
- 
-+	/* Surface Laptop Go 2 */
-+	{ "MSHW0290", (unsigned long)ssam_node_group_slg1 },
-+
- 	/* Surface Laptop Studio */
- 	{ "MSHW0123", (unsigned long)ssam_node_group_sls },
- 
--- 
-2.37.2
-
-From 1135c744bf81e6b3528fcddf0b18fbc8353fe7ff Mon Sep 17 00:00:00 2001
+From edc6a485b06125a928c62c7d149861ca4d603ccd Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jun 2022 20:42:00 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Rename HID device
@@ -7131,9 +7099,9 @@ index 93ab62eb393d..7d82398f55b1 100644
  };
  
 -- 
-2.37.2
+2.37.3
 
-From c6b04410f5383e56f768071a02811eec38027af5 Mon Sep 17 00:00:00 2001
+From a92cc0122356f6015bb73773038b61a5e269a0bd Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jun 2022 20:52:47 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Rename HID device
@@ -7224,9 +7192,9 @@ index 7d82398f55b1..9970f89b1411 100644
  };
  
 -- 
-2.37.2
+2.37.3
 
-From 9aaa3d4912f9796d3658a8f035a23848dba33178 Mon Sep 17 00:00:00 2001
+From 2b28caa61d0783215ce24c418e435214f867c0dd Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jun 2022 20:54:59 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add HID devices for
@@ -7260,9 +7228,9 @@ index 9970f89b1411..585911020cea 100644
  };
  
 -- 
-2.37.2
+2.37.3
 
-From 2db7d4411f43d57e45672872465d05b091af1ca4 Mon Sep 17 00:00:00 2001
+From 749702e2ed1883c23763cc434f2ce1ddcdd0f336 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jul 2020 17:19:53 +0200
 Subject: [PATCH] i2c: acpi: Implement RawBytes read access
@@ -7372,9 +7340,9 @@ index 08b561f0709d..d7c397bce0f0 100644
  		dev_warn(&adapter->dev, "protocol 0x%02x not supported for client 0x%02x\n",
  			 accessor_type, client->addr);
 -- 
-2.37.2
+2.37.3
 
-From 1519f583848db6ea7fb0d648ef80c729760dd3f7 Mon Sep 17 00:00:00 2001
+From bcb73e7e4c52a3c430e252d090614d18bad7e044 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 13 Feb 2021 16:41:18 +0100
 Subject: [PATCH] platform/surface: Add driver for Surface Book 1 dGPU switch
@@ -7595,9 +7563,9 @@ index 000000000000..8b816ed8f35c
 +MODULE_DESCRIPTION("Discrete GPU Power-Switch for Surface Book 1");
 +MODULE_LICENSE("GPL");
 -- 
-2.37.2
+2.37.3
 
-From 12ca17de985a65027d9264486f2fec28cfbf039b Mon Sep 17 00:00:00 2001
+From 48e1c1ac0c69aa95a8c9f19307fffb4b77cf2170 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:05:09 +1100
 Subject: [PATCH] Input: soc_button_array - support AMD variant Surface devices
@@ -7672,9 +7640,9 @@ index 480476121c01..36e1bf7b7a01 100644
  
  /*
 -- 
-2.37.2
+2.37.3
 
-From 038c419cb0686e9bc79e0d7117e6c0ab620ed083 Mon Sep 17 00:00:00 2001
+From df10e0afc475ed5177cfa692db6dbfea28d7a9fe Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:22:57 +1100
 Subject: [PATCH] platform/surface: surfacepro3_button: don't load on amd
@@ -7744,9 +7712,9 @@ index 242fb690dcaf..30eea54dbb47 100644
  
  
 -- 
-2.37.2
+2.37.3
 
-From 46cf30ad2214c8a50498d44c97fb0d98acdf31ed Mon Sep 17 00:00:00 2001
+From 62a4fddab3c7a44dc5b17633ccc7f125f59ee3f9 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 5 Nov 2020 13:09:45 +0100
 Subject: [PATCH] hid/multitouch: Turn off Type Cover keyboard backlight when
@@ -7977,9 +7945,9 @@ index 2e72922e36f5..15f5f11c4b85 100644
  	{ .driver_data = MT_CLS_GOOGLE,
  		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY, USB_VENDOR_ID_GOOGLE,
 -- 
-2.37.2
+2.37.3
 
-From 61e311a6ce7fc4c4005130e4b3cce203f7ded406 Mon Sep 17 00:00:00 2001
+From 2b1d157b58d6a192e147dbfc84526e7ffa9ae2c1 Mon Sep 17 00:00:00 2001
 From: PJungkamp <p.jungkamp@gmail.com>
 Date: Fri, 25 Feb 2022 12:04:25 +0100
 Subject: [PATCH] hid/multitouch: Add support for surface pro type cover tablet
@@ -8277,9 +8245,9 @@ index 15f5f11c4b85..69202575ce19 100644
  	unregister_pm_notifier(&td->pm_notifier);
  	del_timer_sync(&td->release_timer);
 -- 
-2.37.2
+2.37.3
 
-From a5bfc31f5a78d54ef1aad12ef12ec65242e539a4 Mon Sep 17 00:00:00 2001
+From 716290db6ffaeb61e78eb40d6b466e05bb983990 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Thu, 21 Jul 2022 14:11:20 +0200
 Subject: [PATCH] platform/surface: gpe: Add support for 13" Intel version of
@@ -8320,9 +8288,9 @@ index 27365cbe1ee9..c219b840d491 100644
  		.ident = "Surface Laptop Studio",
  		.matches = {
 -- 
-2.37.2
+2.37.3
 
-From 0a3646496fbd99f59d21a0f4624b9bed7c4579ce Mon Sep 17 00:00:00 2001
+From 63aeabc28778964d2ff7f33c81394d82945beae4 Mon Sep 17 00:00:00 2001
 From: Hans de Goede <hdegoede@redhat.com>
 Date: Sun, 10 Oct 2021 20:56:57 +0200
 Subject: [PATCH] ACPI: delay enumeration of devices with a _DEP pointing to an
@@ -8396,9 +8364,9 @@ index 762b61f67e6c..2c0f39a7f2a1 100644
  	 * Do not enumerate devices with enumeration_by_parent flag set as
  	 * they will be enumerated by their respective parents.
 -- 
-2.37.2
+2.37.3
 
-From 04d11d2e49fd47c81ae37ee09acdbf2e485c0660 Mon Sep 17 00:00:00 2001
+From 0a1366c998d0bbd976995ddedb3c1fca8665db6c Mon Sep 17 00:00:00 2001
 From: zouxiaoh <xiaohong.zou@intel.com>
 Date: Fri, 25 Jun 2021 08:52:59 +0800
 Subject: [PATCH] iommu: intel-ipu: use IOMMU passthrough mode for Intel IPUs
@@ -8513,9 +8481,9 @@ index 825b524e81f3..095d566c058f 100644
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9D3E, quirk_iommu_ipts);
  
 -- 
-2.37.2
+2.37.3
 
-From 9b1976c703584ca8302935993890825ae565253f Mon Sep 17 00:00:00 2001
+From 23350bbaa1baea7694766c9aeeeecacd67d5a877 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Sun, 10 Oct 2021 20:57:02 +0200
 Subject: [PATCH] platform/x86: int3472: Enable I2c daisy chain
@@ -8550,9 +8518,9 @@ index 22f61b47f9e5..e1de1ff40bba 100644
  
  	return 0;
 -- 
-2.37.2
+2.37.3
 
-From 5417703cd0d0c25b77ff62175cfa9f43d92aa10c Mon Sep 17 00:00:00 2001
+From 247beedc634caa1a965f462451641d7f37f07d74 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 28 Oct 2021 21:55:16 +0100
 Subject: [PATCH] media: i2c: Add driver for DW9719 VCM
@@ -9056,9 +9024,9 @@ index 000000000000..8451c75b696b
 +MODULE_DESCRIPTION("DW9719 VCM Driver");
 +MODULE_LICENSE("GPL");
 -- 
-2.37.2
+2.37.3
 
-From b4539e8c7d09c19dac7d6622a3c31e4ee368b10f Mon Sep 17 00:00:00 2001
+From 131a1b6b516582eeeba78853894a168c0a4604fd Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Wed, 4 May 2022 23:21:45 +0100
 Subject: [PATCH] media: ipu3-cio2: Move functionality from .complete() to
@@ -9171,9 +9139,9 @@ index dbdbdb648a0d..d0715144bf3e 100644
  
  static int cio2_parse_firmware(struct cio2_device *cio2)
 -- 
-2.37.2
+2.37.3
 
-From 97636fb45ffd69fdbe4106982169709bf03530fb Mon Sep 17 00:00:00 2001
+From 82abd409bf7173da2ed6b76d95410f1f60e714fa Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 2 Jun 2022 22:15:56 +0100
 Subject: [PATCH] media: ipu3-cio2: Re-add .complete() to ipu3-cio2
@@ -9214,9 +9182,9 @@ index d0715144bf3e..3a25dfc696b2 100644
  
  static int cio2_parse_firmware(struct cio2_device *cio2)
 -- 
-2.37.2
+2.37.3
 
-From 2045d2e3f30af8b3fe7a18030b2bc366f4b1c24f Mon Sep 17 00:00:00 2001
+From 1abd24d4d11a1842c20c2d7feed35b39c4061745 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 15 Jul 2022 23:48:00 +0200
 Subject: [PATCH] drivers/media/i2c: Fix DW9719 dependencies
@@ -9243,9 +9211,221 @@ index 5c245f642ae3..50ea62e63784 100644
  	select VIDEO_V4L2_SUBDEV_API
  	select V4L2_ASYNC
 -- 
-2.37.2
+2.37.3
 
-From 73bf1e7fc5e71751a6b747d5de20e565604522e6 Mon Sep 17 00:00:00 2001
+From 86f47552d0d743f3100b07c6f859033c031db588 Mon Sep 17 00:00:00 2001
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+Date: Thu, 25 Aug 2022 21:36:37 +0300
+Subject: [PATCH] ipu3-imgu: Fix NULL pointer dereference in active selection
+ access
+
+What the IMGU driver did was that it first acquired the pointers to active
+and try V4L2 subdev state, and only then figured out which one to use.
+
+The problem with that approach and a later patch (see Fixes: tag) is that
+as sd_state argument to v4l2_subdev_get_try_crop() et al is NULL, there is
+now an attempt to dereference that.
+
+Fix this.
+
+Also rewrap lines a little.
+
+Fixes: 0d346d2a6f54 ("media: v4l2-subdev: add subdev-wide state struct")
+Cc: stable@vger.kernel.org # for v5.14 and later
+Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+Reviewed-by: Bingbu Cao <bingbu.cao@intel.com>
+Patchset: cameras
+---
+ drivers/staging/media/ipu3/ipu3-v4l2.c | 31 ++++++++++++--------------
+ 1 file changed, 14 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/staging/media/ipu3/ipu3-v4l2.c b/drivers/staging/media/ipu3/ipu3-v4l2.c
+index d1c539cefba8..2234bb8d48b3 100644
+--- a/drivers/staging/media/ipu3/ipu3-v4l2.c
++++ b/drivers/staging/media/ipu3/ipu3-v4l2.c
+@@ -192,33 +192,30 @@ static int imgu_subdev_get_selection(struct v4l2_subdev *sd,
+ 				     struct v4l2_subdev_state *sd_state,
+ 				     struct v4l2_subdev_selection *sel)
+ {
+-	struct v4l2_rect *try_sel, *r;
+-	struct imgu_v4l2_subdev *imgu_sd = container_of(sd,
+-							struct imgu_v4l2_subdev,
+-							subdev);
++	struct imgu_v4l2_subdev *imgu_sd =
++		container_of(sd, struct imgu_v4l2_subdev, subdev);
+ 
+ 	if (sel->pad != IMGU_NODE_IN)
+ 		return -EINVAL;
+ 
+ 	switch (sel->target) {
+ 	case V4L2_SEL_TGT_CROP:
+-		try_sel = v4l2_subdev_get_try_crop(sd, sd_state, sel->pad);
+-		r = &imgu_sd->rect.eff;
+-		break;
++		if (sel->which == V4L2_SUBDEV_FORMAT_TRY)
++			sel->r = *v4l2_subdev_get_try_crop(sd, sd_state,
++							   sel->pad);
++		else
++			sel->r = imgu_sd->rect.eff;
++		return 0;
+ 	case V4L2_SEL_TGT_COMPOSE:
+-		try_sel = v4l2_subdev_get_try_compose(sd, sd_state, sel->pad);
+-		r = &imgu_sd->rect.bds;
+-		break;
++		if (sel->which == V4L2_SUBDEV_FORMAT_TRY)
++			sel->r = *v4l2_subdev_get_try_compose(sd, sd_state,
++							      sel->pad);
++		else
++			sel->r = imgu_sd->rect.bds;
++		return 0;
+ 	default:
+ 		return -EINVAL;
+ 	}
+-
+-	if (sel->which == V4L2_SUBDEV_FORMAT_TRY)
+-		sel->r = *try_sel;
+-	else
+-		sel->r = *r;
+-
+-	return 0;
+ }
+ 
+ static int imgu_subdev_set_selection(struct v4l2_subdev *sd,
+-- 
+2.37.3
+
+From 90d952acdd44a833c8131cd63df69a43453763fe Mon Sep 17 00:00:00 2001
+From: Maximilian Luz <luzmaximilian@gmail.com>
+Date: Wed, 7 Sep 2022 15:38:08 +0200
+Subject: [PATCH] ipu3-imgu: Fix NULL pointer dereference in
+ imgu_subdev_set_selection()
+
+Calling v4l2_subdev_get_try_crop() and v4l2_subdev_get_try_compose()
+with a subdev state of NULL leads to a NULL pointer dereference. This
+can currently happen in imgu_subdev_set_selection() when the state
+passed in is NULL, as this method first gets pointers to both the "try"
+and "active" states and only then decides which to use.
+
+The same issue has been addressed for imgu_subdev_get_selection() with
+commit 30d03a0de650 ("ipu3-imgu: Fix NULL pointer dereference in active
+selection access"). However the issue still persists in
+imgu_subdev_set_selection().
+
+Therefore, apply a similar fix as done in the aforementioned commit to
+imgu_subdev_set_selection(). To keep things a bit cleaner, introduce
+helper functions for "crop" and "compose" access and use them in both
+imgu_subdev_set_selection() and imgu_subdev_get_selection().
+
+Fixes: 0d346d2a6f54 ("media: v4l2-subdev: add subdev-wide state struct")
+Cc: stable@vger.kernel.org # for v5.14 and later
+Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
+Patchset: cameras
+---
+ drivers/staging/media/ipu3/ipu3-v4l2.c | 57 +++++++++++++++-----------
+ 1 file changed, 34 insertions(+), 23 deletions(-)
+
+diff --git a/drivers/staging/media/ipu3/ipu3-v4l2.c b/drivers/staging/media/ipu3/ipu3-v4l2.c
+index 2234bb8d48b3..490ba0eb249b 100644
+--- a/drivers/staging/media/ipu3/ipu3-v4l2.c
++++ b/drivers/staging/media/ipu3/ipu3-v4l2.c
+@@ -188,6 +188,28 @@ static int imgu_subdev_set_fmt(struct v4l2_subdev *sd,
+ 	return 0;
+ }
+ 
++static struct v4l2_rect *
++imgu_subdev_get_crop(struct imgu_v4l2_subdev *sd,
++		     struct v4l2_subdev_state *sd_state, unsigned int pad,
++		     enum v4l2_subdev_format_whence which)
++{
++	if (which == V4L2_SUBDEV_FORMAT_TRY)
++		return v4l2_subdev_get_try_crop(&sd->subdev, sd_state, pad);
++	else
++		return &sd->rect.eff;
++}
++
++static struct v4l2_rect *
++imgu_subdev_get_compose(struct imgu_v4l2_subdev *sd,
++			struct v4l2_subdev_state *sd_state, unsigned int pad,
++			enum v4l2_subdev_format_whence which)
++{
++	if (which == V4L2_SUBDEV_FORMAT_TRY)
++		return v4l2_subdev_get_try_compose(&sd->subdev, sd_state, pad);
++	else
++		return &sd->rect.bds;
++}
++
+ static int imgu_subdev_get_selection(struct v4l2_subdev *sd,
+ 				     struct v4l2_subdev_state *sd_state,
+ 				     struct v4l2_subdev_selection *sel)
+@@ -200,18 +222,12 @@ static int imgu_subdev_get_selection(struct v4l2_subdev *sd,
+ 
+ 	switch (sel->target) {
+ 	case V4L2_SEL_TGT_CROP:
+-		if (sel->which == V4L2_SUBDEV_FORMAT_TRY)
+-			sel->r = *v4l2_subdev_get_try_crop(sd, sd_state,
+-							   sel->pad);
+-		else
+-			sel->r = imgu_sd->rect.eff;
++		sel->r = *imgu_subdev_get_crop(imgu_sd, sd_state, sel->pad,
++					       sel->which);
+ 		return 0;
+ 	case V4L2_SEL_TGT_COMPOSE:
+-		if (sel->which == V4L2_SUBDEV_FORMAT_TRY)
+-			sel->r = *v4l2_subdev_get_try_compose(sd, sd_state,
+-							      sel->pad);
+-		else
+-			sel->r = imgu_sd->rect.bds;
++		sel->r = *imgu_subdev_get_compose(imgu_sd, sd_state, sel->pad,
++						  sel->which);
+ 		return 0;
+ 	default:
+ 		return -EINVAL;
+@@ -223,10 +239,9 @@ static int imgu_subdev_set_selection(struct v4l2_subdev *sd,
+ 				     struct v4l2_subdev_selection *sel)
+ {
+ 	struct imgu_device *imgu = v4l2_get_subdevdata(sd);
+-	struct imgu_v4l2_subdev *imgu_sd = container_of(sd,
+-							struct imgu_v4l2_subdev,
+-							subdev);
+-	struct v4l2_rect *rect, *try_sel;
++	struct imgu_v4l2_subdev *imgu_sd =
++		container_of(sd, struct imgu_v4l2_subdev, subdev);
++	struct v4l2_rect *rect;
+ 
+ 	dev_dbg(&imgu->pci_dev->dev,
+ 		 "set subdev %u sel which %u target 0x%4x rect [%ux%u]",
+@@ -238,22 +253,18 @@ static int imgu_subdev_set_selection(struct v4l2_subdev *sd,
+ 
+ 	switch (sel->target) {
+ 	case V4L2_SEL_TGT_CROP:
+-		try_sel = v4l2_subdev_get_try_crop(sd, sd_state, sel->pad);
+-		rect = &imgu_sd->rect.eff;
++		rect = imgu_subdev_get_crop(imgu_sd, sd_state, sel->pad,
++					    sel->which);
+ 		break;
+ 	case V4L2_SEL_TGT_COMPOSE:
+-		try_sel = v4l2_subdev_get_try_compose(sd, sd_state, sel->pad);
+-		rect = &imgu_sd->rect.bds;
++		rect = imgu_subdev_get_compose(imgu_sd, sd_state, sel->pad,
++					       sel->which);
+ 		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+ 
+-	if (sel->which == V4L2_SUBDEV_FORMAT_TRY)
+-		*try_sel = sel->r;
+-	else
+-		*rect = sel->r;
+-
++	*rect = sel->r;
+ 	return 0;
+ }
+ 
+-- 
+2.37.3
+
+From f48f910254bcbc02338128293f8199e832b07fcb Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Sat, 29 May 2021 17:47:38 +1000
 Subject: [PATCH] ACPI: Add quirk for Surface Laptop 4 AMD missing irq 7
@@ -9310,9 +9490,9 @@ index 907cc98b1938..0116d27b29ea 100644
  	mp_config_acpi_legacy_irqs();
  
 -- 
-2.37.2
+2.37.3
 
-From 6bbad3dfd4d1a28db24ed3ce0a011a824fb2a2dd Mon Sep 17 00:00:00 2001
+From 324a9a147dda942ca3f96b1d10edab524ea47193 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Thu, 3 Jun 2021 14:04:26 +0200
 Subject: [PATCH] ACPI: Add AMD 13" Surface Laptop 4 model to irq 7 override
@@ -9352,5 +9532,5 @@ index 0116d27b29ea..af102c6f8e5b 100644
  };
  
 -- 
-2.37.2
+2.37.3
 

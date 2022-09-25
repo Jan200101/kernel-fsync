@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.19.9
+%define specversion 5.19.10
 %define patchversion 5.19
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.19.9
+%define tarfile_release 5.19.10
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 5.19.9
+%define kabiversion 5.19.10
 
 #
 # End of genspec.sh variables
@@ -874,9 +874,10 @@ Patch302: asus-linux.patch
 
 
 # temporary patches
-Patch400: v6-ACPI-skip-IRQ-override-on-AMD-Zen-platforms.patch
 Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 Patch402: amdgpu-regression.patch
+Patch403: v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
+Patch404: revert-iommu-recursive-locking.patch
 
 %endif
 
@@ -1465,9 +1466,10 @@ ApplyOptionalPatch steam-deck.patch
 ApplyOptionalPatch asus-linux.patch
 
 # temporary patches
-ApplyOptionalPatch v6-ACPI-skip-IRQ-override-on-AMD-Zen-platforms.patch
 ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 ApplyOptionalPatch amdgpu-regression.patch
+ApplyOptionalPatch v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
+ApplyOptionalPatch revert-iommu-recursive-locking.patch
 
 %endif
 
@@ -3175,8 +3177,12 @@ fi
 #
 #
 %changelog
-* Sat Sep 17 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.9-201.fsync
-- Linux v5.19.9 futex2 zen openrgb
+* Wed Sep 21 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.10-201.fsync
+- Linux v5.19.10 futex2 zen openrgb
+
+* Tue Sep 20 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.10-0]
+- kbuild: Add skip_encoding_btf_enum64 option to pahole (Martin Rodriguez Reboredo)
+- Linux v5.19.10
 
 * Thu Sep 15 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.9-0]
 - Add CONFIG_ARM64_ERRATUM_2457168 as new stable config option (Justin M. Forbes)
