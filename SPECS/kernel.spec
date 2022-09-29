@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.19.11
+%define specversion 5.19.12
 %define patchversion 5.19
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.19.11
+%define tarfile_release 5.19.12
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 5.19.11
+%define kabiversion 5.19.12
 
 #
 # End of genspec.sh variables
@@ -877,6 +877,9 @@ Patch302: asus-linux.patch
 Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 Patch402: amdgpu-regression.patch
 Patch403: v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
+Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
+Patch406: ALSA:-usb-audio:-Split-endpoint-setups-for-hw_params-and-prepare.patch
+Patch407: ACPI:-processor-idle:-Practically-limit-Dummy-wait-workaround-to-old-Intel-systems.patch
 
 %endif
 
@@ -1468,6 +1471,9 @@ ApplyOptionalPatch asus-linux.patch
 ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 ApplyOptionalPatch amdgpu-regression.patch
 ApplyOptionalPatch v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
+ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
+ApplyOptionalPatch ALSA:-usb-audio:-Split-endpoint-setups-for-hw_params-and-prepare.patch
+ApplyOptionalPatch ACPI:-processor-idle:-Practically-limit-Dummy-wait-workaround-to-old-Intel-systems.patch
 
 %endif
 
@@ -3175,8 +3181,11 @@ fi
 #
 #
 %changelog
-* Mon Sep 26 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.11-201.fsync
-- Linux v5.19.11 futex2 zen openrgb
+* Thu Sep 29 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.12-201.fsync
+- Linux v5.19.12 futex2 zen openrgb
+
+* Wed Sep 28 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.12-0]
+- Linux v5.19.12
 
 * Fri Sep 23 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.11-0]
 - Linux v5.19.11
