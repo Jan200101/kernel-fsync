@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.19.12
+%define specversion 5.19.13
 %define patchversion 5.19
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.19.12
+%define tarfile_release 5.19.13
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 5.19.12
+%define kabiversion 5.19.13
 
 #
 # End of genspec.sh variables
@@ -3181,8 +3181,11 @@ fi
 #
 #
 %changelog
-* Thu Sep 29 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.12-201.fsync
-- Linux v5.19.12 futex2 zen openrgb
+* Wed Oct 05 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.13-201.fsync
+- Linux v5.19.13 futex2 zen openrgb
+
+* Tue Oct 04 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.13-0]
+- Linux v5.19.13
 
 * Wed Sep 28 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.12-0]
 - Linux v5.19.12
