@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.19.13
+%define specversion 5.19.14
 %define patchversion 5.19
 %define pkgrelease 200
 %define kversion 5
-%define tarfile_release 5.19.13
+%define tarfile_release 5.19.14
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 5.19.13
+%define kabiversion 5.19.14
 
 #
 # End of genspec.sh variables
@@ -878,7 +878,6 @@ Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 Patch402: amdgpu-regression.patch
 Patch403: v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
 Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
-Patch406: ALSA:-usb-audio:-Split-endpoint-setups-for-hw_params-and-prepare.patch
 Patch407: ACPI:-processor-idle:-Practically-limit-Dummy-wait-workaround-to-old-Intel-systems.patch
 
 %endif
@@ -1472,7 +1471,6 @@ ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.pat
 ApplyOptionalPatch amdgpu-regression.patch
 ApplyOptionalPatch v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
 ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
-ApplyOptionalPatch ALSA:-usb-audio:-Split-endpoint-setups-for-hw_params-and-prepare.patch
 ApplyOptionalPatch ACPI:-processor-idle:-Practically-limit-Dummy-wait-workaround-to-old-Intel-systems.patch
 
 %endif
@@ -3181,8 +3179,11 @@ fi
 #
 #
 %changelog
-* Wed Oct 05 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.13-201.fsync
-- Linux v5.19.13 futex2 zen openrgb
+* Thu Oct 06 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.14-201.fsync
+- Linux v5.19.14 futex2 zen openrgb
+
+* Wed Oct 05 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.14-0]
+- Linux v5.19.14
 
 * Tue Oct 04 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.13-0]
 - Linux v5.19.13
