@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 5.19.14
+%define specversion 5.19.15
 %define patchversion 5.19
-%define pkgrelease 200
+%define pkgrelease 201
 %define kversion 5
-%define tarfile_release 5.19.14
+%define tarfile_release 5.19.15
 # This is needed to do merge window version magic
 %define patchlevel 19
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 5.19.14
+%define kabiversion 5.19.15
 
 #
 # End of genspec.sh variables
@@ -879,6 +879,7 @@ Patch402: amdgpu-regression.patch
 Patch403: v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
 Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
 Patch407: ACPI:-processor-idle:-Practically-limit-Dummy-wait-workaround-to-old-Intel-systems.patch
+Patch408: 0001-acpi-proc-idle-skip-dummy-wait.patch
 
 %endif
 
@@ -1472,6 +1473,7 @@ ApplyOptionalPatch amdgpu-regression.patch
 ApplyOptionalPatch v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
 ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
 ApplyOptionalPatch ACPI:-processor-idle:-Practically-limit-Dummy-wait-workaround-to-old-Intel-systems.patch
+ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
 
 %endif
 
@@ -3179,8 +3181,29 @@ fi
 #
 #
 %changelog
-* Thu Oct 06 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.14-201.fsync
-- Linux v5.19.14 futex2 zen openrgb
+* Sat Oct 15 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 5.19.15-202.fsync
+- kernel-fsync v5.19.15
+
+* Thu Oct 13 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.15-1]
+- Bump for build (Justin M. Forbes)
+- mctp: prevent double key removal and unref (Jeremy Kerr)
+- wifi: cfg80211: update hidden BSSes to avoid WARN_ON (Johannes Berg)
+- wifi: mac80211: fix crash in beacon protection for P2P-device (Johannes Berg)
+- wifi: mac80211_hwsim: avoid mac80211 warning on bad rate (Johannes Berg)
+- wifi: cfg80211: avoid nontransmitted BSS list corruption (Johannes Berg)
+- wifi: cfg80211: fix BSS refcounting bugs (Johannes Berg)
+- wifi: cfg80211: ensure length byte is present before access (Johannes Berg)
+- wifi: mac80211: fix MBSSID parsing use-after-free (Johannes Berg)
+- wifi: cfg80211/mac80211: reject bad MBSSID elements (Johannes Berg)
+- wifi: cfg80211: fix u8 overflow in cfg80211_update_notlisted_nontrans() (Johannes Berg)
+- drm/vc4: hdmi: Check the HSM rate at runtime_resume (Maxime Ripard)
+- drm/vc4: hdmi: Enforce the minimum rate at runtime_resume (Maxime Ripard)
+- phy: rockchip-inno-usb2: Return zero after otg sync (Peter Geis)
+
+* Wed Oct 12 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.15-0]
+- scsi: stex: Properly zero out the passthrough command structure (Linus Torvalds)
+- ipv4: Handle attempt to delete multipath route when fib_info contains an nh reference (David Ahern)
+- Linux v5.19.15
 
 * Wed Oct 05 2022 Justin M. Forbes <jforbes@fedoraproject.org> [5.19.14-0]
 - Linux v5.19.14

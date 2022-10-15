@@ -1,12 +1,8 @@
----
- drivers/acpi/x86/s2idle.c | 63 ++++++++++++++++++++++++++++-----------
- 1 file changed, 46 insertions(+), 17 deletions(-)
-
 diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
-index f9ac12b778e6..a7757551f750 100644
+index e10394b847af..c9ee30627b6c 100644
 --- a/drivers/acpi/x86/s2idle.c
 +++ b/drivers/acpi/x86/s2idle.c
-@@ -363,6 +363,39 @@ static int validate_dsm(acpi_handle handle, const char *uuid, int rev, guid_t *d
+@@ -369,6 +369,39 @@ static int validate_dsm(acpi_handle handle, const char *uuid, int rev, guid_t *d
  	return ret;
  }
  
@@ -46,7 +42,11 @@ index f9ac12b778e6..a7757551f750 100644
  static int lps0_device_attach(struct acpi_device *adev,
  			      const struct acpi_device_id *not_used)
  {
-@@ -452,31 +452,27 @@
+diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
+index c9ee30627b6c..2d1ff7796c34 100644
+--- a/drivers/acpi/x86/s2idle.c
++++ b/drivers/acpi/x86/s2idle.c
+@@ -412,31 +412,29 @@ static int lps0_device_attach(struct acpi_device *adev,
  		return 0;
  
  	if (acpi_s2idle_vendor_amd()) {
@@ -72,7 +72,7 @@ index f9ac12b778e6..a7757551f750 100644
 +		if (dev_id != NULL)
 +			data = (const struct amd_lps0_hid_device_data *) dev_id->driver_data;
 +		else
-+			return 0;
++			data = &amd_rembrandt;
 +		rev_id = data->rev_id;
  		lps0_dsm_func_mask = validate_dsm(adev->handle,
  					ACPI_LPS0_DSM_UUID_AMD, rev_id, &lps0_dsm_guid);
@@ -87,36 +87,12 @@ index f9ac12b778e6..a7757551f750 100644
  			acpi_handle_debug(adev->handle, "_DSM UUID %s: Adjusted function mask: 0x%x\n",
  					  ACPI_LPS0_DSM_UUID_AMD, lps0_dsm_func_mask);
 -		} else if (lps0_dsm_func_mask_microsoft > 0 && !strcmp(hid, "AMDI0007")) {
-+		} else if (lps0_dsm_func_mask_microsoft > 0 && data->prefer_amd_guid) {
++		} else if (lps0_dsm_func_mask_microsoft > 0 && data->prefer_amd_guid &&
++				(!strcmp(hid, "AMDI0007") ||
++				 !strcmp(hid, "AMDI0008"))) {
  			lps0_dsm_func_mask_microsoft = -EINVAL;
  			acpi_handle_debug(adev->handle, "_DSM Using AMD method\n");
  		}
--- 
-2.34.1
-
-  ---
- drivers/acpi/x86/s2idle.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
-index a7757551f750..a8256e5a0e8a 100644
---- a/drivers/acpi/x86/s2idle.c
-+++ b/drivers/acpi/x86/s2idle.c
-@@ -461,7 +461,7 @@
- 		if (dev_id != NULL)
- 			data = (const struct amd_lps0_hid_device_data *) dev_id->driver_data;
- 		else
--			return 0;
-+			data = &amd_rembrandt;
- 		rev_id = data->rev_id;
- 		lps0_dsm_func_mask = validate_dsm(adev->handle,
- 					ACPI_LPS0_DSM_UUID_AMD, rev_id, &lps0_dsm_guid);
--- 
-2.34.1
-
-  ---
- drivers/acpi/x86/s2idle.c | 16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
 index a8256e5a0e8a..a9b0f2b54a1c 100644
@@ -133,8 +109,8 @@ index a8256e5a0e8a..a9b0f2b54a1c 100644
  static const struct acpi_device_id lps0_device_ids[] = {
  	{"PNP0D80", },
  	{"", },
-@@ -451,6 +451,9 @@
- 	if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
+@@ -402,6 +406,9 @@ static int lps0_device_attach(struct acpi_device *adev,
+ 	if (lps0_device_handle)
  		return 0;
  
 +	lps0_dsm_func_mask_microsoft = validate_dsm(adev->handle,
@@ -143,7 +119,7 @@ index a8256e5a0e8a..a9b0f2b54a1c 100644
  	if (acpi_s2idle_vendor_amd()) {
  		static const struct acpi_device_id *dev_id;
  		const struct amd_lps0_hid_device_data *data;
-@@ -468,14 +468,11 @@
+@@ -416,16 +423,12 @@ static int lps0_device_attach(struct acpi_device *adev,
  		rev_id = data->rev_id;
  		lps0_dsm_func_mask = validate_dsm(adev->handle,
  					ACPI_LPS0_DSM_UUID_AMD, rev_id, &lps0_dsm_guid);
@@ -154,8 +130,10 @@ index a8256e5a0e8a..a9b0f2b54a1c 100644
  			lps0_dsm_func_mask = (lps0_dsm_func_mask << 1) | 0x1;
  			acpi_handle_debug(adev->handle, "_DSM UUID %s: Adjusted function mask: 0x%x\n",
  					  ACPI_LPS0_DSM_UUID_AMD, lps0_dsm_func_mask);
--		} else if (lps0_dsm_func_mask_microsoft > 0 && data->prefer_amd_guid) {
-+		} else if (lps0_dsm_func_mask_microsoft > 0 && data->prefer_amd_guid && !prefer_microsoft_guid) {
+ 		} else if (lps0_dsm_func_mask_microsoft > 0 && data->prefer_amd_guid &&
+-				(!strcmp(hid, "AMDI0007") ||
+-				 !strcmp(hid, "AMDI0008"))) {
++				!prefer_microsoft_guid) {
  			lps0_dsm_func_mask_microsoft = -EINVAL;
  			acpi_handle_debug(adev->handle, "_DSM Using AMD method\n");
  		}
@@ -169,18 +147,8 @@ index a8256e5a0e8a..a9b0f2b54a1c 100644
  	}
  
  	if (lps0_dsm_func_mask < 0 && lps0_dsm_func_mask_microsoft < 0)
--- 
-2.34.1
-
-  ---
-v1->v2:
- * Fixup for __init
----
- drivers/acpi/x86/s2idle.c | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
-
 diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
-index a9b0f2b54a1c..9ee734e0c3c5 100644
+index a9b0f2b54a1c..6a2c94fdbeae 100644
 --- a/drivers/acpi/x86/s2idle.c
 +++ b/drivers/acpi/x86/s2idle.c
 @@ -17,6 +17,7 @@
@@ -220,21 +188,18 @@ index a9b0f2b54a1c..9ee734e0c3c5 100644
  static int lps0_device_attach(struct acpi_device *adev,
  			      const struct acpi_device_id *not_used)
  {
-@@ -566,8 +589,9 @@ static const struct platform_s2idle_ops acpi_s2idle_ops_lps0 = {
- 	.end = acpi_s2idle_end,
- };
+@@ -568,6 +591,7 @@ static const struct platform_s2idle_ops acpi_s2idle_ops_lps0 = {
  
--void acpi_s2idle_setup(void)
-+void __init acpi_s2idle_setup(void)
+ void acpi_s2idle_setup(void)
  {
 +	dmi_check_system(s2idle_dmi_table);
  	acpi_scan_add_handler(&lps0_handler);
  	s2idle_set_ops(&acpi_s2idle_ops_lps0);
- }
--- 
-2.34.1
-
-  ---
+ }---
+v3-v4:
+ * Absorb tags
+v2->v3:
+ * Absorb tags
 v1->v2:
  * New patch
 ---
@@ -242,7 +207,7 @@ v1->v2:
  1 file changed, 8 insertions(+)
 
 diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
-index 9ee734e0c3c5..4bdc7133d2ea 100644
+index 99eae362de6d..2cd381f6c002 100644
 --- a/drivers/acpi/x86/s2idle.c
 +++ b/drivers/acpi/x86/s2idle.c
 @@ -420,6 +420,14 @@ static const struct dmi_system_id s2idle_dmi_table[] __initconst = {
@@ -262,19 +227,23 @@ index 9ee734e0c3c5..4bdc7133d2ea 100644
  
 -- 
 2.34.1
-
-  ---
+---
+v3->v4:
+ * Fix URL for one of the bugzilla links
+v2->v3:
+ * Adjust prefix to cover multiple systems
+ * Add another Link tag
 v1->v2:
  * New patch
 ---
- drivers/acpi/x86/s2idle.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/acpi/x86/s2idle.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
 diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
-index 4bdc7133d2ea..8475a3915812 100644
+index 2cd381f6c002..c811eeed42cd 100644
 --- a/drivers/acpi/x86/s2idle.c
 +++ b/drivers/acpi/x86/s2idle.c
-@@ -428,6 +428,17 @@ static const struct dmi_system_id s2idle_dmi_table[] __initconst = {
+@@ -428,6 +428,29 @@ static const struct dmi_system_id s2idle_dmi_table[] __initconst = {
  			DMI_MATCH(DMI_PRODUCT_NAME, "ROG Zephyrus G14 GA402"),
  		},
  	},
@@ -289,10 +258,53 @@ index 4bdc7133d2ea..8475a3915812 100644
 +			DMI_MATCH(DMI_PRODUCT_NAME, "82V2"),
 +		},
 +	},
++	{
++		/*
++		 * 
++		 * Hijacking patch for GV601
++		 * 
++		 */
++		.callback = lps0_prefer_microsoft,
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ASUSTeK COMPUTER INC."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "GV601"),
++		},
++	},
  	{}
  };
  
 -- 
 2.34.1
+---
+v3->v4:
+ * Absorb tag
+v2->v3:
+ * New patch
+---
+ drivers/acpi/x86/s2idle.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-  
+diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
+index c811eeed42cd..eedd21d8a284 100644
+--- a/drivers/acpi/x86/s2idle.c
++++ b/drivers/acpi/x86/s2idle.c
+@@ -440,6 +440,17 @@ static const struct dmi_system_id s2idle_dmi_table[] __initconst = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "82"),
+ 		},
+ 	},
++	{
++		/*
++		 * ASUSTeK COMPUTER INC. ROG Flow X13 GV301RE_GV301RE
++		 * https://gitlab.freedesktop.org/drm/amd/-/issues/2148
++		 */
++		.callback = lps0_prefer_microsoft,
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "ROG Flow X13 GV301"),
++		},
++	},
+ 	{}
+ };
+ 
+-- 
+2.34.1

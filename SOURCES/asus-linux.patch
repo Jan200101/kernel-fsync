@@ -1,196 +1,3 @@
-From e6529e0ad6942bb0eadc5f5ad0590124153e0a8c Mon Sep 17 00:00:00 2001
-From: "Luke D. Jones" <luke@ljones.dev>
-Date: Wed, 3 Aug 2022 11:02:05 +1200
-Subject: [PATCH 1/1] HID: amd_sfh: Add keyguard for ASUS ROG X13 tablet
-
-Add support for ROG X13 Flow 2-in-1 to disable the keyboard when
-the lid is flipped.
-
-Signed-off-by: Luke D. Jones <luke@ljones.dev>
----
- drivers/hid/amd-sfh-hid/amd_sfh_pcie.c        |  7 ++++-
- drivers/hid/amd-sfh-hid/amd_sfh_pcie.h        |  1 +
- .../hid_descriptor/amd_sfh_hid_desc.c         | 27 +++++++++++++++++++
- .../hid_descriptor/amd_sfh_hid_desc.h         |  9 +++++++
- .../hid_descriptor/amd_sfh_hid_report_desc.h  | 19 +++++++++++++
- 5 files changed, 62 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
-index dadc491bbf6b..243541d426d8 100644
---- a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
-+++ b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
-@@ -26,6 +26,7 @@
- #define ACEL_EN		BIT(0)
- #define GYRO_EN		BIT(1)
- #define MAGNO_EN	BIT(2)
-+#define KBGUARD_EN	BIT(15)
- #define HPD_EN		BIT(16)
- #define ALS_EN		BIT(19)
- 
-@@ -232,6 +233,9 @@ int amd_mp2_get_sensor_num(struct amd_mp2_dev *privdata, u8 *sensor_id)
- 	if (HPD_EN & activestatus)
- 		sensor_id[num_of_sensors++] = HPD_IDX;
- 
-+	if (KBGUARD_EN & activestatus)
-+		sensor_id[num_of_sensors++] = KBGUARD_IDX;
-+
- 	return num_of_sensors;
- }
- 
-@@ -373,7 +377,8 @@ static int __maybe_unused amd_mp2_pci_suspend(struct device *dev)
- 
- 	for (i = 0; i < cl_data->num_hid_devices; i++) {
- 		if (cl_data->sensor_idx[i] != HPD_IDX &&
--		    cl_data->sensor_sts[i] == SENSOR_ENABLED) {
-+			cl_data->sensor_idx[i] != KBGUARD_IDX &&
-+			cl_data->sensor_sts[i] == SENSOR_ENABLED) {
- 			mp2->mp2_ops->stop(mp2, cl_data->sensor_idx[i]);
- 			status = amd_sfh_wait_for_response
- 					(mp2, cl_data->sensor_idx[i], SENSOR_DISABLED);
-diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h
-index 8c760526132a..4a86bc6038a2 100644
---- a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h
-+++ b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h
-@@ -36,6 +36,7 @@
- #define SENSOR_DISABLED    5
- 
- #define HPD_IDX		16
-+#define KBGUARD_IDX	15
- 
- #define AMD_SFH_IDLE_LOOP	200
- 
-diff --git a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c
-index 76095bd53c65..f41d28ea7b93 100644
---- a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c
-+++ b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c
-@@ -57,6 +57,11 @@ int get_report_descriptor(int sensor_idx, u8 *rep_desc)
- 		memcpy(rep_desc, hpd_report_descriptor,
- 		       sizeof(hpd_report_descriptor));
- 		break;
-+	case KBGUARD_IDX: /* kbguard ? */
-+		memset(rep_desc, 0, sizeof(kbguard_report_descriptor));
-+		memcpy(rep_desc, kbguard_report_descriptor,
-+		       sizeof(kbguard_report_descriptor));
-+		break;
- 	default:
- 		break;
- 	}
-@@ -116,6 +121,16 @@ u32 get_descr_sz(int sensor_idx, int descriptor_name)
- 			return sizeof(struct hpd_feature_report);
- 		}
- 		break;
-+	case KBGUARD_IDX:
-+		switch (descriptor_name) {
-+		case descr_size:
-+			return sizeof(kbguard_report_descriptor);
-+		case input_size:
-+			return sizeof(struct kbguard_input_report);
-+		case feature_size:
-+			return sizeof(struct kbguard_feature_report);
-+		}
-+		break;
- 
- 	default:
- 		break;
-@@ -139,6 +154,7 @@ u8 get_feature_report(int sensor_idx, int report_id, u8 *feature_report)
- 	struct gyro_feature_report gyro_feature;
- 	struct magno_feature_report magno_feature;
- 	struct hpd_feature_report hpd_feature;
-+	struct kbguard_feature_report kbguard_feature;
- 	struct als_feature_report als_feature;
- 	u8 report_size = 0;
- 
-@@ -186,6 +202,11 @@ u8 get_feature_report(int sensor_idx, int report_id, u8 *feature_report)
- 		memcpy(feature_report, &hpd_feature, sizeof(hpd_feature));
- 		report_size = sizeof(hpd_feature);
- 		break;
-+	case KBGUARD_IDX:  /* auto disable keyboard when flip out */
-+		get_common_features(&kbguard_feature.common_property, report_id);
-+		memcpy(feature_report, &kbguard_feature, sizeof(kbguard_feature));
-+		report_size = sizeof(kbguard_feature);
-+		break;
- 
- 	default:
- 		break;
-@@ -210,6 +231,7 @@ u8 get_input_report(u8 current_index, int sensor_idx, int report_id, struct amd_
- 	struct accel3_input_report acc_input;
- 	struct gyro_input_report gyro_input;
- 	struct hpd_input_report hpd_input;
-+	struct kbguard_input_report kbguard_input;
- 	struct als_input_report als_input;
- 	struct hpd_status hpdstatus;
- 	u8 report_size = 0;
-@@ -262,6 +284,11 @@ u8 get_input_report(u8 current_index, int sensor_idx, int report_id, struct amd_
- 		report_size = sizeof(hpd_input);
- 		memcpy(input_report, &hpd_input, sizeof(hpd_input));
- 		break;
-+	case KBGUARD_IDX: /* kb guard */
-+		get_common_inputs(&kbguard_input.common_property, report_id);
-+		report_size = sizeof(kbguard_input);
-+		memcpy(input_report, &kbguard_input, sizeof(kbguard_input));
-+break;
- 	default:
- 		break;
- 	}
-diff --git a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h
-index 70b1b7abe2c6..98571a8597b3 100644
---- a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h
-+++ b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h
-@@ -105,12 +105,21 @@ struct hpd_feature_report {
- 	struct common_feature_property common_property;
- } __packed;
- 
-+struct kbguard_feature_report {
-+	struct common_feature_property common_property;
-+} __packed;
-+
- struct hpd_input_report {
- 	struct common_input_property common_property;
- 	 /* values specific to human presence sensor */
- 	u8 human_presence;
- } __packed;
- 
-+struct kbguard_input_report {
-+	struct common_input_property common_property;
-+} __packed;
-+
-+
- int get_report_descriptor(int sensor_idx, u8 rep_desc[]);
- u32 get_descr_sz(int sensor_idx, int descriptor_name);
- u8 get_feature_report(int sensor_idx, int report_id, u8 *feature_report);
-diff --git a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h
-index 697f2791ea9c..7a62fcec2c73 100644
---- a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h
-+++ b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h
-@@ -644,6 +644,25 @@ static const u8 als_report_descriptor[] = {
- 0xC0			/* HID end collection */
- };
- 
-+
-+static const u8 kbguard_report_descriptor[] = {
-+0x06, 0x43, 0xFF,  // Usage Page (Vendor Defined 0xFF43)
-+0x0A, 0x02, 0x02,  // Usage (0x0202)
-+0xA1, 0x01, // Collection (Application)
-+0x85, 0x11, //   Report ID (17)
-+0x15, 0x00, //   Logical Minimum (0)
-+0x25, 0x01, //   Logical Maximum (1)
-+0x35, 0x00, //   Physical Minimum (0)
-+0x45, 0x01, //   Physical Maximum (1)
-+0x65, 0x00, //   Unit (None)
-+0x55, 0x00, //   Unit Exponent (0)
-+0x75, 0x01, //   Report Size (1)
-+0x95, 0x98, //   Report Count (-104)
-+0x81, 0x03, //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-+0x91, 0x03, //   Output (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
-+0xC1, 0x00, // End Collection
-+};
-+
- /* BIOMETRIC PRESENCE*/
- static const u8 hpd_report_descriptor[] = {
- 0x05, 0x20,          /* Usage page */
--- 
-2.37.1
-
 From 170f0da25dac630dacb920d043fb20e12c287520 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Tue, 9 Aug 2022 14:50:53 +1200
@@ -2118,6 +1925,199 @@ index 3d861477cb20..7dd580fdc61c 100644
 -- 
 2.37.2
 
+From e6529e0ad6942bb0eadc5f5ad0590124153e0a8c Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Wed, 3 Aug 2022 11:02:05 +1200
+Subject: [PATCH 1/1] HID: amd_sfh: Add keyguard for ASUS ROG X13 tablet
+
+Add support for ROG X13 Flow 2-in-1 to disable the keyboard when
+the lid is flipped.
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ drivers/hid/amd-sfh-hid/amd_sfh_pcie.c        |  7 ++++-
+ drivers/hid/amd-sfh-hid/amd_sfh_pcie.h        |  1 +
+ .../hid_descriptor/amd_sfh_hid_desc.c         | 27 +++++++++++++++++++
+ .../hid_descriptor/amd_sfh_hid_desc.h         |  9 +++++++
+ .../hid_descriptor/amd_sfh_hid_report_desc.h  | 19 +++++++++++++
+ 5 files changed, 62 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
+index dadc491bbf6b..243541d426d8 100644
+--- a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
++++ b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
+@@ -26,6 +26,7 @@
+ #define ACEL_EN		BIT(0)
+ #define GYRO_EN		BIT(1)
+ #define MAGNO_EN	BIT(2)
++#define KBGUARD_EN	BIT(15)
+ #define HPD_EN		BIT(16)
+ #define ALS_EN		BIT(19)
+ 
+@@ -232,6 +233,9 @@ int amd_mp2_get_sensor_num(struct amd_mp2_dev *privdata, u8 *sensor_id)
+ 	if (HPD_EN & activestatus)
+ 		sensor_id[num_of_sensors++] = HPD_IDX;
+ 
++	if (KBGUARD_EN & activestatus)
++		sensor_id[num_of_sensors++] = KBGUARD_IDX;
++
+ 	return num_of_sensors;
+ }
+ 
+@@ -373,7 +377,8 @@ static int __maybe_unused amd_mp2_pci_suspend(struct device *dev)
+ 
+ 	for (i = 0; i < cl_data->num_hid_devices; i++) {
+ 		if (cl_data->sensor_idx[i] != HPD_IDX &&
+-		    cl_data->sensor_sts[i] == SENSOR_ENABLED) {
++			cl_data->sensor_idx[i] != KBGUARD_IDX &&
++			cl_data->sensor_sts[i] == SENSOR_ENABLED) {
+ 			mp2->mp2_ops->stop(mp2, cl_data->sensor_idx[i]);
+ 			status = amd_sfh_wait_for_response
+ 					(mp2, cl_data->sensor_idx[i], SENSOR_DISABLED);
+diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h
+index 8c760526132a..4a86bc6038a2 100644
+--- a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h
++++ b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h
+@@ -36,6 +36,7 @@
+ #define SENSOR_DISABLED    5
+ 
+ #define HPD_IDX		16
++#define KBGUARD_IDX	15
+ 
+ #define AMD_SFH_IDLE_LOOP	200
+ 
+diff --git a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c
+index 76095bd53c65..f41d28ea7b93 100644
+--- a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c
++++ b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c
+@@ -57,6 +57,11 @@ int get_report_descriptor(int sensor_idx, u8 *rep_desc)
+ 		memcpy(rep_desc, hpd_report_descriptor,
+ 		       sizeof(hpd_report_descriptor));
+ 		break;
++	case KBGUARD_IDX: /* kbguard ? */
++		memset(rep_desc, 0, sizeof(kbguard_report_descriptor));
++		memcpy(rep_desc, kbguard_report_descriptor,
++		       sizeof(kbguard_report_descriptor));
++		break;
+ 	default:
+ 		break;
+ 	}
+@@ -116,6 +121,16 @@ u32 get_descr_sz(int sensor_idx, int descriptor_name)
+ 			return sizeof(struct hpd_feature_report);
+ 		}
+ 		break;
++	case KBGUARD_IDX:
++		switch (descriptor_name) {
++		case descr_size:
++			return sizeof(kbguard_report_descriptor);
++		case input_size:
++			return sizeof(struct kbguard_input_report);
++		case feature_size:
++			return sizeof(struct kbguard_feature_report);
++		}
++		break;
+ 
+ 	default:
+ 		break;
+@@ -139,6 +154,7 @@ u8 get_feature_report(int sensor_idx, int report_id, u8 *feature_report)
+ 	struct gyro_feature_report gyro_feature;
+ 	struct magno_feature_report magno_feature;
+ 	struct hpd_feature_report hpd_feature;
++	struct kbguard_feature_report kbguard_feature;
+ 	struct als_feature_report als_feature;
+ 	u8 report_size = 0;
+ 
+@@ -186,6 +202,11 @@ u8 get_feature_report(int sensor_idx, int report_id, u8 *feature_report)
+ 		memcpy(feature_report, &hpd_feature, sizeof(hpd_feature));
+ 		report_size = sizeof(hpd_feature);
+ 		break;
++	case KBGUARD_IDX:  /* auto disable keyboard when flip out */
++		get_common_features(&kbguard_feature.common_property, report_id);
++		memcpy(feature_report, &kbguard_feature, sizeof(kbguard_feature));
++		report_size = sizeof(kbguard_feature);
++		break;
+ 
+ 	default:
+ 		break;
+@@ -210,6 +231,7 @@ u8 get_input_report(u8 current_index, int sensor_idx, int report_id, struct amd_
+ 	struct accel3_input_report acc_input;
+ 	struct gyro_input_report gyro_input;
+ 	struct hpd_input_report hpd_input;
++	struct kbguard_input_report kbguard_input;
+ 	struct als_input_report als_input;
+ 	struct hpd_status hpdstatus;
+ 	u8 report_size = 0;
+@@ -262,6 +284,11 @@ u8 get_input_report(u8 current_index, int sensor_idx, int report_id, struct amd_
+ 		report_size = sizeof(hpd_input);
+ 		memcpy(input_report, &hpd_input, sizeof(hpd_input));
+ 		break;
++	case KBGUARD_IDX: /* kb guard */
++		get_common_inputs(&kbguard_input.common_property, report_id);
++		report_size = sizeof(kbguard_input);
++		memcpy(input_report, &kbguard_input, sizeof(kbguard_input));
++break;
+ 	default:
+ 		break;
+ 	}
+diff --git a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h
+index 70b1b7abe2c6..98571a8597b3 100644
+--- a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h
++++ b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h
+@@ -105,12 +105,21 @@ struct hpd_feature_report {
+ 	struct common_feature_property common_property;
+ } __packed;
+ 
++struct kbguard_feature_report {
++	struct common_feature_property common_property;
++} __packed;
++
+ struct hpd_input_report {
+ 	struct common_input_property common_property;
+ 	 /* values specific to human presence sensor */
+ 	u8 human_presence;
+ } __packed;
+ 
++struct kbguard_input_report {
++	struct common_input_property common_property;
++} __packed;
++
++
+ int get_report_descriptor(int sensor_idx, u8 rep_desc[]);
+ u32 get_descr_sz(int sensor_idx, int descriptor_name);
+ u8 get_feature_report(int sensor_idx, int report_id, u8 *feature_report);
+diff --git a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h
+index 697f2791ea9c..7a62fcec2c73 100644
+--- a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h
++++ b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h
+@@ -644,6 +644,25 @@ static const u8 als_report_descriptor[] = {
+ 0xC0			/* HID end collection */
+ };
+ 
++
++static const u8 kbguard_report_descriptor[] = {
++0x06, 0x43, 0xFF,  // Usage Page (Vendor Defined 0xFF43)
++0x0A, 0x02, 0x02,  // Usage (0x0202)
++0xA1, 0x01, // Collection (Application)
++0x85, 0x11, //   Report ID (17)
++0x15, 0x00, //   Logical Minimum (0)
++0x25, 0x01, //   Logical Maximum (1)
++0x35, 0x00, //   Physical Minimum (0)
++0x45, 0x01, //   Physical Maximum (1)
++0x65, 0x00, //   Unit (None)
++0x55, 0x00, //   Unit Exponent (0)
++0x75, 0x01, //   Report Size (1)
++0x95, 0x98, //   Report Count (-104)
++0x81, 0x03, //   Input (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
++0x91, 0x03, //   Output (Const,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
++0xC1, 0x00, // End Collection
++};
++
+ /* BIOMETRIC PRESENCE*/
+ static const u8 hpd_report_descriptor[] = {
+ 0x05, 0x20,          /* Usage page */
+-- 
+2.37.1
+
 From 3f73788b14ada783657e5e6303c4e5de5e096be5 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Fri, 26 Aug 2022 12:32:24 +1200
@@ -2179,27 +2179,17 @@ index f608a4467d99..ea45e10302f7 100644
 -- 
 2.37.2
 
-From fe443cc4ff4e12652af1cdae63cff354a2467b67 Mon Sep 17 00:00:00 2001
-From: "Luke D. Jones" <luke@ljones.dev>
-Date: Fri, 26 Aug 2022 12:34:02 +1200
-Subject: [PATCH 21/21] asus-wmi: Support the GPU fan on TUF laptops
-
-Add support for TUF laptops which have the ability to control
-the GPU fan. This will show as a second fan in hwmon, and has
-the ability to run as boost (fullspeed), or auto.
-
-Signed-off-by: Luke D. Jones <luke@ljones.dev>
 ---
  drivers/platform/x86/asus-wmi.c            | 71 ++++++++++++++++++++++
  include/linux/platform_data/x86/asus-wmi.h |  1 +
  2 files changed, 72 insertions(+)
 
 diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
-index ea45e10302f7..d05684194f2d 100644
+index ac06fec0565c..2a74e468591a 100644
 --- a/drivers/platform/x86/asus-wmi.c
 +++ b/drivers/platform/x86/asus-wmi.c
-@@ -226,7 +226,9 @@ struct asus_wmi {
- 	u32 tablet_switch_dev_id;
+@@ -221,7 +221,9 @@ struct asus_wmi {
+ 	struct asus_rfkill uwb;
  
  	enum fan_type fan_type;
 +	enum fan_type gpu_fan_type;
@@ -2208,12 +2198,12 @@ index ea45e10302f7..d05684194f2d 100644
  	int agfn_pwm;
  
  	bool fan_boost_mode_available;
-@@ -1861,6 +1863,18 @@ static int asus_fan_set_auto(struct asus_wmi *asus)
+@@ -1757,6 +1759,18 @@ static int asus_fan_set_auto(struct asus_wmi *asus)
  		return -ENXIO;
  	}
  
 +	/*
-+	 * Modern models like the G713 also have GPU fan control (this is not AGFN)
++	 * Modern models like G713 also have GPU fan control. This is not AGFN.
 +	 */
 +	if (asus->gpu_fan_type == FAN_TYPE_SPEC83) {
 +		status = asus_wmi_set_devstate(ASUS_WMI_DEVID_GPU_FAN_CTRL,
@@ -2227,7 +2217,7 @@ index ea45e10302f7..d05684194f2d 100644
  
  	return 0;
  }
-@@ -2063,9 +2077,57 @@ static ssize_t asus_hwmon_temp1(struct device *dev,
+@@ -1959,9 +1973,57 @@ static ssize_t asus_hwmon_temp1(struct device *dev,
  		       deci_kelvin_to_millicelsius(value & 0xFFFF));
  }
  
@@ -2238,7 +2228,7 @@ index ea45e10302f7..d05684194f2d 100644
 +{
 +	struct asus_wmi *asus = dev_get_drvdata(dev);
 +
-+	return sysfs_emit(buf, "%d\n", asus->gpu_fan_pwm_mode);
++	return sprintf(buf, "%d\n", asus->gpu_fan_pwm_mode);
 +}
 +
 +static ssize_t pwm2_enable_store(struct device *dev,
@@ -2285,7 +2275,7 @@ index ea45e10302f7..d05684194f2d 100644
  static DEVICE_ATTR_RO(fan1_input);
  static DEVICE_ATTR_RO(fan1_label);
  
-@@ -2075,6 +2137,7 @@ static DEVICE_ATTR(temp1_input, S_IRUGO, asus_hwmon_temp1, NULL);
+@@ -1971,6 +2033,7 @@ static DEVICE_ATTR(temp1_input, S_IRUGO, asus_hwmon_temp1, NULL);
  static struct attribute *hwmon_attributes[] = {
  	&dev_attr_pwm1.attr,
  	&dev_attr_pwm1_enable.attr,
@@ -2293,7 +2283,7 @@ index ea45e10302f7..d05684194f2d 100644
  	&dev_attr_fan1_input.attr,
  	&dev_attr_fan1_label.attr,
  
-@@ -2097,6 +2160,9 @@ static umode_t asus_hwmon_sysfs_is_visible(struct kobject *kobj,
+@@ -1993,6 +2056,9 @@ static umode_t asus_hwmon_sysfs_is_visible(struct kobject *kobj,
  	    || attr == &dev_attr_pwm1_enable.attr) {
  		if (asus->fan_type == FAN_TYPE_NONE)
  			return 0;
@@ -2303,7 +2293,7 @@ index ea45e10302f7..d05684194f2d 100644
  	} else if (attr == &dev_attr_temp1_input.attr) {
  		int err = asus_wmi_get_devstate(asus,
  						ASUS_WMI_DEVID_THERMAL_CTRL,
-@@ -2139,6 +2205,7 @@ static int asus_wmi_hwmon_init(struct asus_wmi *asus)
+@@ -2035,6 +2101,7 @@ static int asus_wmi_hwmon_init(struct asus_wmi *asus)
  
  static int asus_wmi_fan_init(struct asus_wmi *asus)
  {
@@ -2311,7 +2301,7 @@ index ea45e10302f7..d05684194f2d 100644
  	asus->fan_type = FAN_TYPE_NONE;
  	asus->agfn_pwm = -1;
  
-@@ -2147,6 +2214,10 @@ static int asus_wmi_fan_init(struct asus_wmi *asus)
+@@ -2043,6 +2110,10 @@ static int asus_wmi_fan_init(struct asus_wmi *asus)
  	else if (asus_wmi_has_agfn_fan(asus))
  		asus->fan_type = FAN_TYPE_AGFN;
  
@@ -2323,10 +2313,10 @@ index ea45e10302f7..d05684194f2d 100644
  		return -ENODEV;
  
 diff --git a/include/linux/platform_data/x86/asus-wmi.h b/include/linux/platform_data/x86/asus-wmi.h
-index 7dd580fdc61c..28234dc9fa6a 100644
+index a571b47ff362..bcffb77371be 100644
 --- a/include/linux/platform_data/x86/asus-wmi.h
 +++ b/include/linux/platform_data/x86/asus-wmi.h
-@@ -79,6 +79,7 @@
+@@ -77,6 +77,7 @@
  #define ASUS_WMI_DEVID_THERMAL_CTRL	0x00110011
  #define ASUS_WMI_DEVID_FAN_CTRL		0x00110012 /* deprecated */
  #define ASUS_WMI_DEVID_CPU_FAN_CTRL	0x00110013
@@ -2335,5 +2325,327 @@ index 7dd580fdc61c..28234dc9fa6a 100644
  #define ASUS_WMI_DEVID_GPU_FAN_CURVE	0x00110025
  
 -- 
-2.37.2
+2.37.1
+
+  From ded47e7197a4ce9d6c34c0c96c6551ecaca0b6bd Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Fri, 16 Sep 2022 11:17:16 +1200
+Subject: [PATCH] asus-wmi: Expand support of GPU fan to read RPM and label
+
+The previously added patch to add support for pwm change for TUF laptops
+also is usuable for more than TUF. The same method `0x00110014` is
+used to read the fan RPM.
+
+Add two extra attributes for reading fan2 plus fan2 label.
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ drivers/platform/x86/asus-wmi.c | 36 +++++++++++++++++++++++++++++++--
+ 1 file changed, 34 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
+index ae46af731de9..7fe6ce25da0a 100644
+--- a/drivers/platform/x86/asus-wmi.c
++++ b/drivers/platform/x86/asus-wmi.c
+@@ -72,6 +72,7 @@ module_param(fnlock_default, bool, 0444);
+ 
+ #define ASUS_WMI_FNLOCK_BIOS_DISABLED	BIT(0)
+ 
++#define ASUS_GPU_FAN_DESC		"gpu_fan"
+ #define ASUS_FAN_DESC			"cpu_fan"
+ #define ASUS_FAN_MFUN			0x13
+ #define ASUS_FAN_SFUN_READ		0x06
+@@ -2078,6 +2079,30 @@ static ssize_t asus_hwmon_temp1(struct device *dev,
+ }
+ 
+ /* GPU fan on modern ROG laptops */
++static ssize_t fan2_input_show(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
++{
++	struct asus_wmi *asus = dev_get_drvdata(dev);
++	int value;
++	int ret;
++
++	ret = asus_wmi_get_devstate(asus, ASUS_WMI_DEVID_GPU_FAN_CTRL, &value);
++	if (ret < 0)
++		return ret;
++
++	value &= 0xffff;
++
++	return sysfs_emit(buf, "%d\n", value < 0 ? -1 : value * 100);
++}
++
++static ssize_t fan2_label_show(struct device *dev,
++					  struct device_attribute *attr,
++					  char *buf)
++{
++	return sprintf(buf, "%s\n", ASUS_GPU_FAN_DESC);
++}
++
+ static ssize_t pwm2_enable_show(struct device *dev,
+ 				struct device_attribute *attr,
+ 				char *buf)
+@@ -2127,9 +2152,12 @@ static ssize_t pwm2_enable_store(struct device *dev,
+ /* Fan1 */
+ static DEVICE_ATTR_RW(pwm1);
+ static DEVICE_ATTR_RW(pwm1_enable);
+-static DEVICE_ATTR_RW(pwm2_enable);
+ static DEVICE_ATTR_RO(fan1_input);
+ static DEVICE_ATTR_RO(fan1_label);
++/* Fan2 - GPU fan */
++static DEVICE_ATTR_RW(pwm2_enable);
++static DEVICE_ATTR_RO(fan2_input);
++static DEVICE_ATTR_RO(fan2_label);
+ 
+ /* Temperature */
+ static DEVICE_ATTR(temp1_input, S_IRUGO, asus_hwmon_temp1, NULL);
+@@ -2140,6 +2168,8 @@ static struct attribute *hwmon_attributes[] = {
+ 	&dev_attr_pwm2_enable.attr,
+ 	&dev_attr_fan1_input.attr,
+ 	&dev_attr_fan1_label.attr,
++	&dev_attr_fan2_input.attr,
++	&dev_attr_fan2_label.attr,
+ 
+ 	&dev_attr_temp1_input.attr,
+ 	NULL
+@@ -2160,7 +2190,9 @@ static umode_t asus_hwmon_sysfs_is_visible(struct kobject *kobj,
+ 	    || attr == &dev_attr_pwm1_enable.attr) {
+ 		if (asus->fan_type == FAN_TYPE_NONE)
+ 			return 0;
+-	} else if (attr == &dev_attr_pwm2_enable.attr) {
++	} else if (attr == &dev_attr_fan2_input.attr
++	    || attr == &dev_attr_fan2_label.attr
++	    || attr == &dev_attr_pwm2_enable.attr) {
+ 		if (asus->gpu_fan_type == FAN_TYPE_NONE)
+ 			return 0;
+ 	} else if (attr == &dev_attr_temp1_input.attr) {
+-- 
+2.37.3
+
+From c104c26a25de7faf6c1fce3d05806d1766721798 Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Mon, 10 Oct 2022 20:00:26 +1300
+Subject: [PATCH]  ALSA: hda/realtek: Add quirk for ASUS GV601R laptop
+
+The ASUS ROG X16 (GV601R) series laptop has the same node-to-DAC pairs
+as early models and the G14, this includes bass speakers which are by
+default mapped incorrectly to the 0x06 node.
+
+Add a quirk to use the same DAC pairs as the G14.
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ sound/pci/hda/patch_realtek.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index bce82b834cec..1ffea762ba57 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -9422,6 +9422,7 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
+ 	SND_PCI_QUIRK(0x1043, 0x1e8e, "ASUS Zephyrus G15", ALC289_FIXUP_ASUS_GA401),
+ 	SND_PCI_QUIRK(0x1043, 0x1c52, "ASUS Zephyrus G15 2022", ALC289_FIXUP_ASUS_GA401),
+ 	SND_PCI_QUIRK(0x1043, 0x1f11, "ASUS Zephyrus G14", ALC289_FIXUP_ASUS_GA401),
++	SND_PCI_QUIRK(0x1043, 0x1f92, "ASUS ROG Flow X16", ALC289_FIXUP_ASUS_GA401),
+ 	SND_PCI_QUIRK(0x1043, 0x3030, "ASUS ZN270IE", ALC256_FIXUP_ASUS_AIO_GPIO2),
+ 	SND_PCI_QUIRK(0x1043, 0x831a, "ASUS P901", ALC269_FIXUP_STEREO_DMIC),
+ 	SND_PCI_QUIRK(0x1043, 0x834a, "ASUS S101", ALC269_FIXUP_STEREO_DMIC),
+-- 
+2.37.3
+
+From 4e55d420b8f311a5d93367e8598c7d1590eff4cf Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Mon, 10 Oct 2022 19:51:57 +1300
+Subject: [PATCH] Fixes bc2c23549ccd ("ALSA: hda/realtek: Add pincfg for ASUS
+ G533Z HP jack")
+
+The initial fix for ASUS G533Z was based on faulty information. This
+fixes the pincfg to values that have been verified with no existing
+module options or other hacks enabled.
+
+Enables headphone jack, and 5.1 surround.
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ sound/pci/hda/patch_realtek.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index bce82b834cec..24406f81da27 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -8449,11 +8449,13 @@ static const struct hda_fixup alc269_fixups[] = {
+ 	[ALC285_FIXUP_ASUS_G533Z_PINS] = {
+ 		.type = HDA_FIXUP_PINS,
+ 		.v.pins = (const struct hda_pintbl[]) {
+-			{ 0x14, 0x90170120 },
+-			{ }
++				{ 0x14, 0x90170152 }, /* Speaker Surround Playback Switch */
++				{ 0x19, 0x03a19020 }, /* Mic Boost Volume */
++				{ 0x1a, 0x03a11c30 }, /* Mic Boost Volume */
++				{ 0x1e, 0x90170151 }, /* Rear jack, IN OUT EAPD Detect */
++				{ 0x21, 0x03211420 },
++				{ }
+ 		},
+-		.chained = true,
+-		.chain_id = ALC294_FIXUP_ASUS_G513_PINS,
+ 	},
+ 	[ALC294_FIXUP_ASUS_COEF_1B] = {
+ 		.type = HDA_FIXUP_VERBS,
+-- 
+2.37.3
+
+From ef5a27e01610251d6b91e3bdcf297246414b40ce Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Mon, 10 Oct 2022 19:27:51 +1300
+Subject: [PATCH]  platform/x86: asus-wmi: Add support for ROG X16 tablet mode
+
+Add quirk for ASUS ROG X16 Flow 2-in-1 to enable tablet mode with
+lid flip (all screen rotations).
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ drivers/platform/x86/asus-nb-wmi.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/platform/x86/asus-nb-wmi.c b/drivers/platform/x86/asus-nb-wmi.c
+index 613c45c9fbe3..c685a705b73d 100644
+--- a/drivers/platform/x86/asus-nb-wmi.c
++++ b/drivers/platform/x86/asus-nb-wmi.c
+@@ -464,6 +464,15 @@ static const struct dmi_system_id asus_quirks[] = {
+ 		},
+ 		.driver_data = &quirk_asus_tablet_mode,
+ 	},
++	{
++		.callback = dmi_matched,
++		.ident = "ASUS ROG FLOW X16",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "GV601R"),
++		},
++		.driver_data = &quirk_asus_tablet_mode,
++	},
+ 	{},
+ };
+ 
+-- 
+2.37.3
+
+From 9eccb147466f00a13c593ac078d8639e1eafe3a2 Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Fri, 14 Oct 2022 10:43:09 +1300
+Subject: [PATCH] platform/x86: asus-wmi: Add safety checks to dgpu/egpu/mux
+ methods
+
+The WMI methods for dgpu_disable, egpu_enable, and gpu_mux_mode have
+no internal safety checks. This means it is possible for a user to
+set the gpu mux to discreet mode and then disable the dgpu, resulting
+in the user having no screen and very little chance of recovery.
+
+This commit adds checks to dgpu_disable and egpu_enable to ensure that
+the dgpu can not be disabled if the MUX is in discreet mode, and a
+check to gpu_mux_mode to prevent switching to discreet mode if
+dgpu_disable is set.
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ drivers/platform/x86/asus-wmi.c | 38 +++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
+index 6e8e093f96b3..1afc4d40fa1a 100644
+--- a/drivers/platform/x86/asus-wmi.c
++++ b/drivers/platform/x86/asus-wmi.c
+@@ -615,6 +615,18 @@ static ssize_t dgpu_disable_store(struct device *dev,
+ 	if (disable > 1)
+ 		return -EINVAL;
+ 
++	/*
++	 * The GPU MUX must be checked first, if it is in discreet mode the
++	 * dgpu_disable cannot be set to on or users can end up with no screen.
++	 */
++	result = asus_wmi_get_devstate_simple(asus, ASUS_WMI_DEVID_GPU_MUX);
++	if (result < 0)
++		return result;
++	if (!result && disable) {
++		pr_warn("ASUS MUX is in discreet mode, can not set dgpu_disable on\n");
++		return -EINVAL;
++	}
++
+ 	err = asus_wmi_set_devstate(ASUS_WMI_DEVID_DGPU, disable, &result);
+ 	if (err) {
+ 		pr_warn("Failed to set dgpu disable: %d\n", err);
+@@ -663,6 +675,19 @@ static ssize_t egpu_enable_store(struct device *dev,
+ 	if (enable > 1)
+ 		return -EINVAL;
+ 
++	/*
++	 * The GPU MUX must be checked first, if it is in discreet mode the
++	 * egpu_enable cannot be set to on or users can end up with no screen.
++	 * Note: egpu_enable method in WMI also sets dgpu_disable to on.
++	 */
++	result = asus_wmi_get_devstate_simple(asus, ASUS_WMI_DEVID_GPU_MUX);
++	if (result < 0)
++		return result;
++	if (!result && enable) {
++		pr_warn("ASUS MUX is in discreet mode, can not set egpu_enable on\n");
++		return -EINVAL;
++	}
++
+ 	err = asus_wmi_set_devstate(ASUS_WMI_DEVID_EGPU, enable, &result);
+ 	if (err) {
+ 		pr_warn("Failed to set egpu disable: %d\n", err);
+@@ -709,6 +734,19 @@ static ssize_t gpu_mux_mode_store(struct device *dev,
+ 	if (optimus > 1)
+ 		return -EINVAL;
+ 
++	/*
++	 * The dgpu_disable must be checked first, if it is enabled the
++	 * gpu MUX can not be set to 0 or users can end up with no screen.
++	 * Note: egpu_enable also switches dgpu_disable to 1 if enabled.
++	 */
++	result = asus_wmi_get_devstate_simple(asus, ASUS_WMI_DEVID_DGPU);
++	if (result < 0)
++		return result;
++	if (result && !optimus) {
++		pr_warn("ASUS dgpu_disable is set, can not switch MUX to discreet mode\n");
++		return -EINVAL;
++	}
++
+ 	err = asus_wmi_set_devstate(ASUS_WMI_DEVID_GPU_MUX, optimus, &result);
+ 	if (err) {
+ 		dev_err(dev, "Failed to set GPU MUX mode: %d\n", err);
+-- 
+2.37.3
+
+From f1c38428ff75d0f3956615bea69a43b8b6812414 Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Fri, 14 Oct 2022 13:03:36 +1300
+Subject: [PATCH] platform/x86: asus-wmi: Check for reboot required in
+ dgpu_disable  methods
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ drivers/platform/x86/asus-wmi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
+index 1afc4d40fa1a..5d5c473541bd 100644
+--- a/drivers/platform/x86/asus-wmi.c
++++ b/drivers/platform/x86/asus-wmi.c
+@@ -633,6 +633,11 @@ static ssize_t dgpu_disable_store(struct device *dev,
+ 		return err;
+ 	}
+ 
++	if (result == 2) {
++		pr_warn("Failed to set dgpu disable, reboot is required\n");
++		return -2;
++	}
++
+ 	if (result > 1) {
+ 		pr_warn("Failed to set dgpu disable (result): 0x%x\n", result);
+ 		return -EIO;
+-- 
+2.37.3
 
