@@ -46,7 +46,7 @@ diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
 index c9ee30627b6c..2d1ff7796c34 100644
 --- a/drivers/acpi/x86/s2idle.c
 +++ b/drivers/acpi/x86/s2idle.c
-@@ -412,31 +412,29 @@ static int lps0_device_attach(struct acpi_device *adev,
+@@ -472,31 +472,27 @@ static int lps0_device_attach(struct acpi_device *adev,
  		return 0;
  
  	if (acpi_s2idle_vendor_amd()) {
@@ -86,13 +86,11 @@ index c9ee30627b6c..2d1ff7796c34 100644
  			lps0_dsm_func_mask = (lps0_dsm_func_mask << 1) | 0x1;
  			acpi_handle_debug(adev->handle, "_DSM UUID %s: Adjusted function mask: 0x%x\n",
  					  ACPI_LPS0_DSM_UUID_AMD, lps0_dsm_func_mask);
--		} else if (lps0_dsm_func_mask_microsoft > 0 && !strcmp(hid, "AMDI0007")) {
+-		} else if (lps0_dsm_func_mask_microsoft > 0 &&
 +		} else if (lps0_dsm_func_mask_microsoft > 0 && data->prefer_amd_guid &&
-+				(!strcmp(hid, "AMDI0007") ||
-+				 !strcmp(hid, "AMDI0008"))) {
+ 				(!strcmp(hid, "AMDI0007") ||
+ 				 !strcmp(hid, "AMDI0008"))) {
  			lps0_dsm_func_mask_microsoft = -EINVAL;
- 			acpi_handle_debug(adev->handle, "_DSM Using AMD method\n");
- 		}
 
 diff --git a/drivers/acpi/x86/s2idle.c b/drivers/acpi/x86/s2idle.c
 index a8256e5a0e8a..a9b0f2b54a1c 100644
