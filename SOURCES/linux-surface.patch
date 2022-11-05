@@ -1,4 +1,4 @@
-From cf081f3ccc47f650f1fa8c2f0a35bacf5b177766 Mon Sep 17 00:00:00 2001
+From 3c97e0f82689012bd51bc01db291fb06fbc94750 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 18 Oct 2020 16:42:44 +0900
 Subject: [PATCH] (surface3-oemb) add DMI matches for Surface 3 with broken DMI
@@ -97,411 +97,9 @@ index 6beb00858c33..d82d77387a0a 100644
  };
  
 -- 
-2.38.0
+2.38.1
 
-From 7877f4ebb43da4625e635c5f1ce491422a50a05a Mon Sep 17 00:00:00 2001
-From: Tsuchiya Yuto <kitakar@gmail.com>
-Date: Tue, 29 Sep 2020 17:32:22 +0900
-Subject: [PATCH] mwifiex: pcie: add reset_wsid quirk for Surface 3
-
-This commit adds reset_wsid quirk and uses this quirk for Surface 3 on
-card reset.
-
-To reset mwifiex on Surface 3, it seems that calling the _DSM method
-exists in \_SB.WSID [1] device is required.
-
-On Surface 3, calling the _DSM method removes/re-probes the card by
-itself. So, need to place the reset function before performing FLR and
-skip performing any other reset-related works.
-
-Note that Surface Pro 3 also has the WSID device [2], but it seems to need
-more work. This commit only supports Surface 3 yet.
-
-[1] https://github.com/linux-surface/acpidumps/blob/05cba925f3a515f222acb5b3551a032ddde958fe/surface_3/dsdt.dsl#L11947-L12011
-[2] https://github.com/linux-surface/acpidumps/blob/05cba925f3a515f222acb5b3551a032ddde958fe/surface_pro_3/dsdt.dsl#L12164-L12216
-
-Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
-Patchset: mwifiex
----
- drivers/net/wireless/marvell/mwifiex/pcie.c   | 10 +++
- .../wireless/marvell/mwifiex/pcie_quirks.c    | 83 +++++++++++++++++++
- .../wireless/marvell/mwifiex/pcie_quirks.h    |  6 ++
- 3 files changed, 99 insertions(+)
-
-diff --git a/drivers/net/wireless/marvell/mwifiex/pcie.c b/drivers/net/wireless/marvell/mwifiex/pcie.c
-index f7f9277602a5..56ae323ca3b5 100644
---- a/drivers/net/wireless/marvell/mwifiex/pcie.c
-+++ b/drivers/net/wireless/marvell/mwifiex/pcie.c
-@@ -2981,6 +2981,16 @@ static void mwifiex_pcie_card_reset_work(struct mwifiex_adapter *adapter)
- {
- 	struct pcie_service_card *card = adapter->card;
- 
-+	/* On Surface 3, reset_wsid method removes then re-probes card by
-+	 * itself. So, need to place it here and skip performing any other
-+	 * reset-related works.
-+	 */
-+	if (card->quirks & QUIRK_FW_RST_WSID_S3) {
-+		mwifiex_pcie_reset_wsid_quirk(card->dev);
-+		/* skip performing any other reset-related works */
-+		return;
-+	}
-+
- 	/* We can't afford to wait here; remove() might be waiting on us. If we
- 	 * can't grab the device lock, maybe we'll get another chance later.
- 	 */
-diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-index dd6d21f1dbfd..2175358dc65d 100644
---- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-+++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-@@ -1,10 +1,21 @@
- // SPDX-License-Identifier: GPL-2.0-only
- // NXP Wireless LAN device driver: PCIE and platform specific quirks
- 
-+#include <linux/acpi.h>
- #include <linux/dmi.h>
- 
- #include "pcie_quirks.h"
- 
-+/* For reset_wsid quirk */
-+#define ACPI_WSID_PATH		"\\_SB.WSID"
-+#define WSID_REV		0x0
-+#define WSID_FUNC_WIFI_PWR_OFF	0x1
-+#define WSID_FUNC_WIFI_PWR_ON	0x2
-+/* WSID _DSM UUID: "534ea3bf-fcc2-4e7a-908f-a13978f0c7ef" */
-+static const guid_t wsid_dsm_guid =
-+	GUID_INIT(0x534ea3bf, 0xfcc2, 0x4e7a,
-+		  0x90, 0x8f, 0xa1, 0x39, 0x78, 0xf0, 0xc7, 0xef);
-+
- /* quirk table based on DMI matching */
- static const struct dmi_system_id mwifiex_quirk_table[] = {
- 	{
-@@ -73,6 +84,14 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 		},
- 		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
- 	},
-+	{
-+		.ident = "Surface 3",
-+		.matches = {
-+			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
-+			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface 3"),
-+		},
-+		.driver_data = (void *)QUIRK_FW_RST_WSID_S3,
-+	},
- 	{}
- };
- 
-@@ -89,6 +108,9 @@ void mwifiex_initialize_quirks(struct pcie_service_card *card)
- 		dev_info(&pdev->dev, "no quirks enabled\n");
- 	if (card->quirks & QUIRK_FW_RST_D3COLD)
- 		dev_info(&pdev->dev, "quirk reset_d3cold enabled\n");
-+	if (card->quirks & QUIRK_FW_RST_WSID_S3)
-+		dev_info(&pdev->dev,
-+			 "quirk reset_wsid for Surface 3 enabled\n");
- }
- 
- static void mwifiex_pcie_set_power_d3cold(struct pci_dev *pdev)
-@@ -145,3 +167,64 @@ int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev)
- 
- 	return 0;
- }
-+
-+int mwifiex_pcie_reset_wsid_quirk(struct pci_dev *pdev)
-+{
-+	acpi_handle handle;
-+	union acpi_object *obj;
-+	acpi_status status;
-+
-+	dev_info(&pdev->dev, "Using reset_wsid quirk to perform FW reset\n");
-+
-+	status = acpi_get_handle(NULL, ACPI_WSID_PATH, &handle);
-+	if (ACPI_FAILURE(status)) {
-+		dev_err(&pdev->dev, "No ACPI handle for path %s\n",
-+			ACPI_WSID_PATH);
-+		return -ENODEV;
-+	}
-+
-+	if (!acpi_has_method(handle, "_DSM")) {
-+		dev_err(&pdev->dev, "_DSM method not found\n");
-+		return -ENODEV;
-+	}
-+
-+	if (!acpi_check_dsm(handle, &wsid_dsm_guid,
-+			    WSID_REV, WSID_FUNC_WIFI_PWR_OFF)) {
-+		dev_err(&pdev->dev,
-+			"_DSM method doesn't support wifi power off func\n");
-+		return -ENODEV;
-+	}
-+
-+	if (!acpi_check_dsm(handle, &wsid_dsm_guid,
-+			    WSID_REV, WSID_FUNC_WIFI_PWR_ON)) {
-+		dev_err(&pdev->dev,
-+			"_DSM method doesn't support wifi power on func\n");
-+		return -ENODEV;
-+	}
-+
-+	/* card will be removed immediately after this call on Surface 3 */
-+	dev_info(&pdev->dev, "turning wifi off...\n");
-+	obj = acpi_evaluate_dsm(handle, &wsid_dsm_guid,
-+				WSID_REV, WSID_FUNC_WIFI_PWR_OFF,
-+				NULL);
-+	if (!obj) {
-+		dev_err(&pdev->dev,
-+			"device _DSM execution failed for turning wifi off\n");
-+		return -EIO;
-+	}
-+	ACPI_FREE(obj);
-+
-+	/* card will be re-probed immediately after this call on Surface 3 */
-+	dev_info(&pdev->dev, "turning wifi on...\n");
-+	obj = acpi_evaluate_dsm(handle, &wsid_dsm_guid,
-+				WSID_REV, WSID_FUNC_WIFI_PWR_ON,
-+				NULL);
-+	if (!obj) {
-+		dev_err(&pdev->dev,
-+			"device _DSM execution failed for turning wifi on\n");
-+		return -EIO;
-+	}
-+	ACPI_FREE(obj);
-+
-+	return 0;
-+}
-diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
-index d6ff964aec5b..40c95ab24bd7 100644
---- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
-+++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
-@@ -5,5 +5,11 @@
- 
- #define QUIRK_FW_RST_D3COLD	BIT(0)
- 
-+/* Surface 3 and Surface Pro 3 have the same _DSM method but need to
-+ * be handled differently. Currently, only S3 is supported.
-+ */
-+#define QUIRK_FW_RST_WSID_S3	BIT(1)
-+
- void mwifiex_initialize_quirks(struct pcie_service_card *card);
- int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
-+int mwifiex_pcie_reset_wsid_quirk(struct pci_dev *pdev);
--- 
-2.38.0
-
-From a752cce0b4ff03b78c53f4f9889a707bf706f9bc Mon Sep 17 00:00:00 2001
-From: Tsuchiya Yuto <kitakar@gmail.com>
-Date: Wed, 30 Sep 2020 18:08:24 +0900
-Subject: [PATCH] mwifiex: pcie: (OEMB) add quirk for Surface 3 with broken DMI
- table
-
-(made referring to http://git.osdn.net/view?p=android-x86/kernel.git;a=commitdiff;h=18e2e857c57633b25b3b4120f212224a108cd883)
-
-On some Surface 3, the DMI table gets corrupted for unknown reasons
-and breaks existing DMI matching used for device-specific quirks.
-
-This commit adds the (broken) DMI info for the affected Surface 3.
-
-On affected systems, DMI info will look like this:
-    $ grep . /sys/devices/virtual/dmi/id/{bios_vendor,board_name,board_vendor,\
-    chassis_vendor,product_name,sys_vendor}
-    /sys/devices/virtual/dmi/id/bios_vendor:American Megatrends Inc.
-    /sys/devices/virtual/dmi/id/board_name:OEMB
-    /sys/devices/virtual/dmi/id/board_vendor:OEMB
-    /sys/devices/virtual/dmi/id/chassis_vendor:OEMB
-    /sys/devices/virtual/dmi/id/product_name:OEMB
-    /sys/devices/virtual/dmi/id/sys_vendor:OEMB
-
-Expected:
-    $ grep . /sys/devices/virtual/dmi/id/{bios_vendor,board_name,board_vendor,\
-    chassis_vendor,product_name,sys_vendor}
-    /sys/devices/virtual/dmi/id/bios_vendor:American Megatrends Inc.
-    /sys/devices/virtual/dmi/id/board_name:Surface 3
-    /sys/devices/virtual/dmi/id/board_vendor:Microsoft Corporation
-    /sys/devices/virtual/dmi/id/chassis_vendor:Microsoft Corporation
-    /sys/devices/virtual/dmi/id/product_name:Surface 3
-    /sys/devices/virtual/dmi/id/sys_vendor:Microsoft Corporation
-
-Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
-Patchset: mwifiex
----
- drivers/net/wireless/marvell/mwifiex/pcie_quirks.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-index 2175358dc65d..aec48547a88a 100644
---- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-+++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-@@ -92,6 +92,15 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 		},
- 		.driver_data = (void *)QUIRK_FW_RST_WSID_S3,
- 	},
-+	{
-+		.ident = "Surface 3",
-+		.matches = {
-+			DMI_EXACT_MATCH(DMI_BIOS_VENDOR, "American Megatrends Inc."),
-+			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "OEMB"),
-+			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "OEMB"),
-+		},
-+		.driver_data = (void *)QUIRK_FW_RST_WSID_S3,
-+	},
- 	{}
- };
- 
--- 
-2.38.0
-
-From e651da0b596b34da881f2eddb924a36cb31f8ec0 Mon Sep 17 00:00:00 2001
-From: Tsuchiya Yuto <kitakar@gmail.com>
-Date: Sun, 4 Oct 2020 00:11:49 +0900
-Subject: [PATCH] mwifiex: pcie: disable bridge_d3 for Surface gen4+
-
-Currently, mwifiex fw will crash after suspend on recent kernel series.
-On Windows, it seems that the root port of wifi will never enter D3 state
-(stay on D0 state). And on Linux, disabling the D3 state for the
-bridge fixes fw crashing after suspend.
-
-This commit disables the D3 state of root port on driver initialization
-and fixes fw crashing after suspend.
-
-Signed-off-by: Tsuchiya Yuto <kitakar@gmail.com>
-Patchset: mwifiex
----
- drivers/net/wireless/marvell/mwifiex/pcie.c   |  7 +++++
- .../wireless/marvell/mwifiex/pcie_quirks.c    | 27 +++++++++++++------
- .../wireless/marvell/mwifiex/pcie_quirks.h    |  1 +
- 3 files changed, 27 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/net/wireless/marvell/mwifiex/pcie.c b/drivers/net/wireless/marvell/mwifiex/pcie.c
-index 56ae323ca3b5..3b9a1d97f16e 100644
---- a/drivers/net/wireless/marvell/mwifiex/pcie.c
-+++ b/drivers/net/wireless/marvell/mwifiex/pcie.c
-@@ -368,6 +368,7 @@ static int mwifiex_pcie_probe(struct pci_dev *pdev,
- 					const struct pci_device_id *ent)
- {
- 	struct pcie_service_card *card;
-+	struct pci_dev *parent_pdev = pci_upstream_bridge(pdev);
- 	int ret;
- 
- 	pr_debug("info: vendor=0x%4.04X device=0x%4.04X rev=%d\n",
-@@ -409,6 +410,12 @@ static int mwifiex_pcie_probe(struct pci_dev *pdev,
- 		return -1;
- 	}
- 
-+	/* disable bridge_d3 for Surface gen4+ devices to fix fw crashing
-+	 * after suspend
-+	 */
-+	if (card->quirks & QUIRK_NO_BRIDGE_D3)
-+		parent_pdev->bridge_d3 = false;
-+
- 	return 0;
- }
- 
-diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-index aec48547a88a..842980db998f 100644
---- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-+++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-@@ -24,7 +24,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
- 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Pro 4"),
- 		},
--		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
-+		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
-+					QUIRK_NO_BRIDGE_D3),
- 	},
- 	{
- 		.ident = "Surface Pro 5",
-@@ -33,7 +34,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
- 			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_1796"),
- 		},
--		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
-+		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
-+					QUIRK_NO_BRIDGE_D3),
- 	},
- 	{
- 		.ident = "Surface Pro 5 (LTE)",
-@@ -42,7 +44,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
- 			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_1807"),
- 		},
--		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
-+		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
-+					QUIRK_NO_BRIDGE_D3),
- 	},
- 	{
- 		.ident = "Surface Pro 6",
-@@ -50,7 +53,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
- 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Pro 6"),
- 		},
--		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
-+		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
-+					QUIRK_NO_BRIDGE_D3),
- 	},
- 	{
- 		.ident = "Surface Book 1",
-@@ -58,7 +62,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
- 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book"),
- 		},
--		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
-+		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
-+					QUIRK_NO_BRIDGE_D3),
- 	},
- 	{
- 		.ident = "Surface Book 2",
-@@ -66,7 +71,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
- 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book 2"),
- 		},
--		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
-+		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
-+					QUIRK_NO_BRIDGE_D3),
- 	},
- 	{
- 		.ident = "Surface Laptop 1",
-@@ -74,7 +80,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
- 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Laptop"),
- 		},
--		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
-+		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
-+					QUIRK_NO_BRIDGE_D3),
- 	},
- 	{
- 		.ident = "Surface Laptop 2",
-@@ -82,7 +89,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
- 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
- 			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Laptop 2"),
- 		},
--		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
-+		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
-+					QUIRK_NO_BRIDGE_D3),
- 	},
- 	{
- 		.ident = "Surface 3",
-@@ -120,6 +128,9 @@ void mwifiex_initialize_quirks(struct pcie_service_card *card)
- 	if (card->quirks & QUIRK_FW_RST_WSID_S3)
- 		dev_info(&pdev->dev,
- 			 "quirk reset_wsid for Surface 3 enabled\n");
-+	if (card->quirks & QUIRK_NO_BRIDGE_D3)
-+		dev_info(&pdev->dev,
-+			 "quirk no_brigde_d3 enabled\n");
- }
- 
- static void mwifiex_pcie_set_power_d3cold(struct pci_dev *pdev)
-diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
-index 40c95ab24bd7..0162eee0ee3c 100644
---- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
-+++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
-@@ -9,6 +9,7 @@
-  * be handled differently. Currently, only S3 is supported.
-  */
- #define QUIRK_FW_RST_WSID_S3	BIT(1)
-+#define QUIRK_NO_BRIDGE_D3	BIT(2)
- 
- void mwifiex_initialize_quirks(struct pcie_service_card *card);
- int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
--- 
-2.38.0
-
-From 3bcb56b5f40e4b16ca8eab0b4548008982c93264 Mon Sep 17 00:00:00 2001
+From e8c9d38dd90a1d2141ee5b36faf122155051a508 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Tue, 3 Nov 2020 13:28:04 +0100
 Subject: [PATCH] mwifiex: Add quirk resetting the PCI bridge on MS Surface
@@ -535,10 +133,10 @@ Patchset: mwifiex
  3 files changed, 31 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/net/wireless/marvell/mwifiex/pcie.c b/drivers/net/wireless/marvell/mwifiex/pcie.c
-index 3b9a1d97f16e..f2ced269b543 100644
+index f7f9277602a5..3aeff40179cf 100644
 --- a/drivers/net/wireless/marvell/mwifiex/pcie.c
 +++ b/drivers/net/wireless/marvell/mwifiex/pcie.c
-@@ -1769,9 +1769,21 @@ mwifiex_pcie_send_boot_cmd(struct mwifiex_adapter *adapter, struct sk_buff *skb)
+@@ -1762,9 +1762,21 @@ mwifiex_pcie_send_boot_cmd(struct mwifiex_adapter *adapter, struct sk_buff *skb)
  static int mwifiex_pcie_init_fw_port(struct mwifiex_adapter *adapter)
  {
  	struct pcie_service_card *card = adapter->card;
@@ -561,114 +159,114 @@ index 3b9a1d97f16e..f2ced269b543 100644
  	if (mwifiex_write_reg(adapter, reg->rx_rdptr, card->rxbd_rdptr |
  			      tx_wrap)) {
 diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-index 842980db998f..dd914393ffcb 100644
+index dd6d21f1dbfd..f46b06f8d643 100644
 --- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
 +++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.c
-@@ -25,7 +25,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+@@ -13,7 +13,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
  			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Pro 4"),
  		},
- 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
--					QUIRK_NO_BRIDGE_D3),
-+					QUIRK_NO_BRIDGE_D3 |
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
 +					QUIRK_DO_FLR_ON_BRIDGE),
  	},
  	{
  		.ident = "Surface Pro 5",
-@@ -35,7 +36,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+@@ -22,7 +23,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
  			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_1796"),
  		},
- 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
--					QUIRK_NO_BRIDGE_D3),
-+					QUIRK_NO_BRIDGE_D3 |
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
 +					QUIRK_DO_FLR_ON_BRIDGE),
  	},
  	{
  		.ident = "Surface Pro 5 (LTE)",
-@@ -45,7 +47,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+@@ -31,7 +33,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
  			DMI_EXACT_MATCH(DMI_PRODUCT_SKU, "Surface_Pro_1807"),
  		},
- 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
--					QUIRK_NO_BRIDGE_D3),
-+					QUIRK_NO_BRIDGE_D3 |
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
 +					QUIRK_DO_FLR_ON_BRIDGE),
  	},
  	{
  		.ident = "Surface Pro 6",
-@@ -54,7 +57,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+@@ -39,7 +42,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
  			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Pro 6"),
  		},
- 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
--					QUIRK_NO_BRIDGE_D3),
-+					QUIRK_NO_BRIDGE_D3 |
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
 +					QUIRK_DO_FLR_ON_BRIDGE),
  	},
  	{
  		.ident = "Surface Book 1",
-@@ -63,7 +67,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+@@ -47,7 +51,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
  			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book"),
  		},
- 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
--					QUIRK_NO_BRIDGE_D3),
-+					QUIRK_NO_BRIDGE_D3 |
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
 +					QUIRK_DO_FLR_ON_BRIDGE),
  	},
  	{
  		.ident = "Surface Book 2",
-@@ -72,7 +77,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+@@ -55,7 +60,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
  			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Book 2"),
  		},
- 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
--					QUIRK_NO_BRIDGE_D3),
-+					QUIRK_NO_BRIDGE_D3 |
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
 +					QUIRK_DO_FLR_ON_BRIDGE),
  	},
  	{
  		.ident = "Surface Laptop 1",
-@@ -81,7 +87,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+@@ -63,7 +69,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
  			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Laptop"),
  		},
- 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
--					QUIRK_NO_BRIDGE_D3),
-+					QUIRK_NO_BRIDGE_D3 |
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
 +					QUIRK_DO_FLR_ON_BRIDGE),
  	},
  	{
  		.ident = "Surface Laptop 2",
-@@ -90,7 +97,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+@@ -71,7 +78,8 @@ static const struct dmi_system_id mwifiex_quirk_table[] = {
+ 			DMI_EXACT_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
  			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Surface Laptop 2"),
  		},
- 		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
--					QUIRK_NO_BRIDGE_D3),
-+					QUIRK_NO_BRIDGE_D3 |
+-		.driver_data = (void *)QUIRK_FW_RST_D3COLD,
++		.driver_data = (void *)(QUIRK_FW_RST_D3COLD |
 +					QUIRK_DO_FLR_ON_BRIDGE),
  	},
- 	{
- 		.ident = "Surface 3",
-@@ -131,6 +139,8 @@ void mwifiex_initialize_quirks(struct pcie_service_card *card)
- 	if (card->quirks & QUIRK_NO_BRIDGE_D3)
- 		dev_info(&pdev->dev,
- 			 "quirk no_brigde_d3 enabled\n");
+ 	{}
+ };
+@@ -89,6 +97,8 @@ void mwifiex_initialize_quirks(struct pcie_service_card *card)
+ 		dev_info(&pdev->dev, "no quirks enabled\n");
+ 	if (card->quirks & QUIRK_FW_RST_D3COLD)
+ 		dev_info(&pdev->dev, "quirk reset_d3cold enabled\n");
 +	if (card->quirks & QUIRK_DO_FLR_ON_BRIDGE)
 +		dev_info(&pdev->dev, "quirk do_flr_on_bridge enabled\n");
  }
  
  static void mwifiex_pcie_set_power_d3cold(struct pci_dev *pdev)
 diff --git a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
-index 0162eee0ee3c..1b7c1e63ac5d 100644
+index d6ff964aec5b..5d30ae39d65e 100644
 --- a/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
 +++ b/drivers/net/wireless/marvell/mwifiex/pcie_quirks.h
-@@ -10,6 +10,7 @@
-  */
- #define QUIRK_FW_RST_WSID_S3	BIT(1)
- #define QUIRK_NO_BRIDGE_D3	BIT(2)
-+#define QUIRK_DO_FLR_ON_BRIDGE	BIT(3)
+@@ -4,6 +4,7 @@
+ #include "pcie.h"
+ 
+ #define QUIRK_FW_RST_D3COLD	BIT(0)
++#define QUIRK_DO_FLR_ON_BRIDGE	BIT(1)
  
  void mwifiex_initialize_quirks(struct pcie_service_card *card);
  int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
 -- 
-2.38.0
+2.38.1
 
-From 01adfefa9e7c14a7e77be36d3c5374d252b5de24 Mon Sep 17 00:00:00 2001
+From 1a5210524194ca0bd4330828ca98e1ecdc02d72f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 25 Mar 2021 11:33:02 +0100
 Subject: [PATCH] Bluetooth: btusb: Lower passive lescan interval on Marvell
@@ -744,66 +342,9 @@ index 1bb46cbff0fa..8aa8db5d4cde 100644
  	    (id->driver_info & BTUSB_MEDIATEK)) {
  		hdev->setup = btusb_mtk_setup;
 -- 
-2.38.0
+2.38.1
 
-From c2ed6cb8f8ff11bb1571797542ae1f863024d2b1 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
-Date: Tue, 10 Nov 2020 12:49:56 +0100
-Subject: [PATCH] mwifiex: Use non-posted PCI register writes
-
-On the 88W8897 card it's very important the TX ring write pointer is
-updated correctly to its new value before setting the TX ready
-interrupt, otherwise the firmware appears to crash (probably because
-it's trying to DMA-read from the wrong place).
-
-Since PCI uses "posted writes" when writing to a register, it's not
-guaranteed that a write will happen immediately. That means the pointer
-might be outdated when setting the TX ready interrupt, leading to
-firmware crashes especially when ASPM L1 and L1 substates are enabled
-(because of the higher link latency, the write will probably take
-longer).
-
-So fix those firmware crashes by always forcing non-posted writes. We do
-that by simply reading back the register after writing it, just as a lot
-of other drivers do.
-
-There are two reproducers that are fixed with this patch:
-
-1) During rx/tx traffic and with ASPM L1 substates enabled (the enabled
-substates are platform dependent), the firmware crashes and eventually a
-command timeout appears in the logs. That crash is fixed by using a
-non-posted write in mwifiex_pcie_send_data().
-
-2) When sending lots of commands to the card, waking it up from sleep in
-very quick intervals, the firmware eventually crashes. That crash
-appears to be fixed by some other non-posted write included here.
-
-Patchset: mwifiex
----
- drivers/net/wireless/marvell/mwifiex/pcie.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/net/wireless/marvell/mwifiex/pcie.c b/drivers/net/wireless/marvell/mwifiex/pcie.c
-index f2ced269b543..68f827d34b76 100644
---- a/drivers/net/wireless/marvell/mwifiex/pcie.c
-+++ b/drivers/net/wireless/marvell/mwifiex/pcie.c
-@@ -226,6 +226,12 @@ static int mwifiex_write_reg(struct mwifiex_adapter *adapter, int reg, u32 data)
- 
- 	iowrite32(data, card->pci_mmap1 + reg);
- 
-+	/* Do a read-back, which makes the write non-posted, ensuring the
-+	 * completion before returning.
-+	 * The firmware of the 88W8897 card is buggy and this avoids crashes.
-+	 */
-+	ioread32(card->pci_mmap1 + reg);
-+
- 	return 0;
- }
- 
--- 
-2.38.0
-
-From 850913cd3d364fa006bbc63167ee8a044ac10444 Mon Sep 17 00:00:00 2001
+From abff062e2f35a8e58053f248fc4dd8b808a93749 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 27 Feb 2021 00:45:52 +0100
 Subject: [PATCH] ath10k: Add module parameters to override board files
@@ -922,9 +463,9 @@ index d1ac64026cb3..5c883a12d9f8 100644
  	ret = firmware_request_nowarn(&fw, filename, ar->dev);
  	ath10k_dbg(ar, ATH10K_DBG_BOOT, "boot fw request '%s': %d\n",
 -- 
-2.38.0
+2.38.1
 
-From d6c7ff8753ac6460d826d755f1f3e6386105004e Mon Sep 17 00:00:00 2001
+From 5687662d0c5880de172f5cd6667034a2197e772a Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 30 Jul 2020 13:21:53 +0200
 Subject: [PATCH] misc: mei: Add missing IPTS device IDs
@@ -960,9 +501,9 @@ index 5435604327a7..1165ee4f5928 100644
  
  	{MEI_PCI_DEVICE(MEI_DEV_ID_TGP_LP, MEI_ME_PCH15_CFG)},
 -- 
-2.38.0
+2.38.1
 
-From 19a643df0c2269755fe50e53f2bda8bbf02382d4 Mon Sep 17 00:00:00 2001
+From a09de6da693be52da43fe35fc7ff76269f162237 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 6 Aug 2020 11:20:41 +0200
 Subject: [PATCH] misc: Add support for Intel Precise Touch & Stylus
@@ -2428,9 +1969,9 @@ index 000000000000..53fb86a88f97
 +
 +#endif /* _IPTS_UAPI_H_ */
 -- 
-2.38.0
+2.38.1
 
-From 3f3b7b3bf8c60a9212c0cc2c2cf31d9ca763e1cd Mon Sep 17 00:00:00 2001
+From 730820b1dbfd732a51653bbe789a84c0669575ad Mon Sep 17 00:00:00 2001
 From: Liban Hannan <liban.p@gmail.com>
 Date: Tue, 12 Apr 2022 23:31:12 +0100
 Subject: [PATCH] iommu: ipts: use IOMMU passthrough mode for IPTS
@@ -2452,7 +1993,7 @@ Patchset: ipts
  1 file changed, 24 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index 31bc50e538a3..d8ecca292f93 100644
+index ecc0b05b2796..4c895b5f7e2d 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
 @@ -37,6 +37,8 @@
@@ -2479,7 +2020,7 @@ index 31bc50e538a3..d8ecca292f93 100644
  
  const struct iommu_ops intel_iommu_ops;
  
-@@ -2602,6 +2606,9 @@ static int device_def_domain_type(struct device *dev)
+@@ -2603,6 +2607,9 @@ static int device_def_domain_type(struct device *dev)
  
  		if ((iommu_identity_mapping & IDENTMAP_GFX) && IS_GFX_DEVICE(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
@@ -2489,7 +2030,7 @@ index 31bc50e538a3..d8ecca292f93 100644
  	}
  
  	return 0;
-@@ -2991,6 +2998,9 @@ static int __init init_dmars(void)
+@@ -2992,6 +2999,9 @@ static int __init init_dmars(void)
  	if (!dmar_map_gfx)
  		iommu_identity_mapping |= IDENTMAP_GFX;
  
@@ -2499,7 +2040,7 @@ index 31bc50e538a3..d8ecca292f93 100644
  	check_tylersburg_isoch();
  
  	ret = si_domain_init(hw_pass_through);
-@@ -4788,6 +4798,17 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
+@@ -4793,6 +4803,17 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
  	dmar_map_gfx = 0;
  }
  
@@ -2517,7 +2058,7 @@ index 31bc50e538a3..d8ecca292f93 100644
  /* G4x/GM45 integrated gfx dmar support is totally busted. */
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
-@@ -4823,6 +4844,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
+@@ -4828,6 +4849,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163A, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
  
@@ -2528,9 +2069,9 @@ index 31bc50e538a3..d8ecca292f93 100644
  {
  	if (risky_device(dev))
 -- 
-2.38.0
+2.38.1
 
-From aea7c2d43bb6419f5abc89441fa6dddea59b414c Mon Sep 17 00:00:00 2001
+From 8696c6504d1ee31bca940d8fd1dddb5fdaaf00e6 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jul 2020 17:19:53 +0200
 Subject: [PATCH] i2c: acpi: Implement RawBytes read access
@@ -2640,9 +2181,9 @@ index 08b561f0709d..d7c397bce0f0 100644
  		dev_warn(&adapter->dev, "protocol 0x%02x not supported for client 0x%02x\n",
  			 accessor_type, client->addr);
 -- 
-2.38.0
+2.38.1
 
-From 6f7f7ad9af793bcb4b60564b5a5da353b0690960 Mon Sep 17 00:00:00 2001
+From 7e4238440be15bc04cfd8d127367a209e0940022 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 13 Feb 2021 16:41:18 +0100
 Subject: [PATCH] platform/surface: Add driver for Surface Book 1 dGPU switch
@@ -2863,9 +2404,9 @@ index 000000000000..8b816ed8f35c
 +MODULE_DESCRIPTION("Discrete GPU Power-Switch for Surface Book 1");
 +MODULE_LICENSE("GPL");
 -- 
-2.38.0
+2.38.1
 
-From 5cf259bfcbbe641c70ad6c5eea62ebc1e6e07bd9 Mon Sep 17 00:00:00 2001
+From 8991bf274ff740a7450f836ede983fe78831c106 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:05:09 +1100
 Subject: [PATCH] Input: soc_button_array - support AMD variant Surface devices
@@ -2940,9 +2481,9 @@ index 480476121c01..36e1bf7b7a01 100644
  
  /*
 -- 
-2.38.0
+2.38.1
 
-From 1bdc0fbcda34412b4a4bf0372d4cf776c7ca43a3 Mon Sep 17 00:00:00 2001
+From 135725875006c05db9b8b4d2a9fb2762dce97234 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:22:57 +1100
 Subject: [PATCH] platform/surface: surfacepro3_button: don't load on amd
@@ -3012,9 +2553,9 @@ index 242fb690dcaf..30eea54dbb47 100644
  
  
 -- 
-2.38.0
+2.38.1
 
-From 1ffe7e9746dba16ca1936198703166d8c27e1649 Mon Sep 17 00:00:00 2001
+From 57fa94c5a26bf24cdb99b9f7135b156f379ba742 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 5 Nov 2020 13:09:45 +0100
 Subject: [PATCH] hid/multitouch: Turn off Type Cover keyboard backlight when
@@ -3245,9 +2786,9 @@ index 91a4d3fc30e0..458537bf4a8e 100644
  	{ .driver_data = MT_CLS_GOOGLE,
  		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY, USB_VENDOR_ID_GOOGLE,
 -- 
-2.38.0
+2.38.1
 
-From 7f0b06e3e5b7df1ddcb954906f651f727f10717d Mon Sep 17 00:00:00 2001
+From b2b83714f120894994c701f2ccaddcbceab37b7c Mon Sep 17 00:00:00 2001
 From: PJungkamp <p.jungkamp@gmail.com>
 Date: Fri, 25 Feb 2022 12:04:25 +0100
 Subject: [PATCH] hid/multitouch: Add support for surface pro type cover tablet
@@ -3545,9 +3086,9 @@ index 458537bf4a8e..3d7d002a662f 100644
  	unregister_pm_notifier(&td->pm_notifier);
  	del_timer_sync(&td->release_timer);
 -- 
-2.38.0
+2.38.1
 
-From f7a93cc0fd6be37a77b98c2abc57211d8269730e Mon Sep 17 00:00:00 2001
+From 1da322aaee27fbeb57d1c5ae4c9815e61c13a2ee Mon Sep 17 00:00:00 2001
 From: Hans de Goede <hdegoede@redhat.com>
 Date: Sun, 10 Oct 2021 20:56:57 +0200
 Subject: [PATCH] ACPI: delay enumeration of devices with a _DEP pointing to an
@@ -3621,9 +3162,9 @@ index 42cec8120f18..72d0e599120f 100644
  	 * Do not enumerate devices with enumeration_by_parent flag set as
  	 * they will be enumerated by their respective parents.
 -- 
-2.38.0
+2.38.1
 
-From e53ff4336793833ca7475d11409cf61203370f05 Mon Sep 17 00:00:00 2001
+From a01e3c26872c6fd5872fbaacbc28b049666ceefc Mon Sep 17 00:00:00 2001
 From: zouxiaoh <xiaohong.zou@intel.com>
 Date: Fri, 25 Jun 2021 08:52:59 +0800
 Subject: [PATCH] iommu: intel-ipu: use IOMMU passthrough mode for Intel IPUs
@@ -3649,7 +3190,7 @@ Patchset: cameras
  1 file changed, 30 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index d8ecca292f93..e3b37a19b6bc 100644
+index 4c895b5f7e2d..f68f031dee46 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
 @@ -37,6 +37,12 @@
@@ -3680,7 +3221,7 @@ index d8ecca292f93..e3b37a19b6bc 100644
  #define IDENTMAP_IPTS		16
  
  const struct iommu_ops intel_iommu_ops;
-@@ -2607,6 +2615,9 @@ static int device_def_domain_type(struct device *dev)
+@@ -2608,6 +2616,9 @@ static int device_def_domain_type(struct device *dev)
  		if ((iommu_identity_mapping & IDENTMAP_GFX) && IS_GFX_DEVICE(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
  
@@ -3690,7 +3231,7 @@ index d8ecca292f93..e3b37a19b6bc 100644
  		if ((iommu_identity_mapping & IDENTMAP_IPTS) && IS_IPTS(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
  	}
-@@ -2998,6 +3009,9 @@ static int __init init_dmars(void)
+@@ -2999,6 +3010,9 @@ static int __init init_dmars(void)
  	if (!dmar_map_gfx)
  		iommu_identity_mapping |= IDENTMAP_GFX;
  
@@ -3700,7 +3241,7 @@ index d8ecca292f93..e3b37a19b6bc 100644
  	if (!dmar_map_ipts)
  		iommu_identity_mapping |= IDENTMAP_IPTS;
  
-@@ -4798,6 +4812,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
+@@ -4803,6 +4817,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
  	dmar_map_gfx = 0;
  }
  
@@ -3719,7 +3260,7 @@ index d8ecca292f93..e3b37a19b6bc 100644
  static void quirk_iommu_ipts(struct pci_dev *dev)
  {
  	if (!IS_IPTS(dev))
-@@ -4809,6 +4835,7 @@ static void quirk_iommu_ipts(struct pci_dev *dev)
+@@ -4814,6 +4840,7 @@ static void quirk_iommu_ipts(struct pci_dev *dev)
  	pci_info(dev, "Passthrough IOMMU for IPTS\n");
  	dmar_map_ipts = 0;
  }
@@ -3727,7 +3268,7 @@ index d8ecca292f93..e3b37a19b6bc 100644
  /* G4x/GM45 integrated gfx dmar support is totally busted. */
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
-@@ -4844,6 +4871,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
+@@ -4849,6 +4876,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163A, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
  
@@ -3738,9 +3279,9 @@ index d8ecca292f93..e3b37a19b6bc 100644
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9D3E, quirk_iommu_ipts);
  
 -- 
-2.38.0
+2.38.1
 
-From 62a30b7c7a3c825600efe1a70f6c670a655ea5e2 Mon Sep 17 00:00:00 2001
+From b230cd2a5edce8159650e62d0d9d08f747cad31c Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Sun, 10 Oct 2021 20:57:02 +0200
 Subject: [PATCH] platform/x86: int3472: Enable I2c daisy chain
@@ -3775,9 +3316,9 @@ index 22f61b47f9e5..e1de1ff40bba 100644
  
  	return 0;
 -- 
-2.38.0
+2.38.1
 
-From 16fff23e17f0a0bde5e484e2aaba0940aff63ce1 Mon Sep 17 00:00:00 2001
+From 93168a83c8861680db54dde07dfcb10d42c1e9c7 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 28 Oct 2021 21:55:16 +0100
 Subject: [PATCH] media: i2c: Add driver for DW9719 VCM
@@ -4281,9 +3822,9 @@ index 000000000000..8451c75b696b
 +MODULE_DESCRIPTION("DW9719 VCM Driver");
 +MODULE_LICENSE("GPL");
 -- 
-2.38.0
+2.38.1
 
-From ed77e610029cf5cdcbed647670d963a8ade49d10 Mon Sep 17 00:00:00 2001
+From 88c4b8f25be8353c1c57dbdcb925b209e02ac49d Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Wed, 4 May 2022 23:21:45 +0100
 Subject: [PATCH] media: ipu3-cio2: Move functionality from .complete() to
@@ -4396,9 +3937,9 @@ index a3fe547b7fce..5648f29ced7b 100644
  
  static int cio2_parse_firmware(struct cio2_device *cio2)
 -- 
-2.38.0
+2.38.1
 
-From bac377c1e75c9aea4f7fcee09db02c7c0be1e40d Mon Sep 17 00:00:00 2001
+From 7a735d80c21df58382d2c3d33748f867bf05fd67 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 2 Jun 2022 22:15:56 +0100
 Subject: [PATCH] media: ipu3-cio2: Re-add .complete() to ipu3-cio2
@@ -4439,9 +3980,9 @@ index 5648f29ced7b..957a30cd369d 100644
  
  static int cio2_parse_firmware(struct cio2_device *cio2)
 -- 
-2.38.0
+2.38.1
 
-From 2cdd92525b8a27fd8c8edf6cb1e1c5d3cb233b92 Mon Sep 17 00:00:00 2001
+From 9e13a833faa1b5e7110a8ef939fd628d16cbfef4 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 15 Jul 2022 23:48:00 +0200
 Subject: [PATCH] drivers/media/i2c: Fix DW9719 dependencies
@@ -4468,90 +4009,9 @@ index 98d081efeef7..c67966cafe10 100644
  	select VIDEO_V4L2_SUBDEV_API
  	select V4L2_ASYNC
 -- 
-2.38.0
+2.38.1
 
-From a3051d35806d33fe6fb31040ff6c0a1f81a31e37 Mon Sep 17 00:00:00 2001
-From: Sakari Ailus <sakari.ailus@linux.intel.com>
-Date: Thu, 25 Aug 2022 21:36:37 +0300
-Subject: [PATCH] ipu3-imgu: Fix NULL pointer dereference in active selection
- access
-
-What the IMGU driver did was that it first acquired the pointers to active
-and try V4L2 subdev state, and only then figured out which one to use.
-
-The problem with that approach and a later patch (see Fixes: tag) is that
-as sd_state argument to v4l2_subdev_get_try_crop() et al is NULL, there is
-now an attempt to dereference that.
-
-Fix this.
-
-Also rewrap lines a little.
-
-Fixes: 0d346d2a6f54 ("media: v4l2-subdev: add subdev-wide state struct")
-Cc: stable@vger.kernel.org # for v5.14 and later
-Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
-Reviewed-by: Bingbu Cao <bingbu.cao@intel.com>
-Patchset: cameras
----
- drivers/staging/media/ipu3/ipu3-v4l2.c | 31 ++++++++++++--------------
- 1 file changed, 14 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/staging/media/ipu3/ipu3-v4l2.c b/drivers/staging/media/ipu3/ipu3-v4l2.c
-index d1c539cefba8..2234bb8d48b3 100644
---- a/drivers/staging/media/ipu3/ipu3-v4l2.c
-+++ b/drivers/staging/media/ipu3/ipu3-v4l2.c
-@@ -192,33 +192,30 @@ static int imgu_subdev_get_selection(struct v4l2_subdev *sd,
- 				     struct v4l2_subdev_state *sd_state,
- 				     struct v4l2_subdev_selection *sel)
- {
--	struct v4l2_rect *try_sel, *r;
--	struct imgu_v4l2_subdev *imgu_sd = container_of(sd,
--							struct imgu_v4l2_subdev,
--							subdev);
-+	struct imgu_v4l2_subdev *imgu_sd =
-+		container_of(sd, struct imgu_v4l2_subdev, subdev);
- 
- 	if (sel->pad != IMGU_NODE_IN)
- 		return -EINVAL;
- 
- 	switch (sel->target) {
- 	case V4L2_SEL_TGT_CROP:
--		try_sel = v4l2_subdev_get_try_crop(sd, sd_state, sel->pad);
--		r = &imgu_sd->rect.eff;
--		break;
-+		if (sel->which == V4L2_SUBDEV_FORMAT_TRY)
-+			sel->r = *v4l2_subdev_get_try_crop(sd, sd_state,
-+							   sel->pad);
-+		else
-+			sel->r = imgu_sd->rect.eff;
-+		return 0;
- 	case V4L2_SEL_TGT_COMPOSE:
--		try_sel = v4l2_subdev_get_try_compose(sd, sd_state, sel->pad);
--		r = &imgu_sd->rect.bds;
--		break;
-+		if (sel->which == V4L2_SUBDEV_FORMAT_TRY)
-+			sel->r = *v4l2_subdev_get_try_compose(sd, sd_state,
-+							      sel->pad);
-+		else
-+			sel->r = imgu_sd->rect.bds;
-+		return 0;
- 	default:
- 		return -EINVAL;
- 	}
--
--	if (sel->which == V4L2_SUBDEV_FORMAT_TRY)
--		sel->r = *try_sel;
--	else
--		sel->r = *r;
--
--	return 0;
- }
- 
- static int imgu_subdev_set_selection(struct v4l2_subdev *sd,
--- 
-2.38.0
-
-From 07342c91ee73cfa7e1d25cecd6aa4e0b5961659b Mon Sep 17 00:00:00 2001
+From 6036672bab4a63b554485dca3b743df8047b9ac3 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Wed, 7 Sep 2022 15:38:08 +0200
 Subject: [PATCH] ipu3-imgu: Fix NULL pointer dereference in
@@ -4680,9 +4140,9 @@ index 2234bb8d48b3..490ba0eb249b 100644
  }
  
 -- 
-2.38.0
+2.38.1
 
-From 7f05ef4c0b13280490b8ec2e57b2c030e4f52be3 Mon Sep 17 00:00:00 2001
+From 6ebcbcebe441381c19768044c655735725139c99 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Sat, 29 May 2021 17:47:38 +1000
 Subject: [PATCH] ACPI: Add quirk for Surface Laptop 4 AMD missing irq 7
@@ -4747,9 +4207,9 @@ index 907cc98b1938..0116d27b29ea 100644
  	mp_config_acpi_legacy_irqs();
  
 -- 
-2.38.0
+2.38.1
 
-From c9cb2f9530fa98146ae22dc43e0bed4d317c0808 Mon Sep 17 00:00:00 2001
+From a2037d0d5c58bd7973ad372c7788fc31fa2f9b72 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Thu, 3 Jun 2021 14:04:26 +0200
 Subject: [PATCH] ACPI: Add AMD 13" Surface Laptop 4 model to irq 7 override
@@ -4789,5 +4249,5 @@ index 0116d27b29ea..af102c6f8e5b 100644
  };
  
 -- 
-2.38.0
+2.38.1
 

@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 6.0.5
+%define specversion 6.0.7
 %define patchversion 6.0
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.0.5
+%define tarfile_release 6.0.7
 # This is needed to do merge window version magic
 %define patchlevel 0
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.0.5
+%define kabiversion 6.0.7
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -3219,10 +3219,20 @@ fi
 #
 #
 %changelog
-* Fri Oct 28 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.5-201.fsync
-- kernel-fsync v6.0.5
+* Sat Nov 05 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.7-201.fsync
+- kernel-fsync v6.0.7
 
-* Wed Oct 26 2022 Justin M. Forbes <jforbes@fedoraproject.org> [6.0.5-200]
+* Thu Nov 03 2022 Justin M. Forbes <jforbes@fedoraproject.org> [6.0.7-0]
+- Add revert patch for BTF workaround (Justin M. Forbes)
+- Linux v6.0.7
+
+* Tue Nov 01 2022 Justin M. Forbes <jforbes@fedoraproject.org> [6.0.6-0]
+- drm/simpledrm: Only advertise formats that are supported (Justin M. Forbes)
+- disable enum64 BTF in fedora rawhide (Jiri Olsa)
+- Update patch for 6.0 (Justin M. Forbes)
+- Linux v6.0.6
+
+* Wed Oct 26 2022 Justin M. Forbes <jforbes@fedoraproject.org> [6.0.5-0]
 - Add release targets for stable rebase (Justin M. Forbes)
 - Linux v6.0.5
 
