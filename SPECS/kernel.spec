@@ -130,7 +130,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 0
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.0.7
 
@@ -883,6 +883,7 @@ Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 Patch403: v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
 Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
 Patch408: 0001-acpi-proc-idle-skip-dummy-wait.patch
+Patch409: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 
 %endif
 
@@ -1475,6 +1476,7 @@ ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.pat
 ApplyOptionalPatch v3-1-7-acpi-x86-s2idle-Move-_HID-handling-for-AMD-systems-into-structures.patch
 ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
 ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
+ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 
 %endif
 
@@ -3219,6 +3221,9 @@ fi
 #
 #
 %changelog
+* Sun Nov 13 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.7-202.fsync
+- Add intel async flipping patch
+
 * Sat Nov 05 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.7-201.fsync
 - kernel-fsync v6.0.7
 

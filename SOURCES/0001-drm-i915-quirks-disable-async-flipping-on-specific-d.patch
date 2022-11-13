@@ -1,0 +1,87 @@
+From 9389b36b462bf2b467bdf3390039c51dfae376d1 Mon Sep 17 00:00:00 2001
+From: Jan200101 <sentrycraft123@gmail.com>
+Date: Sun, 13 Nov 2022 17:44:30 +0100
+Subject: [PATCH] drm/i915/quirks: disable async flipping on specific devices
+
+Signed-off-by: Jan200101 <sentrycraft123@gmail.com>
+---
+ drivers/gpu/drm/i915/display/intel_display.c |  2 +-
+ drivers/gpu/drm/i915/display/intel_quirks.c  | 20 ++++++++++++++++++++
+ drivers/gpu/drm/i915/i915_drv.h              |  3 ++-
+ 3 files changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/display/intel_display.c b/drivers/gpu/drm/i915/display/intel_display.c
+index fc5d94862ef3..a6aa0d4342d9 100644
+--- a/drivers/gpu/drm/i915/display/intel_display.c
++++ b/drivers/gpu/drm/i915/display/intel_display.c
+@@ -8615,7 +8615,7 @@ static void intel_mode_config_init(struct drm_i915_private *i915)
+ 
+ 	mode_config->funcs = &intel_mode_funcs;
+ 
+-	mode_config->async_page_flip = HAS_ASYNC_FLIPS(i915);
++	mode_config->async_page_flip = (DISPLAY_VER(i915) >= 5);
+ 
+ 	/*
+ 	 * Maximum framebuffer dimensions, chosen to match
+diff --git a/drivers/gpu/drm/i915/display/intel_quirks.c b/drivers/gpu/drm/i915/display/intel_quirks.c
+index e415cd7c0b84..3e4cd1d0f175 100644
+--- a/drivers/gpu/drm/i915/display/intel_quirks.c
++++ b/drivers/gpu/drm/i915/display/intel_quirks.c
+@@ -9,6 +9,12 @@
+ #include "intel_display_types.h"
+ #include "intel_quirks.h"
+ 
++static void quirk_async_flips_force_disable(struct drm_i915_private *i915)
++{
++	i915->drm.mode_config.async_page_flip = false;
++	drm_info(&i915->drm, "applying async flip disable quirk\n");
++}
++
+ /*
+  * Some machines (Lenovo U160) do not work with SSC on LVDS for some reason
+  */
+@@ -131,6 +137,20 @@ static const struct intel_dmi_quirk intel_dmi_quirks[] = {
+ 		},
+ 		.hook = quirk_no_pps_backlight_power_hook,
+ 	},
++	{
++		.dmi_id_list = &(const struct dmi_system_id[]) {
++			{
++				.callback = NULL,
++				.ident = "ASUS TUF DASH F15",
++				.matches = {
++					DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
++					DMI_MATCH(DMI_PRODUCT_NAME, "ASUS TUF Dash F15 FX516PC_FX516PC"),
++				},
++			},
++			{ }
++		},
++		.hook = quirk_async_flips_force_disable,
++	},
+ };
+ 
+ static struct intel_quirk intel_quirks[] = {
+diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
+index 086bbe8945d6..3d976a892728 100644
+--- a/drivers/gpu/drm/i915/i915_drv.h
++++ b/drivers/gpu/drm/i915/i915_drv.h
+@@ -200,6 +200,7 @@ struct drm_i915_display_funcs {
+ #define QUIRK_INCREASE_T12_DELAY (1<<6)
+ #define QUIRK_INCREASE_DDI_DISABLED_TIME (1<<7)
+ #define QUIRK_NO_PPS_BACKLIGHT_POWER_HOOK (1<<8)
++#define QUIRK_ASYNC_FLIPS_DISABLE (1<<9)
+ 
+ struct i915_suspend_saved_registers {
+ 	u32 saveDSPARB;
+@@ -1341,7 +1342,7 @@ IS_SUBPLATFORM(const struct drm_i915_private *i915,
+ 
+ #define HAS_VRR(i915)	(DISPLAY_VER(i915) >= 11)
+ 
+-#define HAS_ASYNC_FLIPS(i915)		(DISPLAY_VER(i915) >= 5)
++#define HAS_ASYNC_FLIPS(i915)		(i915->drm.mode_config.async_page_flip)
+ 
+ /* Only valid when HAS_DISPLAY() is true */
+ #define INTEL_DISPLAY_ENABLED(dev_priv) \
+-- 
+2.38.1
+
