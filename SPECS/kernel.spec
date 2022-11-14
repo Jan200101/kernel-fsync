@@ -130,7 +130,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 0
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 203%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.0.7
 
@@ -3221,6 +3221,9 @@ fi
 #
 #
 %changelog
+* Mon Nov 14 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.7-203.fsync
+- patch update
+
 * Sun Nov 13 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.7-202.fsync
 - Add intel async flipping patch
 
