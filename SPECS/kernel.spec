@@ -124,13 +124,13 @@ Summary: The Linux kernel
 %define buildid .fsync
 %define specversion 6.0.8
 %define patchversion 6.0
-%define pkgrelease 200
+%define pkgrelease 300
 %define kversion 6
 %define tarfile_release 6.0.8
 # This is needed to do merge window version magic
 %define patchlevel 0
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 301%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.0.8
 
@@ -3221,7 +3221,7 @@ fi
 #
 #
 %changelog
-* Tue Nov 15 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.8-201.fsync
+* Tue Nov 15 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.8-301.fsync
 - kernel-fsync v6.0.8
 
 * Fri Nov 11 2022 Justin M. Forbes <jforbes@fedoraproject.org> [6.0.8-0]
