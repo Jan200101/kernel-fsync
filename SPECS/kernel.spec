@@ -122,17 +122,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 6.0.11
+%define specversion 6.0.12
 %define patchversion 6.0
 %define pkgrelease 300
 %define kversion 6
-%define tarfile_release 6.0.11
+%define tarfile_release 6.0.12
 # This is needed to do merge window version magic
 %define patchlevel 0
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 301%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.0.11
+%define kabiversion 6.0.12
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -3221,8 +3221,12 @@ fi
 #
 #
 %changelog
-* Mon Dec 05 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.11-301.fsync
-- kernel-fsync v6.0.11
+* Fri Dec 16 2022 Jan Drögehoff <sentrycraft123@gmail.com> - 6.0.12-301.fsync
+- kernel-fsync v6.0.12
+
+* Thu Dec 08 2022 Justin M. Forbes <jforbes@fedoraproject.org> [6.0.12-0]
+- Add new config option for 6.0.12 backport (Justin M. Forbes)
+- Linux v6.0.12
 
 * Fri Dec 02 2022 Justin M. Forbes <jforbes@fedoraproject.org> [6.0.11-0]
 - drm/i915: fix TLB invalidation for Gen12 video and compute engines (Andrzej Hajda)
