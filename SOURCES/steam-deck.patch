@@ -2,7 +2,7 @@ diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 index 53abd553b842..5c42b99fe26d 100644
 --- a/drivers/platform/x86/Kconfig
 +++ b/drivers/platform/x86/Kconfig
-@@ -1162,6 +1162,20 @@
+@@ -1140,6 +1140,20 @@
  	  buttons below the display. This module adds an input device
  	  that delivers key events when these buttons are pressed.
  
@@ -22,7 +22,7 @@ index 53abd553b842..5c42b99fe26d 100644
 +
  endif # X86_PLATFORM_DEVICES
  
- config PMC_ATOM
+ config P2SB
 diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 index c12a9b044fd8..c3cc86b27350 100644
 --- a/drivers/platform/x86/Makefile

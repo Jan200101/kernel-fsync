@@ -12,9 +12,9 @@ diff --git a/drivers/gpu/drm/i915/display/intel_quirks.c b/drivers/gpu/drm/i915/
 index e415cd7c0b84..3e4cd1d0f175 100644
 --- a/drivers/gpu/drm/i915/display/intel_quirks.c
 +++ b/drivers/gpu/drm/i915/display/intel_quirks.c
-@@ -9,6 +9,12 @@
- #include "intel_display_types.h"
- #include "intel_quirks.h"
+@@ -14,6 +14,12 @@
+ 	i915->display.quirks.mask |= BIT(quirk);
+ }
  
 +static void quirk_async_flips_force_disable(struct drm_i915_private *i915)
 +{
