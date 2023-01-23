@@ -1,4 +1,4 @@
-From b1ce7e2a0ea543867d0aa1dd7a5d23dad9336a73 Mon Sep 17 00:00:00 2001
+From 19b8ce192055bdeca49b476a88bd5d694c54bbf7 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 18 Oct 2020 16:42:44 +0900
 Subject: [PATCH] (surface3-oemb) add DMI matches for Surface 3 with broken DMI
@@ -99,7 +99,7 @@ index 6beb00858c33..d82d77387a0a 100644
 -- 
 2.39.0
 
-From f68e13904fe89824383047ad407cdf2868c0c644 Mon Sep 17 00:00:00 2001
+From ab8029b679353ff413840f06959039119731599a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Tue, 3 Nov 2020 13:28:04 +0100
 Subject: [PATCH] mwifiex: Add quirk resetting the PCI bridge on MS Surface
@@ -266,7 +266,7 @@ index d6ff964aec5b..5d30ae39d65e 100644
 -- 
 2.39.0
 
-From 14ecac240936e807dd2366c70cdf9d108a5b8f40 Mon Sep 17 00:00:00 2001
+From 38ad493a42fa7e93cee10d17640a39eea0ecba97 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 4 Oct 2020 00:11:49 +0900
 Subject: [PATCH] mwifiex: pcie: disable bridge_d3 for Surface gen4+
@@ -421,7 +421,7 @@ index 5d30ae39d65e..c14eb56eb911 100644
 -- 
 2.39.0
 
-From 2aa594c47d5d32cba044b4b249c7b191d4c5c2e3 Mon Sep 17 00:00:00 2001
+From 73bd3c344cd15dad5095585d51d0f07a7ae0eaf5 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 25 Mar 2021 11:33:02 +0100
 Subject: [PATCH] Bluetooth: btusb: Lower passive lescan interval on Marvell
@@ -499,7 +499,7 @@ index 6beafd62d722..633f77fb4f96 100644
 -- 
 2.39.0
 
-From 272e87cedc1e0b5c51e54c99e36f667c731d0dbb Mon Sep 17 00:00:00 2001
+From 8516237f9b2afa49f7b8f1d9e5ffc5be4a83c512 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 27 Feb 2021 00:45:52 +0100
 Subject: [PATCH] ath10k: Add module parameters to override board files
@@ -620,7 +620,7 @@ index 5eb131ab916f..67f074a126d1 100644
 -- 
 2.39.0
 
-From 6152dcef77a334b7844aa565275902111194a78f Mon Sep 17 00:00:00 2001
+From 42fabf8dcff992959f7e261a13779ba9eb757780 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 30 Jul 2020 13:21:53 +0200
 Subject: [PATCH] misc: mei: Add missing IPTS device IDs
@@ -658,7 +658,7 @@ index 704cd0caa172..b4dc3fddd20d 100644
 -- 
 2.39.0
 
-From 81499f96035b9144633c1dd0942610ad9f4b0dce Mon Sep 17 00:00:00 2001
+From 72fed1d44ac9a6ba0669e20fd617b6330af1634e Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 6 Aug 2020 11:20:41 +0200
 Subject: [PATCH] misc: Add support for Intel Precise Touch & Stylus
@@ -2123,7 +2123,7 @@ index 000000000000..53fb86a88f97
 -- 
 2.39.0
 
-From 1b39126e5e54ffd417c985ca1e08736fca1a51ee Mon Sep 17 00:00:00 2001
+From e3eebbc271fccaa8579b04b340f4b4b01d54ec61 Mon Sep 17 00:00:00 2001
 From: Liban Hannan <liban.p@gmail.com>
 Date: Tue, 12 Apr 2022 23:31:12 +0100
 Subject: [PATCH] iommu: ipts: use IOMMU passthrough mode for IPTS
@@ -2223,7 +2223,7 @@ index 644ca49e8cf8..408c321b929a 100644
 -- 
 2.39.0
 
-From cb437b5308cb73255a86b0a6f1f5e1178d8533f0 Mon Sep 17 00:00:00 2001
+From 9e44cdad03a46c1f08f3be86173c118c6db561c6 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 5 Nov 2022 21:23:53 +0100
 Subject: [PATCH] platform/surface: aggregator: Improve documentation and
@@ -2486,7 +2486,7 @@ index 45501b6e54e8..5c4ae1a26183 100644
 -- 
 2.39.0
 
-From e925dfd94cac673e7327260fd876a96e6fbb50a0 Mon Sep 17 00:00:00 2001
+From 29ac02c869e3070532fa9f6a947dbde5125afe2d Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 5 Nov 2022 21:30:58 +0100
 Subject: [PATCH] platform/surface: aggregator: Ignore command messages not
@@ -2534,32 +2534,28 @@ diff --git a/drivers/platform/surface/aggregator/ssh_request_layer.c b/drivers/p
 index f5565570f16c..90634dcacabf 100644
 --- a/drivers/platform/surface/aggregator/ssh_request_layer.c
 +++ b/drivers/platform/surface/aggregator/ssh_request_layer.c
-@@ -916,6 +916,21 @@ static void ssh_rtl_rx_command(struct ssh_ptl *p, const struct ssam_span *data)
- 	if (sshp_parse_command(dev, data, &command, &command_data))
- 		return;
- 
-+	/*
-+	 * Check if the message was intended for us. If not, drop it.
-+	 *
-+	 * Note: We will need to change this to handle debug messages. On newer
-+	 * generation devices, these seem to be sent to SSAM_SSH_TID_DEBUG. We
-+	 * as host can still receive them as they can be forwarded via an
-+	 * override option on SAM, but doing so does not change the target ID
-+	 * to SSAM_SSH_TID_HOST.
-+	 */
-+	if (command->tid != SSAM_SSH_TID_HOST) {
-+		rtl_warn(rtl, "rtl: dropping message not intended for us (tid = %#04x)\n",
+@@ -920,13 +920,13 @@
+ 	 * Check if the message was intended for us. If not, drop it.
+ 	 *
+ 	 * Note: We will need to change this to handle debug messages. On newer
+-	 * generation devices, these seem to be sent to tid_out=0x03. We as
++	 * generation devices, these seem to be sent to SSAM_SSH_TID_DEBUG. We as
+ 	 * host can still receive them as they can be forwarded via an override
+-	 * option on SAM, but doing so does not change tid_out=0x00.
++	 * option on SAM, but doing so does not change the target ID to SSAM_SSH_TID_HOST.
+ 	 */
+-	if (command->tid_out != 0x00) {
++	if (command->tid != 0x00) {
+ 		rtl_warn(rtl, "rtl: dropping message not intended for us (tid = %#04x)\n",
+-			 command->tid_out);
 +			 command->tid);
-+		return;
-+	}
-+
- 	if (ssh_rqid_is_event(get_unaligned_le16(&command->rqid)))
- 		ssh_rtl_rx_event(rtl, command, &command_data);
- 	else
+ 		return;
+ 	}
+ 
 -- 
 2.39.0
 
-From ff41cec74dd5826fd4ea5b8f6627bfbe3743e1e6 Mon Sep 17 00:00:00 2001
+From 7b80425cbcee6aeac0cf312367c1f98df72f2093 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 5 Nov 2022 21:42:19 +0100
 Subject: [PATCH] platform/surface: aggregator: Add target and source IDs to
@@ -2753,7 +2749,7 @@ index 2a2c17771d01..55cc61bba1da 100644
 -- 
 2.39.0
 
-From 698898dad24512d70a21ab78844e617486028a25 Mon Sep 17 00:00:00 2001
+From 28f119067bd5982c043f3822b01a864e60d6ec54 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 5 Nov 2022 21:32:16 +0100
 Subject: [PATCH] platform/surface: aggregator_hub: Use target-ID enum instead
@@ -2793,7 +2789,7 @@ index 43061514be38..62f27cdb6ca8 100644
 -- 
 2.39.0
 
-From 3c5d1c4ef943afa97f68879843797aff93f62395 Mon Sep 17 00:00:00 2001
+From e9cc6b4179e0e913d5203273742b0ad40f9da048 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 5 Nov 2022 21:33:26 +0100
 Subject: [PATCH] platform/surface: aggregator_tabletsw: Use target-ID enum
@@ -2842,7 +2838,7 @@ index 27d95a6a7851..bd8cd453c393 100644
 -- 
 2.39.0
 
-From cbe57259ff7b94af0ae62170a9814594fe1f6705 Mon Sep 17 00:00:00 2001
+From 118efac5894275e2910b1e6a7764da49ef78a017 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 5 Nov 2022 21:34:06 +0100
 Subject: [PATCH] platform/surface: dtx: Use target-ID enum instead of
@@ -2937,7 +2933,7 @@ index ed36944467f9..0de76a784a35 100644
 -- 
 2.39.0
 
-From f79e434b9f3851364689210195aea86a1720c466 Mon Sep 17 00:00:00 2001
+From 1bf091f4db2f290dc82252ae0479f92e37dc87b0 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 5 Nov 2022 21:40:06 +0100
 Subject: [PATCH] HID: surface-hid: Use target-ID enum instead of hard-coding
@@ -2968,7 +2964,7 @@ index 0635341bc517..42933bf3e925 100644
 -- 
 2.39.0
 
-From 495ca177f24e437bfd86c75057f120e4c836149c Mon Sep 17 00:00:00 2001
+From 9530d700f41edbddd880d2bec9e3b6547de811f3 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 5 Nov 2022 21:45:28 +0100
 Subject: [PATCH] platform/surface: aggregator: Enforce use of target-ID enum
@@ -3200,7 +3196,7 @@ index 46c45d1b6368..4da20b7a0ee5 100644
 -- 
 2.39.0
 
-From edf30b3b5d55e5b3d8064d2edc60b594fe684a3b Mon Sep 17 00:00:00 2001
+From f905337cf4c31e3cc429b94ab9586b370b882c23 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 5 Nov 2022 21:46:37 +0100
 Subject: [PATCH] platform/surface: aggregator_registry: Fix target-ID of
@@ -3247,7 +3243,7 @@ index 023f126121d7..296f72d52e6a 100644
 -- 
 2.39.0
 
-From 0d55229782727243733f867a6b8148276d63fdd3 Mon Sep 17 00:00:00 2001
+From e17056688f8040ace8f60ee7a5ebc4e196ae6b0d Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jul 2020 17:19:53 +0200
 Subject: [PATCH] i2c: acpi: Implement RawBytes read access
@@ -3359,7 +3355,7 @@ index 4dd777cc0c89..b2338618163a 100644
 -- 
 2.39.0
 
-From f65d13f177fe2c309ad238254caaae4e4312cefd Mon Sep 17 00:00:00 2001
+From 725ce85d616e7b985208e32426c41a95a33c4005 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 13 Feb 2021 16:41:18 +0100
 Subject: [PATCH] platform/surface: Add driver for Surface Book 1 dGPU switch
@@ -3582,7 +3578,7 @@ index 000000000000..8b816ed8f35c
 -- 
 2.39.0
 
-From 183996b2e1e626c5c40a986fa25084b11429daa5 Mon Sep 17 00:00:00 2001
+From 0f45b177ca4e7d9b62c0f7572e273104fe93f274 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:05:09 +1100
 Subject: [PATCH] Input: soc_button_array - support AMD variant Surface devices
@@ -3659,7 +3655,7 @@ index 09489380afda..0f02411a60f1 100644
 -- 
 2.39.0
 
-From 87897dbc255aaac49a53478463e1f7d23f3e5622 Mon Sep 17 00:00:00 2001
+From bff73a6735c9eba68a048fa321c371714d5817f6 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:22:57 +1100
 Subject: [PATCH] platform/surface: surfacepro3_button: don't load on amd
@@ -3731,7 +3727,7 @@ index 242fb690dcaf..30eea54dbb47 100644
 -- 
 2.39.0
 
-From 172e2d4a0907bdf22b8bc6d7468c96481a7f355a Mon Sep 17 00:00:00 2001
+From dc3a1664b024f9f8051f65ee84edf5391460dbc4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 5 Nov 2020 13:09:45 +0100
 Subject: [PATCH] hid/multitouch: Turn off Type Cover keyboard backlight when
@@ -3964,7 +3960,7 @@ index 372cbdd223e0..fe849df6a948 100644
 -- 
 2.39.0
 
-From 0a6239b736a59c94c1039d2c1fc553e450b3f721 Mon Sep 17 00:00:00 2001
+From 88620b36eb8e96c20001aaeda03ad290cbabf43e Mon Sep 17 00:00:00 2001
 From: PJungkamp <p.jungkamp@gmail.com>
 Date: Fri, 25 Feb 2022 12:04:25 +0100
 Subject: [PATCH] hid/multitouch: Add support for surface pro type cover tablet
@@ -4264,7 +4260,7 @@ index fe849df6a948..3a7a43eb9fbe 100644
 -- 
 2.39.0
 
-From dd4e87b9c7f4930a07b93c73b4d85de6282c9910 Mon Sep 17 00:00:00 2001
+From d7034b752abab1bc8bbeae6bec214434a59e9a43 Mon Sep 17 00:00:00 2001
 From: Hans de Goede <hdegoede@redhat.com>
 Date: Sun, 10 Oct 2021 20:56:57 +0200
 Subject: [PATCH] ACPI: delay enumeration of devices with a _DEP pointing to an
@@ -4340,7 +4336,7 @@ index b47e93a24a9a..22c921886cbe 100644
 -- 
 2.39.0
 
-From 04d727b390677c247ce35cd3c459a9706c92149b Mon Sep 17 00:00:00 2001
+From b7ae48c658abca801fb92cc6c734a3e3726ede8a Mon Sep 17 00:00:00 2001
 From: zouxiaoh <xiaohong.zou@intel.com>
 Date: Fri, 25 Jun 2021 08:52:59 +0800
 Subject: [PATCH] iommu: intel-ipu: use IOMMU passthrough mode for Intel IPUs
@@ -4457,7 +4453,7 @@ index 408c321b929a..6e58effbe12b 100644
 -- 
 2.39.0
 
-From aab7172afbd549a758e01f936b9a6683ba59b474 Mon Sep 17 00:00:00 2001
+From b8246f77d572fe16b5cd53acf2473cb6eddcaddc Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Sun, 10 Oct 2021 20:57:02 +0200
 Subject: [PATCH] platform/x86: int3472: Enable I2c daisy chain
@@ -4494,7 +4490,7 @@ index 5b8d1a9620a5..6a0ff035cf20 100644
 -- 
 2.39.0
 
-From c429d67a19c8860fd3b7f7b0a4f95fa465028fe6 Mon Sep 17 00:00:00 2001
+From 75d54e3be5ceb01b46d74e3e9d3af3f88d7a2669 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 28 Oct 2021 21:55:16 +0100
 Subject: [PATCH] media: i2c: Add driver for DW9719 VCM
@@ -4998,7 +4994,7 @@ index 000000000000..180b04d2a6b3
 -- 
 2.39.0
 
-From dec3b71065ccf948d1d4830e46adad41ac134195 Mon Sep 17 00:00:00 2001
+From 0611d5aa6bb68362b37dc6dc310050ed2d16bd64 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Wed, 4 May 2022 23:21:45 +0100
 Subject: [PATCH] media: ipu3-cio2: Move functionality from .complete() to
@@ -5113,7 +5109,7 @@ index 390bd5ea3472..76339fb842bf 100644
 -- 
 2.39.0
 
-From 1020ddb552417b2af335b0ad73efafad56cdd039 Mon Sep 17 00:00:00 2001
+From 65a24c651f437949aaa6cd640bf8318d747a92ce Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 2 Jun 2022 22:15:56 +0100
 Subject: [PATCH] media: ipu3-cio2: Re-add .complete() to ipu3-cio2
@@ -5156,7 +5152,7 @@ index 76339fb842bf..eb7aa269ec2b 100644
 -- 
 2.39.0
 
-From f27e3ae91e4d86ceb751029090de793847022949 Mon Sep 17 00:00:00 2001
+From c07d00b78e9792663f36a8f57444fc9b4e66a0d8 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 15 Jul 2022 23:48:00 +0200
 Subject: [PATCH] drivers/media/i2c: Fix DW9719 dependencies
@@ -5185,7 +5181,7 @@ index 98d081efeef7..c67966cafe10 100644
 -- 
 2.39.0
 
-From aaff0863024578f7f6fe91573c68778ad0aec98e Mon Sep 17 00:00:00 2001
+From 4e0cf6e05dd0de32045adcc2087f4ed7c9a184e7 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Sat, 29 May 2021 17:47:38 +1000
 Subject: [PATCH] ACPI: Add quirk for Surface Laptop 4 AMD missing irq 7
@@ -5252,7 +5248,7 @@ index 907cc98b1938..0116d27b29ea 100644
 -- 
 2.39.0
 
-From 9d4e2bb0f9856ce57029c89895b38ae5949502f5 Mon Sep 17 00:00:00 2001
+From 94f476cef8457ab5cba6109ee104608eba7e8072 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Thu, 3 Jun 2021 14:04:26 +0200
 Subject: [PATCH] ACPI: Add AMD 13" Surface Laptop 4 model to irq 7 override
@@ -5294,7 +5290,7 @@ index 0116d27b29ea..af102c6f8e5b 100644
 -- 
 2.39.0
 
-From dcf0efd363e301c409bfccb2ea3119e5d3fa3e52 Mon Sep 17 00:00:00 2001
+From ad11ec823a7792d636492a9f99dfaf7bd7842f0d Mon Sep 17 00:00:00 2001
 From: "Bart Groeneveld | GPX Solutions B.V" <bart@gpxbv.nl>
 Date: Mon, 5 Dec 2022 16:08:46 +0100
 Subject: [PATCH] acpi: allow usage of acpi_tad on HW-reduced platforms
