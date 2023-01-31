@@ -124,17 +124,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 6.1.7
+%define specversion 6.1.8
 %define patchversion 6.1
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.1.7
+%define tarfile_release 6.1.8
 # This is needed to do merge window version magic
 %define patchlevel 1
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.1.7
+%define kabiversion 6.1.8
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -3214,8 +3214,11 @@ fi
 #
 #
 %changelog
-* Mon Jan 23 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.1.7-201.fsync
-- kernel-fsync v6.1.7
+* Tue Jan 31 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.1.8-201.fsync
+- kernel-fsync v6.1.8
+
+* Tue Jan 24 2023 Augusto Caringi <acaringi@redhat.com> [6.1.8-0]
+- Linux v6.1.8
 
 * Wed Jan 18 2023 Augusto Caringi <acaringi@redhat.com> [6.1.7-0]
 - enable efifb for Nvidia (Justin M. Forbes)
