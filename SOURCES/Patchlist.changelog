@@ -1,3 +1,6 @@
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/d37d701b5ab6bf4cbcd9b301e08d4cbb502fecd1
+ d37d701b5ab6bf4cbcd9b301e08d4cbb502fecd1 x86/mm: Randomize per-cpu entry area
+
 "https://gitlab.com/cki-project/kernel-ark/-/commit"/1595d8197147ac3b439c1334527eb2a5cec86095
  1595d8197147ac3b439c1334527eb2a5cec86095 KVM: VMX: Execute IBPB on emulated VM-exit when guest has IBRS
 
