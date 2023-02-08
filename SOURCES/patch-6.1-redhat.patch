@@ -43,7 +43,7 @@
  42 files changed, 534 insertions(+), 190 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 3778b422fa11..63f076bb2bc7 100644
+index 6e34c942744e..cebf71e7b1bf 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -18,6 +18,10 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -120,7 +120,7 @@ index 325cbf69ebbd..1801af7a6ec4 100644
 +	return !!ipl_secure_flag;
 +}
 diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
-index ab19ddb09d65..d463ec57b218 100644
+index 2ec5f1e0312f..e67ca614e4a4 100644
 --- a/arch/s390/kernel/setup.c
 +++ b/arch/s390/kernel/setup.c
 @@ -49,6 +49,7 @@
@@ -131,7 +131,7 @@ index ab19ddb09d65..d463ec57b218 100644
  #include <linux/hugetlb.h>
  #include <linux/kmemleak.h>
 
-@@ -978,6 +979,9 @@ void __init setup_arch(char **cmdline_p)
+@@ -979,6 +980,9 @@ void __init setup_arch(char **cmdline_p)
 
  	log_component_list();
 
