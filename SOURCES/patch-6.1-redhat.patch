@@ -41,7 +41,7 @@
  40 files changed, 519 insertions(+), 188 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 3e82a3224362..9dd0648927cf 100644
+index 4dfe902b7f19..006274bf03e8 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -18,6 +18,10 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -1140,10 +1140,10 @@ index 285acc4aaccc..a7056957e7dd 100644
   * Intersil/Techwell TW686[4589]-based video capture cards have an empty (zero)
   * class code.  Fix it.
 diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 0aaaadb02cc6..a5f68eae241a 100644
+index 1abe43ddb75f..041f8bc643d8 100644
 --- a/drivers/usb/core/hub.c
 +++ b/drivers/usb/core/hub.c
-@@ -5679,6 +5679,13 @@ static void hub_event(struct work_struct *work)
+@@ -5678,6 +5678,13 @@ static void hub_event(struct work_struct *work)
  			(u16) hub->change_bits[0],
  			(u16) hub->event_bits[0]);
 
@@ -1339,7 +1339,7 @@ index 0d99ef17e4a5..81c8e082ec57 100755
 +
  echo ${extra_paholeopt}
 diff --git a/scripts/tags.sh b/scripts/tags.sh
-index e137cf15aae9..2ed2341f7967 100755
+index 0d045182c08c..8606325b0ec2 100755
 --- a/scripts/tags.sh
 +++ b/scripts/tags.sh
 @@ -16,6 +16,8 @@ fi
