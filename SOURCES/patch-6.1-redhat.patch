@@ -8,8 +8,6 @@
  arch/x86/include/asm/pgtable_areas.h               |   8 +-
  arch/x86/kernel/hw_breakpoint.c                    |   2 +-
  arch/x86/kernel/setup.c                            |  22 ++--
- arch/x86/kvm/vmx/nested.c                          |  11 ++
- arch/x86/kvm/vmx/vmx.c                             |   6 +-
  arch/x86/mm/cpu_entry_area.c                       |  46 +++++++-
  drivers/acpi/apei/hest.c                           |   8 ++
  drivers/acpi/irq.c                                 |  17 ++-
@@ -40,10 +38,10 @@
  security/lockdown/Kconfig                          |  13 +++
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |   6 +
- 42 files changed, 534 insertions(+), 190 deletions(-)
+ 40 files changed, 519 insertions(+), 188 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index e51356b982f9..38e5ed779572 100644
+index 3e82a3224362..9dd0648927cf 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -18,6 +18,10 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -234,45 +232,6 @@ index 892609cde4a2..ad9aa11ba3a0 100644
 
  	reserve_initrd();
 
-diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 10c63b1bf92f..df8995977ec2 100644
---- a/arch/x86/kvm/vmx/nested.c
-+++ b/arch/x86/kvm/vmx/nested.c
-@@ -4767,6 +4767,17 @@ void nested_vmx_vmexit(struct kvm_vcpu *vcpu, u32 vm_exit_reason,
-
- 	vmx_switch_vmcs(vcpu, &vmx->vmcs01);
-
-+	/*
-+	 * If IBRS is advertised to the vCPU, KVM must flush the indirect
-+	 * branch predictors when transitioning from L2 to L1, as L1 expects
-+	 * hardware (KVM in this case) to provide separate predictor modes.
-+	 * Bare metal isolates VMX root (host) from VMX non-root (guest), but
-+	 * doesn't isolate different VMCSs, i.e. in this case, doesn't provide
-+	 * separate modes for L2 vs L1.
-+	 */
-+	if (guest_cpuid_has(vcpu, X86_FEATURE_SPEC_CTRL))
-+		indirect_branch_prediction_barrier();
-+
- 	/* Update any VMCS fields that might have changed while L2 ran */
- 	vmcs_write32(VM_EXIT_MSR_LOAD_COUNT, vmx->msr_autoload.host.nr);
- 	vmcs_write32(VM_ENTRY_MSR_LOAD_COUNT, vmx->msr_autoload.guest.nr);
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 4ae248e87f5e..95ed874fbbcc 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -1348,8 +1348,10 @@ void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
-
- 		/*
- 		 * No indirect branch prediction barrier needed when switching
--		 * the active VMCS within a guest, e.g. on nested VM-Enter.
--		 * The L1 VMM can protect itself with retpolines, IBPB or IBRS.
-+		 * the active VMCS within a vCPU, unless IBRS is advertised to
-+		 * the vCPU.  To minimize the number of IBPBs executed, KVM
-+		 * performs IBPB on nested VM-Exit (a single nested transition
-+		 * may switch the active VMCS multiple times).
- 		 */
- 		if (!buddy || WARN_ON_ONCE(buddy->vmcs != prev))
- 			indirect_branch_prediction_barrier();
 diff --git a/arch/x86/mm/cpu_entry_area.c b/arch/x86/mm/cpu_entry_area.c
 index 6c2f1b76a0b6..20844cf141fb 100644
 --- a/arch/x86/mm/cpu_entry_area.c
