@@ -132,7 +132,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 1
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.1.15
 
@@ -874,6 +874,8 @@ Patch207: acso.patch
 # device specific patches
 Patch300: linux-surface.patch
 Patch301: steam-deck.patch
+Patch302: asus-linux.patch
+Patch303: lenovo-legion-laptop.patch
 
 # temporary patches
 Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
@@ -1465,6 +1467,8 @@ ApplyOptionalPatch acso.patch
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
 ApplyOptionalPatch steam-deck.patch
+ApplyOptionalPatch asus-linux.patch
+ApplyOptionalPatch lenovo-legion-laptop.patch
 
 # temporary patches
 ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
@@ -3214,6 +3218,9 @@ fi
 #
 #
 %changelog
+* Wed Mar 08 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.1.15-202.fsync
+- add missing asus-linux patches and lenovo legion patches
+
 * Sat Mar 04 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.1.15-201.fsync
 - kernel-fsync v6.1.15
 
