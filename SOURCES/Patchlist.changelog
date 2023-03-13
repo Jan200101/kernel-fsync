@@ -1,3 +1,6 @@
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/53c2ef1942eba453fec395001e7d911650d81979
+ 53c2ef1942eba453fec395001e7d911650d81979 Revert "wifi: cfg80211: Fix use after free for wext"
+
 "https://gitlab.com/cki-project/kernel-ark/-/commit"/d37d701b5ab6bf4cbcd9b301e08d4cbb502fecd1
  d37d701b5ab6bf4cbcd9b301e08d4cbb502fecd1 x86/mm: Randomize per-cpu entry area
 
