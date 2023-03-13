@@ -41,7 +41,7 @@
  40 files changed, 519 insertions(+), 188 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 4dfe902b7f19..006274bf03e8 100644
+index 5ac6895229e9..794967b1de9a 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -18,6 +18,10 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -72,10 +72,10 @@ index a08c9d092a33..1d82f6e9ecbd 100644
  	  The VM uses one page of physical memory for each page table.
  	  For systems with a lot of processes, this can use a lot of
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 505c8a1ccbe0..575f77325e60 100644
+index 43ff7c7a3ac9..faf7e1ba0744 100644
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
-@@ -1212,7 +1212,7 @@ endchoice
+@@ -1211,7 +1211,7 @@ endchoice
 
  config ARM64_FORCE_52BIT
  	bool "Force 52-bit virtual addresses for userspace"
@@ -84,7 +84,7 @@ index 505c8a1ccbe0..575f77325e60 100644
  	help
  	  For systems with 52-bit userspace VAs enabled, the kernel will attempt
  	  to maintain compatibility with older software by providing 48-bit VAs
-@@ -1451,6 +1451,7 @@ config XEN
+@@ -1450,6 +1450,7 @@ config XEN
  config ARCH_FORCE_MAX_ORDER
  	int
  	default "14" if ARM64_64K_PAGES
@@ -822,7 +822,7 @@ index 84e7ba5314d3..efc96776f761 100644
  	data->xport.ops = &hid_rmi_ops;
 
 diff --git a/drivers/hwtracing/coresight/coresight-etm4x-core.c b/drivers/hwtracing/coresight/coresight-etm4x-core.c
-index 80fefaba58ee..be8f345bb379 100644
+index c7a65d1524fc..f4851d6996e9 100644
 --- a/drivers/hwtracing/coresight/coresight-etm4x-core.c
 +++ b/drivers/hwtracing/coresight/coresight-etm4x-core.c
 @@ -9,6 +9,7 @@
@@ -833,7 +833,7 @@ index 80fefaba58ee..be8f345bb379 100644
  #include <linux/io.h>
  #include <linux/err.h>
  #include <linux/fs.h>
-@@ -2137,6 +2138,16 @@ static const struct amba_id etm4_ids[] = {
+@@ -2143,6 +2144,16 @@ static const struct amba_id etm4_ids[] = {
  	{},
  };
 
@@ -850,7 +850,7 @@ index 80fefaba58ee..be8f345bb379 100644
  MODULE_DEVICE_TABLE(amba, etm4_ids);
 
  static struct amba_driver etm4x_amba_driver = {
-@@ -2170,6 +2181,11 @@ static int __init etm4x_init(void)
+@@ -2176,6 +2187,11 @@ static int __init etm4x_init(void)
  {
  	int ret;
 
@@ -862,7 +862,7 @@ index 80fefaba58ee..be8f345bb379 100644
  	ret = etm4_pm_setup();
 
  	/* etm4_pm_setup() does its own cleanup - exit on error */
-@@ -2196,6 +2212,9 @@ static int __init etm4x_init(void)
+@@ -2202,6 +2218,9 @@ static int __init etm4x_init(void)
 
  static void __exit etm4x_exit(void)
  {
@@ -1065,7 +1065,7 @@ index 258d5fe3d395..f7298e3dc8f3 100644
  	if (data->f01_container->dev.driver) {
  		/* Driver already bound, so enable ATTN now. */
 diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index 959d895fc1df..ced88384a6ee 100644
+index fd8c8aeb3c50..dd638eb800b9 100644
 --- a/drivers/iommu/iommu.c
 +++ b/drivers/iommu/iommu.c
 @@ -8,6 +8,7 @@
@@ -1076,7 +1076,7 @@ index 959d895fc1df..ced88384a6ee 100644
  #include <linux/kernel.h>
  #include <linux/bits.h>
  #include <linux/bug.h>
-@@ -2834,6 +2835,27 @@ u32 iommu_sva_get_pasid(struct iommu_sva *handle)
+@@ -2838,6 +2839,27 @@ u32 iommu_sva_get_pasid(struct iommu_sva *handle)
  }
  EXPORT_SYMBOL_GPL(iommu_sva_get_pasid);
 
@@ -1105,7 +1105,7 @@ index 959d895fc1df..ced88384a6ee 100644
   * Changes the default domain of an iommu group that has *only* one device
   *
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 285acc4aaccc..a7056957e7dd 100644
+index 20ac67d59034..1c1eb7feb5d4 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
 @@ -4296,6 +4296,30 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM, 0x9000,
@@ -1412,10 +1412,10 @@ index a79b985e917e..772a69bf43ec 100644
 
  static int __init lockdown_lsm_init(void)
 diff --git a/security/security.c b/security/security.c
-index 79d82cb6e469..843b0dd8f0dd 100644
+index 75dc0947ee0c..e5be2f687c15 100644
 --- a/security/security.c
 +++ b/security/security.c
-@@ -2630,6 +2630,12 @@ int security_locked_down(enum lockdown_reason what)
+@@ -2631,6 +2631,12 @@ int security_locked_down(enum lockdown_reason what)
  }
  EXPORT_SYMBOL(security_locked_down);
 
