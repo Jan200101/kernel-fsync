@@ -148,17 +148,17 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specversion 6.2.9
+%define specversion 6.2.10
 %define patchversion 6.2
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.2.9
+%define tarfile_release 6.2.10
 # This is needed to do merge window version magic
 %define patchlevel 2
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.2.9
+%define kabiversion 6.2.10
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -3388,8 +3388,17 @@ fi
 #
 #
 %changelog
-* Sun Apr 02 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.2.9-201.fsync
-- kernel-fsync v6.2.9
+* Mon Apr 10 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.2.10-201.fsync
+- kernel-fsync v6.2.10
+
+* Thu Apr 06 2023 Augusto Caringi <acaringi@redhat.com> [6.2.10-0]
+- fedora: arm: Enable DRM_PANEL_HIMAX_HX8394 (Peter Robinson)
+- arm64: dts: rk3399-pinephone-pro: Add touchscreen support (Martijn Braam)
+- arm64: dts: rk3399-pinephone-pro: Add internal display support (Martijn Braam)
+- drm: panel: Add Himax HX8394 panel controller driver (Kamil Trzciński)
+- dt-bindings: display: Add Himax HX8394 panel controller (Javier Martinez Canillas)
+- Fix up revert patch for F36 zboot (Justin M. Forbes)
+- Linux v6.2.10
 
 * Thu Mar 30 2023 Augusto Caringi <acaringi@redhat.com> [6.2.9-0]
 - Add bug numbers from recent MRs (Justin M. Forbes)
