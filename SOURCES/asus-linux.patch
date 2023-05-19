@@ -1,34 +1,53 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Jan200101 <sentrycraft123@gmail.com>
-Date: Wed, 8 Mar 2023 08:26:17 +0100
-Subject: [PATCH] asus-linux This patch adds support for the tablet mode switch
- sensors on convertible devices where that sensor is managed by AMD SFH, like
- the Asus Flow X13 and the Lenovo ThinkPad L13 Yoga Gen2 (AMD).
+Date: Fri, 19 May 2023 17:45:47 +0200
+Subject: [PATCH] asus_linux
 
-Co-developed-by: Ivan Dovgal <iv.dovg@gmail.com>
-Signed-off-by: Ivan Dovgal <iv.dovg@gmail.com>
-Co-developed-by: Luke D. Jones <luke@ljones.dev>
-Signed-off-by: Luke D. Jones <luke@ljones.dev>
-Signed-off-by: Adrian Freund <adrian@freund.io>
----
-v2:
-* Fixed build warning reported by kernel test robot <lkp@intel.com>
 Signed-off-by: Jan200101 <sentrycraft123@gmail.com>
 ---
- drivers/hid/amd-sfh-hid/amd_sfh_client.c      |  2 +
- drivers/hid/amd-sfh-hid/amd_sfh_hid.h         |  2 +-
- drivers/hid/amd-sfh-hid/amd_sfh_pcie.c        |  4 +
- drivers/hid/amd-sfh-hid/amd_sfh_pcie.h        |  1 +
- .../hid_descriptor/amd_sfh_hid_desc.c         | 27 ++++++
- .../hid_descriptor/amd_sfh_hid_desc.h         |  7 ++
- .../hid_descriptor/amd_sfh_hid_report_desc.h  | 21 ++++
- drivers/pci/controller/vmd.c                  | 96 ++++++++++++++-----
- drivers/pci/pcie/aspm.c                       | 54 +++++++++++
- include/linux/pci.h                           |  7 ++
- 10 files changed, 194 insertions(+), 27 deletions(-)
+ drivers/acpi/resource.c                       |  14 ++
+ drivers/hid/amd-sfh-hid/amd_sfh_client.c      |   2 +
+ drivers/hid/amd-sfh-hid/amd_sfh_hid.h         |   2 +-
+ drivers/hid/amd-sfh-hid/amd_sfh_pcie.c        |   4 +
+ drivers/hid/amd-sfh-hid/amd_sfh_pcie.h        |   1 +
+ .../hid_descriptor/amd_sfh_hid_desc.c         |  27 ++++
+ .../hid_descriptor/amd_sfh_hid_desc.h         |   7 +
+ .../hid_descriptor/amd_sfh_hid_report_desc.h  |  21 +++
+ drivers/hid/hid-asus.c                        |  42 +++---
+ drivers/hid/hid-ids.h                         |   1 +
+ drivers/platform/x86/asus-wmi.c               | 131 ++++++++++++++++++
+ drivers/platform/x86/asus-wmi.h               |   1 +
+ include/linux/platform_data/x86/asus-wmi.h    |   4 +
+ sound/pci/hda/patch_realtek.c                 |  20 +++
+ 14 files changed, 250 insertions(+), 27 deletions(-)
 
+diff --git a/drivers/acpi/resource.c b/drivers/acpi/resource.c
+index e8492b3a393a..01a7befe9625 100644
+--- a/drivers/acpi/resource.c
++++ b/drivers/acpi/resource.c
+@@ -467,6 +467,20 @@ static const struct dmi_system_id asus_laptop[] = {
+ 			DMI_MATCH(DMI_BOARD_NAME, "B2502CBA"),
+ 		},
+ 	},
++	{
++		.ident = "Asus TUF Gaming A15 FA507NV",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
++			DMI_MATCH(DMI_BOARD_NAME, "FA507NV"),
++		},
++	},
++	{
++		.ident = "ASUS TUF Gaming A16 FA617NS",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
++			DMI_MATCH(DMI_BOARD_NAME, "FA617NS"),
++		},
++	},
+ 	{ }
+ };
+ 
 diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_client.c b/drivers/hid/amd-sfh-hid/amd_sfh_client.c
-index c751d12f5..690be680e 100644
+index c751d12f5df8..690be680e392 100644
 --- a/drivers/hid/amd-sfh-hid/amd_sfh_client.c
 +++ b/drivers/hid/amd-sfh-hid/amd_sfh_client.c
 @@ -146,6 +146,8 @@ static const char *get_sensor_name(int idx)
@@ -41,7 +60,7 @@ index c751d12f5..690be680e 100644
  		return "ALS";
  	case HPD_IDX:
 diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_hid.h b/drivers/hid/amd-sfh-hid/amd_sfh_hid.h
-index 528036892..97296f587 100644
+index 528036892c9d..97296f587bc7 100644
 --- a/drivers/hid/amd-sfh-hid/amd_sfh_hid.h
 +++ b/drivers/hid/amd-sfh-hid/amd_sfh_hid.h
 @@ -11,7 +11,7 @@
@@ -54,7 +73,7 @@ index 528036892..97296f587 100644
  #define AMD_SFH_HID_PRODUCT	0x0001
  
 diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
-index 47774b9ab..cfda797f0 100644
+index c936d6a51c0c..c33f3f202ff7 100644
 --- a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
 +++ b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.c
 @@ -27,6 +27,7 @@
@@ -76,7 +95,7 @@ index 47774b9ab..cfda797f0 100644
  		sensor_id[num_of_sensors++] = als_idx;
  
 diff --git a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h
-index dfb7cabd8..e18ceee9e 100644
+index dfb7cabd82ef..e18ceee9e5db 100644
 --- a/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h
 +++ b/drivers/hid/amd-sfh-hid/amd_sfh_pcie.h
 @@ -78,6 +78,7 @@ enum sensor_idx {
@@ -88,7 +107,7 @@ index dfb7cabd8..e18ceee9e 100644
  };
  
 diff --git a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c
-index f9a8c02d5..181973f35 100644
+index f9a8c02d5a7b..181973f35f05 100644
 --- a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c
 +++ b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.c
 @@ -47,6 +47,11 @@ static int get_report_descriptor(int sensor_idx, u8 *rep_desc)
@@ -161,7 +180,7 @@ index f9a8c02d5..181973f35 100644
  		get_common_inputs(&als_input.common_property, report_id);
  		/* For ALS ,V2 Platforms uses C2P_MSG5 register instead of DRAM access method */
 diff --git a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h
-index ebd55675e..b22068a47 100644
+index ebd55675eb62..b22068a47429 100644
 --- a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h
 +++ b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_desc.h
 @@ -111,4 +111,11 @@ struct hpd_input_report {
@@ -177,7 +196,7 @@ index ebd55675e..b22068a47 100644
 +} __packed;
  #endif
 diff --git a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h
-index 697f2791e..96cbc1e5b 100644
+index 697f2791ea9c..96cbc1e5b9a7 100644
 --- a/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h
 +++ b/drivers/hid/amd-sfh-hid/hid_descriptor/amd_sfh_hid_report_desc.h
 @@ -644,6 +644,27 @@ static const u8 als_report_descriptor[] = {
@@ -208,231 +227,331 @@ index 697f2791e..96cbc1e5b 100644
  /* BIOMETRIC PRESENCE*/
  static const u8 hpd_report_descriptor[] = {
  0x05, 0x20,          /* Usage page */
-diff --git a/drivers/pci/controller/vmd.c b/drivers/pci/controller/vmd.c
-index 769eedeb8..900bf82dc 100644
---- a/drivers/pci/controller/vmd.c
-+++ b/drivers/pci/controller/vmd.c
-@@ -66,8 +66,22 @@ enum vmd_features {
- 	 * interrupt handling.
- 	 */
- 	VMD_FEAT_CAN_BYPASS_MSI_REMAP		= (1 << 4),
-+
-+	/*
-+	 * Enable ASPM on the PCIE root ports and set the default LTR of the
-+	 * storage devices on platforms where these values are not configured by
-+	 * BIOS. This is needed for laptops, which require these settings for
-+	 * proper power management of the SoC.
-+	 */
-+	VMD_FEAT_BIOS_PM_QUIRK		= (1 << 5),
+diff --git a/drivers/hid/hid-asus.c b/drivers/hid/hid-asus.c
+index d1094bb1aa42..2bc14e076739 100644
+--- a/drivers/hid/hid-asus.c
++++ b/drivers/hid/hid-asus.c
+@@ -883,33 +883,20 @@ static int asus_input_mapping(struct hid_device *hdev,
+ 		case 0xb5: asus_map_key_clear(KEY_CALC);			break;
+ 		case 0xc4: asus_map_key_clear(KEY_KBDILLUMUP);		break;
+ 		case 0xc5: asus_map_key_clear(KEY_KBDILLUMDOWN);		break;
++		case 0xc7: asus_map_key_clear(KEY_KBDILLUMTOGGLE);	break;
+ 
+-		/* ASUS touchpad toggle */
+-		case 0x6b: asus_map_key_clear(KEY_F21);			break;
++		case 0x6b: asus_map_key_clear(KEY_F21);		break; /* ASUS touchpad toggle */
++		case 0x38: asus_map_key_clear(KEY_PROG1);	break; /* ROG key */
++		case 0xba: asus_map_key_clear(KEY_PROG2);	break; /* Fn+C ASUS Splendid */
++		case 0x5c: asus_map_key_clear(KEY_PROG3);	break; /* Fn+Space Power4Gear */
++		case 0x99: asus_map_key_clear(KEY_PROG4);	break; /* Fn+F5 "fan" symbol */
++		case 0xae: asus_map_key_clear(KEY_PROG4);	break; /* Fn+F5 "fan" symbol */
++		case 0x92: asus_map_key_clear(KEY_CALC);	break; /* Fn+Ret "Calc" symbol */
++		case 0xb2: asus_map_key_clear(KEY_PROG2);	break; /* Fn+Left previous aura */
++		case 0xb3: asus_map_key_clear(KEY_PROG3);	break; /* Fn+Left next aura */
++		case 0x6a: asus_map_key_clear(KEY_F13);		break; /* Screenpad toggle */
++		case 0x4b: asus_map_key_clear(KEY_F14);		break; /* Arrows/Pg-Up/Dn toggle */
+ 
+-		/* ROG key */
+-		case 0x38: asus_map_key_clear(KEY_PROG1);		break;
+-
+-		/* Fn+C ASUS Splendid */
+-		case 0xba: asus_map_key_clear(KEY_PROG2);		break;
+-
+-		/* Fn+Space Power4Gear Hybrid */
+-		case 0x5c: asus_map_key_clear(KEY_PROG3);		break;
+-
+-		/* Fn+F5 "fan" symbol on FX503VD */
+-		case 0x99: asus_map_key_clear(KEY_PROG4);		break;
+-
+-		/* Fn+F5 "fan" symbol on N-Key keyboard */
+-		case 0xae: asus_map_key_clear(KEY_PROG4);		break;
+-
+-		/* Fn+Ret "Calc" symbol on N-Key keyboard */
+-		case 0x92: asus_map_key_clear(KEY_CALC);		break;
+-
+-		/* Fn+Left Aura mode previous on N-Key keyboard */
+-		case 0xb2: asus_map_key_clear(KEY_PROG2);		break;
+-
+-		/* Fn+Right Aura mode next on N-Key keyboard */
+-		case 0xb3: asus_map_key_clear(KEY_PROG3);		break;
+ 
+ 		default:
+ 			/* ASUS lazily declares 256 usages, ignore the rest,
+@@ -1267,6 +1254,9 @@ static const struct hid_device_id asus_devices[] = {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK,
+ 	    USB_DEVICE_ID_ASUSTEK_ROG_NKEY_KEYBOARD2),
+ 	  QUIRK_USE_KBD_BACKLIGHT | QUIRK_ROG_NKEY_KEYBOARD },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK,
++	    USB_DEVICE_ID_ASUSTEK_ROG_NKEY_KEYBOARD3),
++	  QUIRK_USE_KBD_BACKLIGHT | QUIRK_ROG_NKEY_KEYBOARD },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK,
+ 	    USB_DEVICE_ID_ASUSTEK_ROG_CLAYMORE_II_KEYBOARD),
+ 	  QUIRK_ROG_CLAYMORE_II_KEYBOARD },
+@@ -1309,4 +1299,4 @@ static struct hid_driver asus_driver = {
  };
+ module_hid_driver(asus_driver);
  
-+#define VMD_FEATS_CLIENT	(VMD_FEAT_HAS_MEMBAR_SHADOW_VSCAP |	\
-+				 VMD_FEAT_HAS_BUS_RESTRICTIONS |	\
-+				 VMD_FEAT_OFFSET_FIRST_VECTOR)
-+
-+#define VMD_BIOS_PM_QUIRK_LTR	0x1003	/* 3145728 ns */
-+
- static DEFINE_IDA(vmd_instance_ida);
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL");
+\ No newline at end of file
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index c2e9b6d1fd7d..513290a2e91c 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -207,6 +207,7 @@
+ #define USB_DEVICE_ID_ASUSTEK_ROG_KEYBOARD3 0x1822
+ #define USB_DEVICE_ID_ASUSTEK_ROG_NKEY_KEYBOARD	0x1866
+ #define USB_DEVICE_ID_ASUSTEK_ROG_NKEY_KEYBOARD2	0x19b6
++#define USB_DEVICE_ID_ASUSTEK_ROG_NKEY_KEYBOARD3	0x1a30
+ #define USB_DEVICE_ID_ASUSTEK_ROG_CLAYMORE_II_KEYBOARD	0x196b
+ #define USB_DEVICE_ID_ASUSTEK_FX503VD_KEYBOARD	0x1869
  
- /*
-@@ -709,6 +723,46 @@ static void vmd_copy_host_bridge_flags(struct pci_host_bridge *root_bridge,
- 	vmd_bridge->native_dpc = root_bridge->native_dpc;
+diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
+index 1038dfdcdd32..14a32e08f900 100644
+--- a/drivers/platform/x86/asus-wmi.c
++++ b/drivers/platform/x86/asus-wmi.c
+@@ -25,6 +25,7 @@
+ #include <linux/input/sparse-keymap.h>
+ #include <linux/kernel.h>
+ #include <linux/leds.h>
++#include <linux/minmax.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+ #include <linux/pci_hotplug.h>
+@@ -200,6 +201,7 @@ struct asus_wmi {
+ 
+ 	struct input_dev *inputdev;
+ 	struct backlight_device *backlight_device;
++	struct backlight_device *screenpad_backlight_device;
+ 	struct platform_device *platform_device;
+ 
+ 	struct led_classdev wlan_led;
+@@ -3208,6 +3210,127 @@ static int is_display_toggle(int code)
+ 	return 0;
  }
  
-+/*
-+ * Enable ASPM and LTR settings on devices that aren't configured by BIOS.
-+ */
-+static int vmd_pm_enable_quirk(struct pci_dev *pdev, void *userdata)
++/* Screenpad backlight *******************************************************/
++
++static int read_screenpad_backlight_power(struct asus_wmi *asus)
 +{
-+	unsigned long features = *(unsigned long *)userdata;
-+	u16 ltr = VMD_BIOS_PM_QUIRK_LTR;
-+	u32 ltr_reg;
-+	int pos;
++	int ret = asus_wmi_get_devstate_simple(asus, ASUS_WMI_DEVID_SCREENPAD_POWER);
 +
-+	if (!(features & VMD_FEAT_BIOS_PM_QUIRK))
-+		return 0;
-+
-+	pci_enable_link_state(pdev, PCIE_LINK_STATE_ALL);
-+
-+	pos = pci_find_ext_capability(pdev, PCI_EXT_CAP_ID_LTR);
-+	if (!pos)
-+		return 0;
-+
-+	/*
-+	 * Skip if the max snoop LTR is non-zero, indicating BIOS has set it
-+	 * so the LTR quirk is not needed.
-+	 */
-+	pci_read_config_dword(pdev, pos + PCI_LTR_MAX_SNOOP_LAT, &ltr_reg);
-+	if (!!(ltr_reg & (PCI_LTR_VALUE_MASK | PCI_LTR_SCALE_MASK)))
-+		return 0;
-+
-+	/*
-+	 * Set the default values to the maximum required by the platform to
-+	 * allow the deepest power management savings. Write as a DWORD where
-+	 * the lower word is the max snoop latency and the upper word is the
-+	 * max non-snoop latency.
-+	 */
-+	ltr_reg = (ltr << 16) | ltr;
-+	pci_write_config_dword(pdev, pos + PCI_LTR_MAX_SNOOP_LAT, ltr_reg);
-+	pci_info(pdev, "VMD: Default LTR value set by driver\n");
-+
-+	return 0;
++	if (ret < 0)
++		return ret;
++	/* 1 == powered */
++	return ret ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
 +}
 +
- static int vmd_enable_domain(struct vmd_dev *vmd, unsigned long features)
- {
- 	struct pci_sysdata *sd = &vmd->sysdata;
-@@ -881,6 +935,8 @@ static int vmd_enable_domain(struct vmd_dev *vmd, unsigned long features)
- 
- 	pci_assign_unassigned_bus_resources(vmd->bus);
- 
-+	pci_walk_bus(vmd->bus, vmd_pm_enable_quirk, &features);
-+
- 	/*
- 	 * VMD root buses are virtual and don't return true on pci_is_pcie()
- 	 * and will fail pcie_bus_configure_settings() early. It can instead be
-@@ -1017,36 +1073,24 @@ static int vmd_resume(struct device *dev)
- static SIMPLE_DEV_PM_OPS(vmd_dev_pm_ops, vmd_suspend, vmd_resume);
- 
- static const struct pci_device_id vmd_ids[] = {
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_VMD_201D),
-+	{PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_VMD_201D),
- 		.driver_data = VMD_FEAT_HAS_MEMBAR_SHADOW_VSCAP,},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_VMD_28C0),
-+	{PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_VMD_28C0),
- 		.driver_data = VMD_FEAT_HAS_MEMBAR_SHADOW |
- 				VMD_FEAT_HAS_BUS_RESTRICTIONS |
- 				VMD_FEAT_CAN_BYPASS_MSI_REMAP,},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x467f),
--		.driver_data = VMD_FEAT_HAS_MEMBAR_SHADOW_VSCAP |
--				VMD_FEAT_HAS_BUS_RESTRICTIONS |
--				VMD_FEAT_OFFSET_FIRST_VECTOR,},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4c3d),
--		.driver_data = VMD_FEAT_HAS_MEMBAR_SHADOW_VSCAP |
--				VMD_FEAT_HAS_BUS_RESTRICTIONS |
--				VMD_FEAT_OFFSET_FIRST_VECTOR,},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa77f),
--		.driver_data = VMD_FEAT_HAS_MEMBAR_SHADOW_VSCAP |
--				VMD_FEAT_HAS_BUS_RESTRICTIONS |
--				VMD_FEAT_OFFSET_FIRST_VECTOR,},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x7d0b),
--		.driver_data = VMD_FEAT_HAS_MEMBAR_SHADOW_VSCAP |
--				VMD_FEAT_HAS_BUS_RESTRICTIONS |
--				VMD_FEAT_OFFSET_FIRST_VECTOR,},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xad0b),
--		.driver_data = VMD_FEAT_HAS_MEMBAR_SHADOW_VSCAP |
--				VMD_FEAT_HAS_BUS_RESTRICTIONS |
--				VMD_FEAT_OFFSET_FIRST_VECTOR,},
--	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_VMD_9A0B),
--		.driver_data = VMD_FEAT_HAS_MEMBAR_SHADOW_VSCAP |
--				VMD_FEAT_HAS_BUS_RESTRICTIONS |
--				VMD_FEAT_OFFSET_FIRST_VECTOR,},
-+	{PCI_VDEVICE(INTEL, 0x467f),
-+		.driver_data = VMD_FEATS_CLIENT | VMD_FEAT_BIOS_PM_QUIRK,},
-+	{PCI_VDEVICE(INTEL, 0x4c3d),
-+		.driver_data = VMD_FEATS_CLIENT | VMD_FEAT_BIOS_PM_QUIRK,},
-+	{PCI_VDEVICE(INTEL, 0xa77f),
-+		.driver_data = VMD_FEATS_CLIENT | VMD_FEAT_BIOS_PM_QUIRK,},
-+	{PCI_VDEVICE(INTEL, 0x7d0b),
-+		.driver_data = VMD_FEATS_CLIENT | VMD_FEAT_BIOS_PM_QUIRK,},
-+	{PCI_VDEVICE(INTEL, 0xad0b),
-+		.driver_data = VMD_FEATS_CLIENT | VMD_FEAT_BIOS_PM_QUIRK,},
-+	{PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_VMD_9A0B),
-+		.driver_data = VMD_FEATS_CLIENT | VMD_FEAT_BIOS_PM_QUIRK,},
- 	{0,}
- };
- MODULE_DEVICE_TABLE(pci, vmd_ids);
-diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
-index 4b4184563..66d7514ca 100644
---- a/drivers/pci/pcie/aspm.c
-+++ b/drivers/pci/pcie/aspm.c
-@@ -1138,6 +1138,60 @@ int pci_disable_link_state(struct pci_dev *pdev, int state)
- }
- EXPORT_SYMBOL(pci_disable_link_state);
- 
-+/**
-+ * pci_enable_link_state - Clear and set the default device link state so that
-+ * the link may be allowed to enter the specified states. Note that if the
-+ * BIOS didn't grant ASPM control to the OS, this does nothing because we can't
-+ * touch the LNKCTL register. Also note that this does not enable states
-+ * disabled by pci_disable_link_state(). Return 0 or a negative errno.
-+ *
-+ * @pdev: PCI device
-+ * @state: Mask of ASPM link states to enable
-+ */
-+int pci_enable_link_state(struct pci_dev *pdev, int state)
++static int read_screenpad_brightness(struct backlight_device *bd)
 +{
-+	struct pcie_link_state *link = pcie_aspm_get_link(pdev);
++	struct asus_wmi *asus = bl_get_data(bd);
++	u32 retval;
++	int err;
 +
-+	if (!link)
-+		return -EINVAL;
-+	/*
-+	 * A driver requested that ASPM be enabled on this device, but
-+	 * if we don't have permission to manage ASPM (e.g., on ACPI
-+	 * systems we have to observe the FADT ACPI_FADT_NO_ASPM bit and
-+	 * the _OSC method), we can't honor that request.
-+	 */
-+	if (aspm_disabled) {
-+		pci_warn(pdev, "can't override BIOS ASPM; OS doesn't have ASPM control\n");
-+		return -EPERM;
++	err = read_screenpad_backlight_power(asus);
++	if (err < 0)
++		return err;
++	/* The device brightness can only be read if powered, so return stored */
++	if (err == FB_BLANK_POWERDOWN)
++		return asus->driver->screenpad_brightness;
++
++	err = asus_wmi_get_devstate(asus, ASUS_WMI_DEVID_SCREENPAD_LIGHT, &retval);
++	if (err < 0)
++		return err;
++
++	return retval & ASUS_WMI_DSTS_BRIGHTNESS_MASK;
++}
++
++static int update_screenpad_bl_status(struct backlight_device *bd)
++{
++	struct asus_wmi *asus = bl_get_data(bd);
++	int power, err = 0;
++	u32 ctrl_param;
++
++	power = read_screenpad_backlight_power(asus);
++	if (power == -ENODEV)
++		return err;
++	else if (power < 0)
++		return power;
++
++	if (bd->props.power != power) {
++		if (power != FB_BLANK_UNBLANK) {
++			/* Only brightness > 0 can power it back on */
++			ctrl_param = max(1, asus->driver->screenpad_brightness);
++			err = asus_wmi_set_devstate(ASUS_WMI_DEVID_SCREENPAD_LIGHT,
++						    ctrl_param, NULL);
++		} else {
++			err = asus_wmi_set_devstate(ASUS_WMI_DEVID_SCREENPAD_POWER, 0, NULL);
++		}
++	} else if (power == FB_BLANK_UNBLANK) {
++		/* Only set brightness if powered on or we get invalid/unsync state */
++		ctrl_param = bd->props.brightness;
++		err = asus_wmi_set_devstate(ASUS_WMI_DEVID_SCREENPAD_LIGHT, ctrl_param, NULL);
 +	}
 +
-+	down_read(&pci_bus_sem);
-+	mutex_lock(&aspm_lock);
-+	link->aspm_default = 0;
-+	if (state & PCIE_LINK_STATE_L0S)
-+		link->aspm_default |= ASPM_STATE_L0S;
-+	if (state & PCIE_LINK_STATE_L1)
-+		/* L1 PM substates require L1 */
-+		link->aspm_default |= ASPM_STATE_L1 | ASPM_STATE_L1SS;
-+	if (state & PCIE_LINK_STATE_L1_1)
-+		link->aspm_default |= ASPM_STATE_L1_1;
-+	if (state & PCIE_LINK_STATE_L1_2)
-+		link->aspm_default |= ASPM_STATE_L1_2;
-+	if (state & PCIE_LINK_STATE_L1_1_PCIPM)
-+		link->aspm_default |= ASPM_STATE_L1_1_PCIPM;
-+	if (state & PCIE_LINK_STATE_L1_2_PCIPM)
-+		link->aspm_default |= ASPM_STATE_L1_2_PCIPM;
-+	pcie_config_aspm_link(link, policy_to_aspm_state(link));
++	/* Ensure brightness is stored to turn back on with */
++	asus->driver->screenpad_brightness = bd->props.brightness;
 +
-+	link->clkpm_default = (state & PCIE_LINK_STATE_CLKPM) ? 1 : 0;
-+	pcie_set_clkpm(link, policy_to_clkpm_state(link));
-+	mutex_unlock(&aspm_lock);
-+	up_read(&pci_bus_sem);
++	return err;
++}
++
++static const struct backlight_ops asus_screenpad_bl_ops = {
++	.get_brightness = read_screenpad_brightness,
++	.update_status = update_screenpad_bl_status,
++	.options = BL_CORE_SUSPENDRESUME,
++};
++
++static int asus_screenpad_init(struct asus_wmi *asus)
++{
++	struct backlight_device *bd;
++	struct backlight_properties props;
++	int power, brightness;
++
++	power = read_screenpad_backlight_power(asus);
++	if (power == -ENODEV)
++		power = FB_BLANK_UNBLANK;
++	else if (power < 0)
++		return power;
++
++	memset(&props, 0, sizeof(struct backlight_properties));
++	props.type = BACKLIGHT_RAW; /* ensure this bd is last to be picked */
++	props.max_brightness = 255;
++	bd = backlight_device_register("asus_screenpad",
++				       &asus->platform_device->dev, asus,
++				       &asus_screenpad_bl_ops, &props);
++	if (IS_ERR(bd)) {
++		pr_err("Could not register backlight device\n");
++		return PTR_ERR(bd);
++	}
++
++	asus->screenpad_backlight_device = bd;
++
++	brightness = read_screenpad_brightness(bd);
++	if (brightness < 0)
++		return brightness;
++	/*
++	 * Counter an odd behaviour where default is set to < 13 if it was 0 on boot.
++	 * 60 is subjective, but accepted as a good compromise to retain visibility.
++	 */
++	if (brightness < 60)
++		brightness = 60;
++
++	asus->driver->screenpad_brightness = brightness;
++	bd->props.brightness = brightness;
++	bd->props.power = power;
++	backlight_update_status(bd);
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL(pci_enable_link_state);
 +
- static int pcie_aspm_set_policy(const char *val,
- 				const struct kernel_param *kp)
- {
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 2bda4a4e4..8c35f15e6 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1651,10 +1651,15 @@ extern bool pcie_ports_native;
- #define PCIE_LINK_STATE_L1_2		BIT(4)
- #define PCIE_LINK_STATE_L1_1_PCIPM	BIT(5)
- #define PCIE_LINK_STATE_L1_2_PCIPM	BIT(6)
-+#define PCIE_LINK_STATE_ALL		(PCIE_LINK_STATE_L0S | PCIE_LINK_STATE_L1 |\
-+					 PCIE_LINK_STATE_CLKPM | PCIE_LINK_STATE_L1_1 |\
-+					 PCIE_LINK_STATE_L1_2 | PCIE_LINK_STATE_L1_1_PCIPM |\
-+					 PCIE_LINK_STATE_L1_2_PCIPM)
++static void asus_screenpad_exit(struct asus_wmi *asus)
++{
++	backlight_device_unregister(asus->screenpad_backlight_device);
++
++	asus->screenpad_backlight_device = NULL;
++}
++
+ /* Fn-lock ********************************************************************/
  
- #ifdef CONFIG_PCIEASPM
- int pci_disable_link_state(struct pci_dev *pdev, int state);
- int pci_disable_link_state_locked(struct pci_dev *pdev, int state);
-+int pci_enable_link_state(struct pci_dev *pdev, int state);
- void pcie_no_aspm(void);
- bool pcie_aspm_support_enabled(void);
- bool pcie_aspm_enabled(struct pci_dev *pdev);
-@@ -1663,6 +1668,8 @@ static inline int pci_disable_link_state(struct pci_dev *pdev, int state)
- { return 0; }
- static inline int pci_disable_link_state_locked(struct pci_dev *pdev, int state)
- { return 0; }
-+static inline int pci_enable_link_state(struct pci_dev *pdev, int state)
-+{ return 0; }
- static inline void pcie_no_aspm(void) { }
- static inline bool pcie_aspm_support_enabled(void) { return false; }
- static inline bool pcie_aspm_enabled(struct pci_dev *pdev) { return false; }
+ static bool asus_wmi_has_fnlock_key(struct asus_wmi *asus)
+@@ -3823,6 +3946,13 @@ static int asus_wmi_add(struct platform_device *pdev)
+ 	} else if (asus->driver->quirks->wmi_backlight_set_devstate)
+ 		err = asus_wmi_set_devstate(ASUS_WMI_DEVID_BACKLIGHT, 2, NULL);
+ 
++	if (asus_wmi_dev_is_present(asus, ASUS_WMI_DEVID_SCREENPAD_LIGHT)) {
++		pr_warn("Begin asus_screenpad_init");
++		err = asus_screenpad_init(asus);
++		if (err && err != -ENODEV)
++			goto fail_backlight;
++	}
++
+ 	if (asus_wmi_has_fnlock_key(asus)) {
+ 		asus->fnlock_locked = fnlock_default;
+ 		asus_wmi_fnlock_update(asus);
+@@ -3844,6 +3974,7 @@ static int asus_wmi_add(struct platform_device *pdev)
+ 
+ fail_wmi_handler:
+ 	asus_wmi_backlight_exit(asus);
++	asus_screenpad_exit(asus);
+ fail_backlight:
+ 	asus_wmi_rfkill_exit(asus);
+ fail_rfkill:
+diff --git a/drivers/platform/x86/asus-wmi.h b/drivers/platform/x86/asus-wmi.h
+index a478ebfd34df..5fbdd0eafa02 100644
+--- a/drivers/platform/x86/asus-wmi.h
++++ b/drivers/platform/x86/asus-wmi.h
+@@ -57,6 +57,7 @@ struct quirk_entry {
+ struct asus_wmi_driver {
+ 	int			brightness;
+ 	int			panel_power;
++	int			screenpad_brightness;
+ 	int			wlan_ctrl_by_user;
+ 
+ 	const char		*name;
+diff --git a/include/linux/platform_data/x86/asus-wmi.h b/include/linux/platform_data/x86/asus-wmi.h
+index 28234dc9fa6a..a2d94adb5c80 100644
+--- a/include/linux/platform_data/x86/asus-wmi.h
++++ b/include/linux/platform_data/x86/asus-wmi.h
+@@ -58,6 +58,10 @@
+ #define ASUS_WMI_DEVID_KBD_BACKLIGHT	0x00050021
+ #define ASUS_WMI_DEVID_LIGHT_SENSOR	0x00050022 /* ?? */
+ #define ASUS_WMI_DEVID_LIGHTBAR		0x00050025
++/* This can only be used to disable the screen, not re-enable */
++#define ASUS_WMI_DEVID_SCREENPAD_POWER	0x00050031
++/* Writing a brightness re-enables the screen if disabled */
++#define ASUS_WMI_DEVID_SCREENPAD_LIGHT	0x00050032
+ #define ASUS_WMI_DEVID_FAN_BOOST_MODE	0x00110018
+ #define ASUS_WMI_DEVID_THROTTLE_THERMAL_POLICY 0x00120075
+ 
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index 172ffc2c332b..ad7fdb5a4ed0 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -7063,6 +7063,8 @@ enum {
+ 	ALC225_FIXUP_DELL1_MIC_NO_PRESENCE,
+ 	ALC295_FIXUP_DISABLE_DAC3,
+ 	ALC285_FIXUP_SPEAKER2_TO_DAC1,
++	ALC285_FIXUP_ASUS_HEADSET_MIC,
++	ALC285_FIXUP_ASUS_SPEAKER2_TO_DAC1,
+ 	ALC280_FIXUP_HP_HEADSET_MIC,
+ 	ALC221_FIXUP_HP_FRONT_MIC,
+ 	ALC292_FIXUP_TPT460,
+@@ -8033,6 +8035,22 @@ static const struct hda_fixup alc269_fixups[] = {
+ 		.chained = true,
+ 		.chain_id = ALC269_FIXUP_THINKPAD_ACPI
+ 	},
++	[ALC285_FIXUP_ASUS_HEADSET_MIC] = {
++		.type = HDA_FIXUP_PINS,
++		.v.pins = (const struct hda_pintbl[]) {
++			{ 0x19, 0x03a11050 },
++			{ 0x1b, 0x03a11c30 },
++			{ }
++		},
++		.chained = true,
++		.chain_id = ALC245_FIXUP_CS35L41_SPI_2
++	},
++	[ALC285_FIXUP_ASUS_SPEAKER2_TO_DAC1] = {
++		.type = HDA_FIXUP_FUNC,
++		.v.func = alc285_fixup_speaker2_to_dac1,
++		.chained = true,
++		.chain_id = ALC285_FIXUP_ASUS_HEADSET_MIC
++	},
+ 	[ALC256_FIXUP_DELL_INSPIRON_7559_SUBWOOFER] = {
+ 		.type = HDA_FIXUP_PINS,
+ 		.v.pins = (const struct hda_pintbl[]) {
+@@ -9504,6 +9522,7 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
+ 	SND_PCI_QUIRK(0x1043, 0x1662, "ASUS GV301QH", ALC294_FIXUP_ASUS_DUAL_SPK),
+ 	SND_PCI_QUIRK(0x1043, 0x1683, "ASUS UM3402YAR", ALC287_FIXUP_CS35L41_I2C_2),
+ 	SND_PCI_QUIRK(0x1043, 0x16b2, "ASUS GU603", ALC289_FIXUP_ASUS_GA401),
++	SND_PCI_QUIRK(0x1043, 0x1c62, "ASUS GU603", ALC289_FIXUP_ASUS_GA401),
+ 	SND_PCI_QUIRK(0x1043, 0x16e3, "ASUS UX50", ALC269_FIXUP_STEREO_DMIC),
+ 	SND_PCI_QUIRK(0x1043, 0x1740, "ASUS UX430UA", ALC295_FIXUP_ASUS_DACS),
+ 	SND_PCI_QUIRK(0x1043, 0x17d1, "ASUS UX431FL", ALC294_FIXUP_ASUS_DUAL_SPK),
+@@ -9542,6 +9561,7 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
+ 	SND_PCI_QUIRK(0x1043, 0x8398, "ASUS P1005", ALC269_FIXUP_STEREO_DMIC),
+ 	SND_PCI_QUIRK(0x1043, 0x83ce, "ASUS P1005", ALC269_FIXUP_STEREO_DMIC),
+ 	SND_PCI_QUIRK(0x1043, 0x8516, "ASUS X101CH", ALC269_FIXUP_ASUS_X101),
++	SND_PCI_QUIRK(0x1043, 0x1473, "ASUS GU604", ALC285_FIXUP_ASUS_SPEAKER2_TO_DAC1),
+ 	SND_PCI_QUIRK(0x104d, 0x9073, "Sony VAIO", ALC275_FIXUP_SONY_VAIO_GPIO2),
+ 	SND_PCI_QUIRK(0x104d, 0x907b, "Sony VAIO", ALC275_FIXUP_SONY_HWEQ),
+ 	SND_PCI_QUIRK(0x104d, 0x9084, "Sony VAIO", ALC275_FIXUP_SONY_HWEQ),

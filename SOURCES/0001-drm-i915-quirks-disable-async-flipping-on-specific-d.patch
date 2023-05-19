@@ -9,7 +9,7 @@ Signed-off-by: Jan200101 <sentrycraft123@gmail.com>
  1 file changed, 20 insertions(+)
 
 diff --git a/drivers/gpu/drm/i915/display/intel_quirks.c b/drivers/gpu/drm/i915/display/intel_quirks.c
-index 6e48d3bcdfec..ee7149a520e3 100644
+index a280448df771..1596114dd9ae 100644
 --- a/drivers/gpu/drm/i915/display/intel_quirks.c
 +++ b/drivers/gpu/drm/i915/display/intel_quirks.c
 @@ -14,6 +14,12 @@ static void intel_set_quirk(struct drm_i915_private *i915, enum intel_quirk_id q

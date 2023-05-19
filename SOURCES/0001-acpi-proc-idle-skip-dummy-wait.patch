@@ -105,9 +105,9 @@ diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
 index 16a1663d02d4..18850aa2b79b 100644
 --- a/drivers/acpi/processor_idle.c
 +++ b/drivers/acpi/processor_idle.c
-@@ -527,9 +527,11 @@
- static void wait_for_freeze(void)
- {
+@@ -529,9 +529,11 @@ static __cpuidle void io_idle(unsigned long addr)
+ 	inb(addr);
+ 
  #ifdef	CONFIG_X86
 -	/* No delay is needed if we are in guest */
 -	if (boot_cpu_has(X86_FEATURE_HYPERVISOR))
