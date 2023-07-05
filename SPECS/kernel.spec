@@ -142,18 +142,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.3.10
-%define specversion 6.3.10
+%define specrpmversion 6.3.11
+%define specversion 6.3.11
 %define patchversion 6.3
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.3.10
+%define tarfile_release 6.3.11
 # This is needed to do merge window version magic
 %define patchlevel 3
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.3.10
+%define kabiversion 6.3.11
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -3448,8 +3448,11 @@ fi
 #
 #
 %changelog
-* Sat Jul 01 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.3.10-201.fsync
-- kernel-fsync v6.3.10
+* Wed Jul 05 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.3.11-201.fsync
+- kernel-fsync v6.3.11
+
+* Sun Jul 02 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.3.11-0]
+- Linux v6.3.11
 
 * Wed Jun 28 2023 Augusto Caringi <acaringi@redhat.com> [6.3.10-0]
 - Linux v6.3.10
