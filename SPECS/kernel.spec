@@ -151,7 +151,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 3
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.3.11
 
@@ -931,6 +931,10 @@ Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
 Patch408: 0001-acpi-proc-idle-skip-dummy-wait.patch
 Patch409: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 Patch410: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
+#   reverts regression introduced in 6.3.10
+Patch411: 0001-Revert-b0cb56fc6e3096c9da04c30d9b501da84dae2b4f.patch
+Patch412: 0002-Revert-1ca399f127e0a372537625b1d462ed586f5d9139.patch
+Patch413: 0003-Revert-da2d907e051d591717d00e28e67ab341b961fd05.patch
 
 %endif
 
@@ -1603,6 +1607,10 @@ ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
 ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
 ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
+#   reverts regression introduced in 6.3.10
+ApplyOptionalPatch 0001-Revert-b0cb56fc6e3096c9da04c30d9b501da84dae2b4f.patch
+ApplyOptionalPatch 0002-Revert-1ca399f127e0a372537625b1d462ed586f5d9139.patch
+ApplyOptionalPatch 0003-Revert-da2d907e051d591717d00e28e67ab341b961fd05.patch
 
 %endif
 
@@ -3448,6 +3456,9 @@ fi
 #
 #
 %changelog
+* Thu Jul 06 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.3.11-202.fsync
+- kernel-fsync v6.3.11 reverts
+
 * Wed Jul 05 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.3.11-201.fsync
 - kernel-fsync v6.3.11
 

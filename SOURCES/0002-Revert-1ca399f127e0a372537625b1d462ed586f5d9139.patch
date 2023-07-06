@@ -1,0 +1,88 @@
+From 046beef43c8c811ce3e96fc2553a15e41f213b11 Mon Sep 17 00:00:00 2001
+From: GloriousEggroll <gloriouseggroll@gmail.com>
+Date: Wed, 5 Jul 2023 16:01:53 -0600
+Subject: [PATCH 2/3] Revert 1ca399f127e0a372537625b1d462ed586f5d9139
+
+---
+ .../gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c | 51 ++++---------------
+ 1 file changed, 10 insertions(+), 41 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
+index 51a3130f6..ae58f24be 100644
+--- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
++++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
+@@ -350,35 +350,6 @@ static inline bool is_dc_timing_adjust_needed(struct dm_crtc_state *old_state,
+ 		return false;
+ }
+ 
+-/**
+- * update_planes_and_stream_adapter() - Send planes to be updated in DC
+- *
+- * DC has a generic way to update planes and stream via
+- * dc_update_planes_and_stream function; however, DM might need some
+- * adjustments and preparation before calling it. This function is a wrapper
+- * for the dc_update_planes_and_stream that does any required configuration
+- * before passing control to DC.
+- */
+-static inline bool update_planes_and_stream_adapter(struct dc *dc,
+-						    int update_type,
+-						    int planes_count,
+-						    struct dc_stream_state *stream,
+-						    struct dc_stream_update *stream_update,
+-						    struct dc_surface_update *array_of_surface_update)
+-{
+-	/*
+-	 * Previous frame finished and HW is ready for optimization.
+-	 */
+-	if (update_type == UPDATE_TYPE_FAST)
+-		dc_post_update_surfaces_to_stream(dc);
+-
+-	return dc_update_planes_and_stream(dc,
+-					   array_of_surface_update,
+-					   planes_count,
+-					   stream,
+-					   stream_update);
+-}
+-
+ /**
+  * dm_pflip_high_irq() - Handle pageflip interrupt
+  * @interrupt_params: ignored
+@@ -2713,12 +2684,11 @@ static void dm_gpureset_commit_state(struct dc_state *dc_state,
+ 				true;
+ 		}
+ 
+-		update_planes_and_stream_adapter(dm->dc,
+-					 UPDATE_TYPE_FULL,
+-					 dc_state->stream_status->plane_count,
+-					 dc_state->streams[k],
+-					 &bundle->stream_update,
+-					 bundle->surface_updates);
++		dc_update_planes_and_stream(dm->dc,
++			bundle->surface_updates,
++			dc_state->stream_status->plane_count,
++			dc_state->streams[k],
++			&bundle->stream_update);
+ 	}
+ 
+ cleanup:
+@@ -8230,12 +8200,11 @@ static void amdgpu_dm_commit_planes(struct drm_atomic_state *state,
+ 				acrtc_state->stream->link->psr_settings.psr_allow_active)
+ 			amdgpu_dm_psr_disable(acrtc_state->stream);
+ 
+-		update_planes_and_stream_adapter(dm->dc,
+-					 acrtc_state->update_type,
+-					 planes_count,
+-					 acrtc_state->stream,
+-					 &bundle->stream_update,
+-					 bundle->surface_updates);
++		dc_update_planes_and_stream(dm->dc,
++					    bundle->surface_updates,
++					    planes_count,
++					    acrtc_state->stream,
++					    &bundle->stream_update);
+ 
+ 		/**
+ 		 * Enable or disable the interrupts on the backend.
+-- 
+2.41.0
+
