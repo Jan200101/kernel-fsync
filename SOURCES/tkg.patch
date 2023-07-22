@@ -325,34 +325,6 @@ index 84badf00647e..6a922bca9f39 100644
 2.28.0
 
 
-From 816ee502759e954304693813bd03d94986b28dba Mon Sep 17 00:00:00 2001
-From: Tk-Glitch <ti3nou@gmail.com>
-Date: Mon, 18 Feb 2019 17:40:57 +0100
-Subject: [PATCH 11/17] mm: Set watermark_scale_factor to 200 (from 10)
-
-Multiple users have reported it's helping reducing/eliminating stuttering
-with DXVK.
----
- mm/page_alloc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 898ff44f2c7b..e72074034793 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -330,7 +330,7 @@ int watermark_boost_factor __read_mostly;
- int min_free_kbytes = 1024;
- int user_min_free_kbytes = -1;
- int watermark_boost_factor __read_mostly = 15000;
--int watermark_scale_factor = 10;
-+int watermark_scale_factor = 200;
- 
- static unsigned long nr_kernel_pages __initdata;
- static unsigned long nr_all_pages __initdata;
--- 
-2.28.0
-
-
 From 90240bcd90a568878738e66c0d45bed3e38e347b Mon Sep 17 00:00:00 2001
 From: Tk-Glitch <ti3nou@gmail.com>
 Date: Fri, 19 Apr 2019 12:33:38 +0200
@@ -405,7 +377,7 @@ index b0cefe94920d..890165099b07 100644
   * that.
   */
 -#define DEFAULT_MAX_MAP_COUNT	(262144)
-+#define DEFAULT_MAX_MAP_COUNT	(524288)
++#define DEFAULT_MAX_MAP_COUNT	(16777216)
  
  extern int sysctl_max_map_count;
  
@@ -537,3 +509,157 @@ index 36a469150ff9..aee891c9b78a 100644
  	if (!strcmp(str, "hwp_only"))
 -- 
 2.28.0
+
+From 379cbab18b5c75c622b93e2c5abdfac141fe9654 Mon Sep 17 00:00:00 2001
+From: Kenny Levinsen <kl@kl.wtf>
+Date: Sun, 27 Dec 2020 14:43:13 +0000
+Subject: [PATCH] ZEN: Input: evdev - use call_rcu when detaching client
+
+Significant time was spent on synchronize_rcu in evdev_detach_client
+when applications closed evdev devices. Switching VT away from a
+graphical environment commonly leads to mass input device closures,
+which could lead to noticable delays on systems with many input devices.
+
+Replace synchronize_rcu with call_rcu, deferring reclaim of the evdev
+client struct till after the RCU grace period instead of blocking the
+calling application.
+
+While this does not solve all slow evdev fd closures, it takes care of a
+good portion of them, including this simple test:
+
+	#include <fcntl.h>
+	#include <unistd.h>
+
+	int main(int argc, char *argv[])
+	{
+		int idx, fd;
+		const char *path = "/dev/input/event0";
+		for (idx = 0; idx < 1000; idx++) {
+			if ((fd = open(path, O_RDWR)) == -1) {
+				return -1;
+			}
+			close(fd);
+		}
+		return 0;
+	}
+
+Time to completion of above test when run locally:
+
+	Before: 0m27.111s
+	After:  0m0.018s
+
+Signed-off-by: Kenny Levinsen <kl@kl.wtf>
+---
+ drivers/input/evdev.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
+index 95f90699d2b17b..2b10fe29d2c8d9 100644
+--- a/drivers/input/evdev.c
++++ b/drivers/input/evdev.c
+@@ -46,6 +46,7 @@ struct evdev_client {
+ 	struct fasync_struct *fasync;
+ 	struct evdev *evdev;
+ 	struct list_head node;
++	struct rcu_head rcu;
+ 	enum input_clock_type clk_type;
+ 	bool revoked;
+ 	unsigned long *evmasks[EV_CNT];
+@@ -377,13 +378,22 @@ static void evdev_attach_client(struct evdev *evdev,
+ 	spin_unlock(&evdev->client_lock);
+ }
+
++static void evdev_reclaim_client(struct rcu_head *rp)
++{
++	struct evdev_client *client = container_of(rp, struct evdev_client, rcu);
++	unsigned int i;
++	for (i = 0; i < EV_CNT; ++i)
++		bitmap_free(client->evmasks[i]);
++	kvfree(client);
++}
++
+ static void evdev_detach_client(struct evdev *evdev,
+ 				struct evdev_client *client)
+ {
+ 	spin_lock(&evdev->client_lock);
+ 	list_del_rcu(&client->node);
+ 	spin_unlock(&evdev->client_lock);
+-	synchronize_rcu();
++	call_rcu(&client->rcu, evdev_reclaim_client);
+ }
+
+ static int evdev_open_device(struct evdev *evdev)
+@@ -436,7 +446,6 @@ static int evdev_release(struct inode *inode, struct file *file)
+ {
+ 	struct evdev_client *client = file->private_data;
+ 	struct evdev *evdev = client->evdev;
+-	unsigned int i;
+
+ 	mutex_lock(&evdev->mutex);
+
+@@ -448,11 +457,6 @@ static int evdev_release(struct inode *inode, struct file *file)
+
+ 	evdev_detach_client(evdev, client);
+
+-	for (i = 0; i < EV_CNT; ++i)
+-		bitmap_free(client->evmasks[i]);
+-
+-	kvfree(client);
+-
+ 	evdev_close_device(evdev);
+
+ 	return 0;
+@@ -495,7 +499,6 @@ static int evdev_open(struct inode *inode, struct file *file)
+
+  err_free_client:
+ 	evdev_detach_client(evdev, client);
+-	kvfree(client);
+ 	return error;
+ }
+
+
+From 2aafb56f20e4b63d8c4af172fe9d017c64bc4129 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Wed, 20 Oct 2021 20:50:11 -0700
+Subject: [PATCH] ZEN: mm: Lower the non-hugetlbpage pageblock size to reduce
+ scheduling delays
+
+The page allocator processes free pages in groups of pageblocks, where
+the size of a pageblock is typically quite large (1024 pages without
+hugetlbpage support). Pageblocks are processed atomically with the zone
+lock held, which can cause severe scheduling delays on both the CPU
+going through the pageblock and any other CPUs waiting to acquire the
+zone lock. A frequent offender is move_freepages_block(), which is used
+by rmqueue() for page allocation.
+
+As it turns out, there's no requirement for pageblocks to be so large,
+so the pageblock order can simply be reduced to ease the scheduling
+delays and zone lock contention. PAGE_ALLOC_COSTLY_ORDER is used as a
+reasonable setting to ensure non-costly page allocation requests can
+still be serviced without always needing to free up more than one
+pageblock's worth of pages at a time.
+
+This has a noticeable effect on overall system latency when memory
+pressure is elevated. The various mm functions which operate on
+pageblocks no longer appear in the preemptoff tracer, where previously
+they would spend up to 100 ms on a mobile arm64 CPU processing a
+pageblock with preemption disabled and the zone lock held.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ include/linux/pageblock-flags.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/pageblock-flags.h b/include/linux/pageblock-flags.h
+index 5f1ae07d724b88..97cda629c9e909 100644
+--- a/include/linux/pageblock-flags.h
++++ b/include/linux/pageblock-flags.h
+@@ -48,7 +48,7 @@ extern unsigned int pageblock_order;
+ #else /* CONFIG_HUGETLB_PAGE */
+
+ /* If huge pages are not used, group by MAX_ORDER_NR_PAGES */
+-#define pageblock_order		MAX_ORDER
++#define pageblock_order		PAGE_ALLOC_COSTLY_ORDER
+
+ #endif /* CONFIG_HUGETLB_PAGE */
+

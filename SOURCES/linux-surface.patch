@@ -1,4 +1,4 @@
-From 485397fc9a0d07d151598fbe5570c7629124cd68 Mon Sep 17 00:00:00 2001
+From 4eacf265d5adbd67e1f3ee63ba76ebfbc213c8ba Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 18 Oct 2020 16:42:44 +0900
 Subject: [PATCH] (surface3-oemb) add DMI matches for Surface 3 with broken DMI
@@ -99,7 +99,7 @@ index cdcbf04b8832..958305779b12 100644
 -- 
 2.41.0
 
-From 3e32e74d21929a3146e0adf85903f0d25bd8df2d Mon Sep 17 00:00:00 2001
+From 7d293837789acaa3b865552ea304cf3fa3cc3b1b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Tue, 3 Nov 2020 13:28:04 +0100
 Subject: [PATCH] mwifiex: Add quirk resetting the PCI bridge on MS Surface
@@ -266,7 +266,7 @@ index d6ff964aec5b..5d30ae39d65e 100644
 -- 
 2.41.0
 
-From dc83352c039f4c15a10e81e25361a688c7a3a709 Mon Sep 17 00:00:00 2001
+From 9a575242ccba531c0215b7653b3e557569828fe6 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 4 Oct 2020 00:11:49 +0900
 Subject: [PATCH] mwifiex: pcie: disable bridge_d3 for Surface gen4+
@@ -421,7 +421,7 @@ index 5d30ae39d65e..c14eb56eb911 100644
 -- 
 2.41.0
 
-From 259df196c6e8b4ecebf76f3c833c97ac92ac01b4 Mon Sep 17 00:00:00 2001
+From 8d69786e9b9f6879acff05bd3a8821f6dd0d85f9 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 25 Mar 2021 11:33:02 +0100
 Subject: [PATCH] Bluetooth: btusb: Lower passive lescan interval on Marvell
@@ -457,7 +457,7 @@ Patchset: mwifiex
  1 file changed, 15 insertions(+)
 
 diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index 0923582299f3..3a2c8e3bc244 100644
+index 2a8e2bb038f5..91d15e7c2898 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
 @@ -65,6 +65,7 @@ static struct usb_driver btusb_driver;
@@ -476,7 +476,7 @@ index 0923582299f3..3a2c8e3bc244 100644
  
  	/* Intel Bluetooth devices */
  	{ USB_DEVICE(0x8087, 0x0025), .driver_info = BTUSB_INTEL_COMBINED },
-@@ -4036,6 +4038,19 @@ static int btusb_probe(struct usb_interface *intf,
+@@ -4296,6 +4298,19 @@ static int btusb_probe(struct usb_interface *intf,
  	if (id->driver_info & BTUSB_MARVELL)
  		hdev->set_bdaddr = btusb_set_bdaddr_marvell;
  
@@ -499,7 +499,7 @@ index 0923582299f3..3a2c8e3bc244 100644
 -- 
 2.41.0
 
-From cbc0fc059185fa764588936a84a83f1732f7cb77 Mon Sep 17 00:00:00 2001
+From 07ef6257248704323077589c80c00ee99972cbb5 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 27 Feb 2021 00:45:52 +0100
 Subject: [PATCH] ath10k: Add module parameters to override board files
@@ -620,7 +620,7 @@ index 5eb131ab916f..67f074a126d1 100644
 -- 
 2.41.0
 
-From fea323ad1ebb58a17ae9975783c2157f7b03663a Mon Sep 17 00:00:00 2001
+From 4b251599b09f01035083eabe39b464553b368da9 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 30 Jul 2020 13:21:53 +0200
 Subject: [PATCH] misc: mei: Add missing IPTS device IDs
@@ -644,7 +644,7 @@ index bdc65d50b945..08723c01d727 100644
  
  #define MEI_DEV_ID_JSP_N      0x4DE0  /* Jasper Lake Point N */
 diff --git a/drivers/misc/mei/pci-me.c b/drivers/misc/mei/pci-me.c
-index 5bf0d50d55a0..c13864512229 100644
+index 676d566f38dd..6b37dd1f8b2a 100644
 --- a/drivers/misc/mei/pci-me.c
 +++ b/drivers/misc/mei/pci-me.c
 @@ -97,6 +97,7 @@ static const struct pci_device_id mei_me_pci_tbl[] = {
@@ -658,7 +658,7 @@ index 5bf0d50d55a0..c13864512229 100644
 -- 
 2.41.0
 
-From 10f227b6d2496d42453a997fe68400867f76328d Mon Sep 17 00:00:00 2001
+From 36d43ffc88a890636dacf53adcbdf5e844a71b46 Mon Sep 17 00:00:00 2001
 From: Liban Hannan <liban.p@gmail.com>
 Date: Tue, 12 Apr 2022 23:31:12 +0100
 Subject: [PATCH] iommu: ipts: use IOMMU passthrough mode for IPTS
@@ -680,7 +680,7 @@ Patchset: ipts
  1 file changed, 24 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index 7c2f4bd33582..3ebd2260cdab 100644
+index b871a6afd803..0d4542b7365d 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
 @@ -37,6 +37,8 @@
@@ -707,7 +707,7 @@ index 7c2f4bd33582..3ebd2260cdab 100644
  
  const struct iommu_ops intel_iommu_ops;
  
-@@ -2588,6 +2592,9 @@ static int device_def_domain_type(struct device *dev)
+@@ -2560,6 +2564,9 @@ static int device_def_domain_type(struct device *dev)
  
  		if ((iommu_identity_mapping & IDENTMAP_GFX) && IS_GFX_DEVICE(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
@@ -717,7 +717,7 @@ index 7c2f4bd33582..3ebd2260cdab 100644
  	}
  
  	return 0;
-@@ -2977,6 +2984,9 @@ static int __init init_dmars(void)
+@@ -2867,6 +2874,9 @@ static int __init init_dmars(void)
  	if (!dmar_map_gfx)
  		iommu_identity_mapping |= IDENTMAP_GFX;
  
@@ -727,7 +727,7 @@ index 7c2f4bd33582..3ebd2260cdab 100644
  	check_tylersburg_isoch();
  
  	ret = si_domain_init(hw_pass_through);
-@@ -4819,6 +4829,17 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
+@@ -4778,6 +4788,17 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
  	dmar_map_gfx = 0;
  }
  
@@ -745,7 +745,7 @@ index 7c2f4bd33582..3ebd2260cdab 100644
  /* G4x/GM45 integrated gfx dmar support is totally busted. */
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
-@@ -4854,6 +4875,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
+@@ -4813,6 +4834,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163A, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
  
@@ -758,7 +758,7 @@ index 7c2f4bd33582..3ebd2260cdab 100644
 -- 
 2.41.0
 
-From 90ddf8ce3ac963f26d27320fe9bf25f50b46a5a2 Mon Sep 17 00:00:00 2001
+From dcc74801efc9dc7f1ba8197d13d78f60f5b7e0f4 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Sun, 11 Dec 2022 12:00:59 +0100
 Subject: [PATCH] hid: Add support for Intel Precise Touch and Stylus
@@ -3608,7 +3608,7 @@ index 000000000000..a314843599fc
 -- 
 2.41.0
 
-From da7ce55ac02658024e533324c6e00f6071a70722 Mon Sep 17 00:00:00 2001
+From 741a055a0f89c4f6db9d908a86c3ad0699928fca Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Fri, 28 Apr 2023 15:41:12 +0200
 Subject: [PATCH] Update IPTS from module repo
@@ -3800,7 +3800,1296 @@ index 6cbb24a8a054..e0c400f420b9 100644
 -- 
 2.41.0
 
-From 08c110320b8017f3520336564bb418ee0d1d3f60 Mon Sep 17 00:00:00 2001
+From 3416fa5a1a0bd6153d50e309ac1bf59bd55d95b6 Mon Sep 17 00:00:00 2001
+From: Dorian Stoll <dorian.stoll@tmsp.io>
+Date: Mon, 17 Jul 2023 18:10:43 +0200
+Subject: [PATCH] Update IPTS from module repo
+
+Changes:
+* Remove usages of C11 for compatibility with older (Android) kernels
+* Remove sensor reset during shutdown
+* Fix compiling resources.c on Android-x86 kernel
+* Split out HID behaviour for different EDS versions into different files
+* Fix kernel-doc comments
+* Add missing docs for members of the device info struct
+* Drop Intel copyright
+* Rename doorbell mode to poll mode
+* Disable the HID interface when the hardware is shutting down.
+
+Based on https://github.com/linux-surface/intel-precise-touch/commit/56765da3f87d87c5e5cf09e928abe0f579525e5e
+
+Signed-off-by: Dorian Stoll <dorian.stoll@tmsp.io>
+Patchset: ipts
+---
+ drivers/hid/ipts/Makefile      |   2 +
+ drivers/hid/ipts/cmd.c         |   1 -
+ drivers/hid/ipts/cmd.h         |   7 +-
+ drivers/hid/ipts/context.h     |   3 +-
+ drivers/hid/ipts/control.c     |  25 ++---
+ drivers/hid/ipts/control.h     |  25 +++--
+ drivers/hid/ipts/desc.h        |   1 -
+ drivers/hid/ipts/eds1.c        | 103 ++++++++++++++++++
+ drivers/hid/ipts/eds1.h        |  35 +++++++
+ drivers/hid/ipts/eds2.c        | 144 ++++++++++++++++++++++++++
+ drivers/hid/ipts/eds2.h        |  35 +++++++
+ drivers/hid/ipts/hid.c         | 184 ++++++---------------------------
+ drivers/hid/ipts/hid.h         |   4 +-
+ drivers/hid/ipts/main.c        |   1 -
+ drivers/hid/ipts/mei.c         |   1 -
+ drivers/hid/ipts/mei.h         |   7 +-
+ drivers/hid/ipts/receiver.c    |  15 +--
+ drivers/hid/ipts/receiver.h    |   1 -
+ drivers/hid/ipts/resources.c   |   6 +-
+ drivers/hid/ipts/resources.h   |   1 -
+ drivers/hid/ipts/spec-device.h |  31 +++---
+ drivers/hid/ipts/spec-hid.h    |   1 -
+ drivers/hid/ipts/thread.c      |   1 -
+ drivers/hid/ipts/thread.h      |   7 +-
+ 24 files changed, 413 insertions(+), 228 deletions(-)
+ create mode 100644 drivers/hid/ipts/eds1.c
+ create mode 100644 drivers/hid/ipts/eds1.h
+ create mode 100644 drivers/hid/ipts/eds2.c
+ create mode 100644 drivers/hid/ipts/eds2.h
+
+diff --git a/drivers/hid/ipts/Makefile b/drivers/hid/ipts/Makefile
+index 0fe655bccdc0..883896f68e6a 100644
+--- a/drivers/hid/ipts/Makefile
++++ b/drivers/hid/ipts/Makefile
+@@ -6,6 +6,8 @@
+ obj-$(CONFIG_HID_IPTS) += ipts.o
+ ipts-objs := cmd.o
+ ipts-objs += control.o
++ipts-objs += eds1.o
++ipts-objs += eds2.o
+ ipts-objs += hid.o
+ ipts-objs += main.o
+ ipts-objs += mei.o
+diff --git a/drivers/hid/ipts/cmd.c b/drivers/hid/ipts/cmd.c
+index 7fd69271ccd5..63a4934bbc5f 100644
+--- a/drivers/hid/ipts/cmd.c
++++ b/drivers/hid/ipts/cmd.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+diff --git a/drivers/hid/ipts/cmd.h b/drivers/hid/ipts/cmd.h
+index 924758ffee67..2b4079075b64 100644
+--- a/drivers/hid/ipts/cmd.h
++++ b/drivers/hid/ipts/cmd.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+@@ -19,7 +18,7 @@
+  */
+ #define IPTS_CMD_DEFAULT_TIMEOUT 1000
+ 
+-/*
++/**
+  * ipts_cmd_recv_timeout() - Receives a response to a command.
+  * @ipts: The IPTS driver context.
+  * @code: The type of the command / response.
+@@ -33,7 +32,7 @@
+ int ipts_cmd_recv_timeout(struct ipts_context *ipts, enum ipts_command_code code,
+ 			  struct ipts_response *rsp, u64 timeout);
+ 
+-/*
++/**
+  * ipts_cmd_recv() - Receives a response to a command.
+  * @ipts: The IPTS driver context.
+  * @code: The type of the command / response.
+@@ -47,7 +46,7 @@ static inline int ipts_cmd_recv(struct ipts_context *ipts, enum ipts_command_cod
+ 	return ipts_cmd_recv_timeout(ipts, code, rsp, IPTS_CMD_DEFAULT_TIMEOUT);
+ }
+ 
+-/*
++/**
+  * ipts_cmd_send() - Executes a command on the device.
+  * @ipts: The IPTS driver context.
+  * @code: The type of the command to execute.
+diff --git a/drivers/hid/ipts/context.h b/drivers/hid/ipts/context.h
+index 3450a95e66ee..ba33259f1f7c 100644
+--- a/drivers/hid/ipts/context.h
++++ b/drivers/hid/ipts/context.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+@@ -41,7 +40,9 @@ struct ipts_context {
+ 	struct ipts_buffer feature_report;
+ 	struct ipts_buffer descriptor;
+ 
++	bool hid_active;
+ 	struct hid_device *hid;
++
+ 	struct ipts_device_info info;
+ 	struct ipts_resources resources;
+ 
+diff --git a/drivers/hid/ipts/control.c b/drivers/hid/ipts/control.c
+index 2f61500b5119..5360842d260b 100644
+--- a/drivers/hid/ipts/control.c
++++ b/drivers/hid/ipts/control.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+@@ -88,6 +87,7 @@ static int ipts_control_set_mode(struct ipts_context *ipts, enum ipts_mode mode)
+ 
+ static int ipts_control_set_mem_window(struct ipts_context *ipts, struct ipts_resources *res)
+ {
++	int i = 0;
+ 	int ret = 0;
+ 	struct ipts_mem_window cmd = { 0 };
+ 	struct ipts_response rsp = { 0 };
+@@ -98,7 +98,7 @@ static int ipts_control_set_mem_window(struct ipts_context *ipts, struct ipts_re
+ 	if (!res)
+ 		return -EFAULT;
+ 
+-	for (int i = 0; i < IPTS_BUFFERS; i++) {
++	for (i = 0; i < IPTS_BUFFERS; i++) {
+ 		cmd.data_addr_lower[i] = lower_32_bits(res->data[i].dma_address);
+ 		cmd.data_addr_upper[i] = upper_32_bits(res->data[i].dma_address);
+ 		cmd.feedback_addr_lower[i] = lower_32_bits(res->feedback[i].dma_address);
+@@ -342,12 +342,6 @@ int ipts_control_hid2me_feedback(struct ipts_context *ipts, enum ipts_feedback_c
+ 	return ipts_control_send_feedback(ipts, IPTS_HID2ME_BUFFER);
+ }
+ 
+-static inline int ipts_control_reset_sensor(struct ipts_context *ipts)
+-{
+-	return ipts_control_hid2me_feedback(ipts, IPTS_FEEDBACK_CMD_TYPE_SOFT_RESET,
+-					    IPTS_FEEDBACK_DATA_TYPE_VENDOR, NULL, 0);
+-}
+-
+ int ipts_control_start(struct ipts_context *ipts)
+ {
+ 	int ret = 0;
+@@ -389,9 +383,9 @@ int ipts_control_start(struct ipts_context *ipts)
+ 		}
+ 
+ 		/*
+-		 * Newer devices can be directly initialized in doorbell mode.
++		 * Newer devices can be directly initialized in polling mode.
+ 		 */
+-		ipts->mode = IPTS_MODE_DOORBELL;
++		ipts->mode = IPTS_MODE_POLL;
+ 	}
+ 
+ 	ret = ipts_control_set_mode(ipts, ipts->mode);
+@@ -418,6 +412,8 @@ int ipts_control_start(struct ipts_context *ipts)
+ 		return ret;
+ 	}
+ 
++	ipts_hid_enable(ipts);
++
+ 	ret = ipts_hid_init(ipts, info);
+ 	if (ret) {
+ 		dev_err(ipts->dev, "Failed to initialize HID device: %d\n", ret);
+@@ -434,6 +430,7 @@ static int _ipts_control_stop(struct ipts_context *ipts)
+ 	if (!ipts)
+ 		return -EFAULT;
+ 
++	ipts_hid_disable(ipts);
+ 	dev_info(ipts->dev, "Stopping IPTS\n");
+ 
+ 	ret = ipts_receiver_stop(ipts);
+@@ -442,12 +439,6 @@ static int _ipts_control_stop(struct ipts_context *ipts)
+ 		return ret;
+ 	}
+ 
+-	ret = ipts_control_reset_sensor(ipts);
+-	if (ret) {
+-		dev_err(ipts->dev, "Failed to reset sensor: %d\n", ret);
+-		return ret;
+-	}
+-
+ 	ret = ipts_resources_free(&ipts->resources);
+ 	if (ret) {
+ 		dev_err(ipts->dev, "Failed to free resources: %d\n", ret);
+@@ -483,7 +474,7 @@ int ipts_control_restart(struct ipts_context *ipts)
+ 		return ret;
+ 
+ 	/*
+-	 * Give the sensor some time to come back from resetting
++	 * Wait a second to give the sensor time to fully shut down.
+ 	 */
+ 	msleep(1000);
+ 
+diff --git a/drivers/hid/ipts/control.h b/drivers/hid/ipts/control.h
+index 744bb92d682a..26629c5144ed 100644
+--- a/drivers/hid/ipts/control.h
++++ b/drivers/hid/ipts/control.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+@@ -15,7 +14,7 @@
+ #include "spec-data.h"
+ #include "spec-device.h"
+ 
+-/*
++/**
+  * ipts_control_request_flush() - Stop the data flow.
+  * @ipts: The IPTS driver context.
+  *
+@@ -26,7 +25,7 @@
+  */
+ int ipts_control_request_flush(struct ipts_context *ipts);
+ 
+-/*
++/**
+  * ipts_control_wait_flush() - Wait until data flow has been stopped.
+  * @ipts: The IPTS driver context.
+  *
+@@ -34,7 +33,7 @@ int ipts_control_request_flush(struct ipts_context *ipts);
+  */
+ int ipts_control_wait_flush(struct ipts_context *ipts);
+ 
+-/*
++/**
+  * ipts_control_wait_flush() - Notify the device that the driver can receive new data.
+  * @ipts: The IPTS driver context.
+  *
+@@ -42,19 +41,19 @@ int ipts_control_wait_flush(struct ipts_context *ipts);
+  */
+ int ipts_control_request_data(struct ipts_context *ipts);
+ 
+-/*
++/**
+  * ipts_control_wait_data() - Wait until new data is available.
+  * @ipts: The IPTS driver context.
+  * @block: Whether to block execution until data is available.
+  *
+- * In doorbell mode, this function will never return while the data flow is active. Instead,
+- * the doorbell will be incremented when new data is available.
++ * In poll mode, this function will never return while the data flow is active. Instead,
++ * the poll will be incremented when new data is available.
+  *
+  * Returns: 0 on success, <0 on error, -EAGAIN if no data is available.
+  */
+ int ipts_control_wait_data(struct ipts_context *ipts, bool block);
+ 
+-/*
++/**
+  * ipts_control_send_feedback() - Submits a feedback buffer to the device.
+  * @ipts: The IPTS driver context.
+  * @buffer: The ID of the buffer containing feedback data.
+@@ -63,7 +62,7 @@ int ipts_control_wait_data(struct ipts_context *ipts, bool block);
+  */
+ int ipts_control_send_feedback(struct ipts_context *ipts, u32 buffer);
+ 
+-/*
++/**
+  * ipts_control_hid2me_feedback() - Sends HID2ME feedback, a special type of feedback.
+  * @ipts: The IPTS driver context.
+  * @cmd: The command that will be run on the device.
+@@ -80,7 +79,7 @@ int ipts_control_send_feedback(struct ipts_context *ipts, u32 buffer);
+ int ipts_control_hid2me_feedback(struct ipts_context *ipts, enum ipts_feedback_cmd_type cmd,
+ 				 enum ipts_feedback_data_type type, void *data, size_t size);
+ 
+-/*
++/**
+  * ipts_control_refill_buffer() - Acknowledges that data in a buffer has been processed.
+  * @ipts: The IPTS driver context.
+  * @buffer: The buffer that has been processed and can be refilled.
+@@ -100,7 +99,7 @@ static inline int ipts_control_refill_buffer(struct ipts_context *ipts, u32 buff
+ 	return ipts_control_send_feedback(ipts, buffer);
+ }
+ 
+-/*
++/**
+  * ipts_control_start() - Initialized the device and starts the data flow.
+  * @ipts: The IPTS driver context.
+  *
+@@ -108,7 +107,7 @@ static inline int ipts_control_refill_buffer(struct ipts_context *ipts, u32 buff
+  */
+ int ipts_control_start(struct ipts_context *ipts);
+ 
+-/*
++/**
+  * ipts_control_stop() - Stops the data flow and resets the device.
+  * @ipts: The IPTS driver context.
+  *
+@@ -116,7 +115,7 @@ int ipts_control_start(struct ipts_context *ipts);
+  */
+ int ipts_control_stop(struct ipts_context *ipts);
+ 
+-/*
++/**
+  * ipts_control_restart() - Stops the device and starts it again.
+  * @ipts: The IPTS driver context.
+  *
+diff --git a/drivers/hid/ipts/desc.h b/drivers/hid/ipts/desc.h
+index c058974a03a1..307438c7c80c 100644
+--- a/drivers/hid/ipts/desc.h
++++ b/drivers/hid/ipts/desc.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2022-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+diff --git a/drivers/hid/ipts/eds1.c b/drivers/hid/ipts/eds1.c
+new file mode 100644
+index 000000000000..ecbb3a8bdaf6
+--- /dev/null
++++ b/drivers/hid/ipts/eds1.c
+@@ -0,0 +1,103 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (c) 2023 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#include <linux/err.h>
++#include <linux/gfp.h>
++#include <linux/hid.h>
++#include <linux/slab.h>
++#include <linux/types.h>
++
++#include "context.h"
++#include "control.h"
++#include "desc.h"
++#include "spec-device.h"
++
++int ipts_eds1_get_descriptor(struct ipts_context *ipts, u8 **desc_buffer, size_t *desc_size)
++{
++	size_t size = 0;
++	u8 *buffer = NULL;
++
++	if (!ipts)
++		return -EFAULT;
++
++	if (!desc_buffer)
++		return -EFAULT;
++
++	if (!desc_size)
++		return -EFAULT;
++
++	size = sizeof(ipts_singletouch_descriptor) + sizeof(ipts_fallback_descriptor);
++
++	buffer = kzalloc(size, GFP_KERNEL);
++	if (!buffer)
++		return -ENOMEM;
++
++	memcpy(buffer, ipts_singletouch_descriptor, sizeof(ipts_singletouch_descriptor));
++	memcpy(&buffer[sizeof(ipts_singletouch_descriptor)], ipts_fallback_descriptor,
++	       sizeof(ipts_fallback_descriptor));
++
++	*desc_size = size;
++	*desc_buffer = buffer;
++
++	return 0;
++}
++
++static int ipts_eds1_switch_mode(struct ipts_context *ipts, enum ipts_mode mode)
++{
++	int ret = 0;
++
++	if (!ipts)
++		return -EFAULT;
++
++	if (ipts->mode == mode)
++		return 0;
++
++	ipts->mode = mode;
++
++	ret = ipts_control_restart(ipts);
++	if (ret)
++		dev_err(ipts->dev, "Failed to switch modes: %d\n", ret);
++
++	return ret;
++}
++
++int ipts_eds1_raw_request(struct ipts_context *ipts, u8 *buffer, size_t size, u8 report_id,
++			  enum hid_report_type report_type, enum hid_class_request request_type)
++{
++	int ret = 0;
++
++	if (!ipts)
++		return -EFAULT;
++
++	if (!buffer)
++		return -EFAULT;
++
++	if (report_id != IPTS_HID_REPORT_SET_MODE)
++		return -EIO;
++
++	if (report_type != HID_FEATURE_REPORT)
++		return -EIO;
++
++	if (size != 2)
++		return -EINVAL;
++
++	/*
++	 * Implement mode switching report for older devices without native HID support.
++	 */
++
++	if (request_type == HID_REQ_GET_REPORT) {
++		memset(buffer, 0, size);
++		buffer[0] = report_id;
++		buffer[1] = ipts->mode;
++	} else if (request_type == HID_REQ_SET_REPORT) {
++		return ipts_eds1_switch_mode(ipts, buffer[1]);
++	} else {
++		return -EIO;
++	}
++
++	return ret;
++}
+diff --git a/drivers/hid/ipts/eds1.h b/drivers/hid/ipts/eds1.h
+new file mode 100644
+index 000000000000..eeeb6575e3e8
+--- /dev/null
++++ b/drivers/hid/ipts/eds1.h
+@@ -0,0 +1,35 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (c) 2023 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#include <linux/hid.h>
++#include <linux/types.h>
++
++#include "context.h"
++
++/**
++ * ipts_eds1_get_descriptor() - Assembles the HID descriptor of the device.
++ * @ipts: The IPTS driver context.
++ * @desc_buffer: A pointer to the location where the address of the allocated buffer is stored.
++ * @desc_size: A pointer to the location where the size of the allocated buffer is stored.
++ *
++ * Returns: 0 on success, <0 on error.
++ */
++int ipts_eds1_get_descriptor(struct ipts_context *ipts, u8 **desc_buffer, size_t *desc_size);
++
++/**
++ * ipts_eds1_raw_request() - Executes an output or feature report on the device.
++ * @ipts: The IPTS driver context.
++ * @buffer: The buffer containing the report.
++ * @size: The size of the buffer.
++ * @report_id: The HID report ID.
++ * @report_type: Whether this report is an output or a feature report.
++ * @request_type: Whether this report requests or sends data.
++ *
++ * Returns: 0 on success, <0 on error.
++ */
++int ipts_eds1_raw_request(struct ipts_context *ipts, u8 *buffer, size_t size, u8 report_id,
++			  enum hid_report_type report_type, enum hid_class_request request_type);
+diff --git a/drivers/hid/ipts/eds2.c b/drivers/hid/ipts/eds2.c
+new file mode 100644
+index 000000000000..e835b460aa79
+--- /dev/null
++++ b/drivers/hid/ipts/eds2.c
+@@ -0,0 +1,144 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (c) 2023 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#include <linux/completion.h>
++#include <linux/err.h>
++#include <linux/gfp.h>
++#include <linux/mutex.h>
++#include <linux/slab.h>
++#include <linux/types.h>
++
++#include "context.h"
++#include "control.h"
++#include "desc.h"
++#include "spec-data.h"
++
++int ipts_eds2_get_descriptor(struct ipts_context *ipts, u8 **desc_buffer, size_t *desc_size)
++{
++	size_t size = 0;
++	u8 *buffer = NULL;
++
++	if (!ipts)
++		return -EFAULT;
++
++	if (!desc_buffer)
++		return -EFAULT;
++
++	if (!desc_size)
++		return -EFAULT;
++
++	size = sizeof(ipts_singletouch_descriptor) + ipts->descriptor.size;
++
++	buffer = kzalloc(size, GFP_KERNEL);
++	if (!*buffer)
++		return -ENOMEM;
++
++	memcpy(buffer, ipts_singletouch_descriptor, sizeof(ipts_singletouch_descriptor));
++	memcpy(&buffer[sizeof(ipts_singletouch_descriptor)], ipts->descriptor.address,
++	       ipts->descriptor.size);
++
++	*desc_size = size;
++	*desc_buffer = buffer;
++
++	return 0;
++}
++
++static int ipts_eds2_get_feature(struct ipts_context *ipts, u8 *buffer, size_t size, u8 report_id,
++				 enum ipts_feedback_data_type type)
++{
++	int ret = 0;
++
++	if (!ipts)
++		return -EFAULT;
++
++	if (!buffer)
++		return -EFAULT;
++
++	mutex_lock(&ipts->feature_lock);
++
++	memset(buffer, 0, size);
++	buffer[0] = report_id;
++
++	memset(&ipts->feature_report, 0, sizeof(ipts->feature_report));
++	reinit_completion(&ipts->feature_event);
++
++	ret = ipts_control_hid2me_feedback(ipts, IPTS_FEEDBACK_CMD_TYPE_NONE, type, buffer, size);
++	if (ret) {
++		dev_err(ipts->dev, "Failed to send hid2me feedback: %d\n", ret);
++		goto out;
++	}
++
++	ret = wait_for_completion_timeout(&ipts->feature_event, msecs_to_jiffies(5000));
++	if (ret == 0) {
++		dev_warn(ipts->dev, "GET_FEATURES timed out!\n");
++		ret = -EIO;
++		goto out;
++	}
++
++	if (!ipts->feature_report.address) {
++		ret = -EFAULT;
++		goto out;
++	}
++
++	if (ipts->feature_report.size > size) {
++		ret = -ETOOSMALL;
++		goto out;
++	}
++
++	ret = ipts->feature_report.size;
++	memcpy(buffer, ipts->feature_report.address, ipts->feature_report.size);
++
++out:
++	mutex_unlock(&ipts->feature_lock);
++	return ret;
++}
++
++static int ipts_eds2_set_feature(struct ipts_context *ipts, u8 *buffer, size_t size, u8 report_id,
++				 enum ipts_feedback_data_type type)
++{
++	int ret = 0;
++
++	if (!ipts)
++		return -EFAULT;
++
++	if (!buffer)
++		return -EFAULT;
++
++	buffer[0] = report_id;
++
++	ret = ipts_control_hid2me_feedback(ipts, IPTS_FEEDBACK_CMD_TYPE_NONE, type, buffer, size);
++	if (ret)
++		dev_err(ipts->dev, "Failed to send hid2me feedback: %d\n", ret);
++
++	return ret;
++}
++
++int ipts_eds2_raw_request(struct ipts_context *ipts, u8 *buffer, size_t size, u8 report_id,
++			  enum hid_report_type report_type, enum hid_class_request request_type)
++{
++	enum ipts_feedback_data_type feedback_type = IPTS_FEEDBACK_DATA_TYPE_VENDOR;
++
++	if (!ipts)
++		return -EFAULT;
++
++	if (!buffer)
++		return -EFAULT;
++
++	if (report_type == HID_OUTPUT_REPORT && request_type == HID_REQ_SET_REPORT)
++		feedback_type = IPTS_FEEDBACK_DATA_TYPE_OUTPUT_REPORT;
++	else if (report_type == HID_FEATURE_REPORT && request_type == HID_REQ_GET_REPORT)
++		feedback_type = IPTS_FEEDBACK_DATA_TYPE_GET_FEATURES;
++	else if (report_type == HID_FEATURE_REPORT && request_type == HID_REQ_SET_REPORT)
++		feedback_type = IPTS_FEEDBACK_DATA_TYPE_SET_FEATURES;
++	else
++		return -EIO;
++
++	if (request_type == HID_REQ_GET_REPORT)
++		return ipts_eds2_get_feature(ipts, buffer, report_id, size, feedback_type);
++	else
++		return ipts_eds2_set_feature(ipts, buffer, report_id, size, feedback_type);
++}
+diff --git a/drivers/hid/ipts/eds2.h b/drivers/hid/ipts/eds2.h
+new file mode 100644
+index 000000000000..064e3716907a
+--- /dev/null
++++ b/drivers/hid/ipts/eds2.h
+@@ -0,0 +1,35 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (c) 2023 Dorian Stoll
++ *
++ * Linux driver for Intel Precise Touch & Stylus
++ */
++
++#include <linux/hid.h>
++#include <linux/types.h>
++
++#include "context.h"
++
++/**
++ * ipts_eds2_get_descriptor() - Assembles the HID descriptor of the device.
++ * @ipts: The IPTS driver context.
++ * @desc_buffer: A pointer to the location where the address of the allocated buffer is stored.
++ * @desc_size: A pointer to the location where the size of the allocated buffer is stored.
++ *
++ * Returns: 0 on success, <0 on error.
++ */
++int ipts_eds2_get_descriptor(struct ipts_context *ipts, u8 **desc_buffer, size_t *desc_size);
++
++/**
++ * ipts_eds2_raw_request() - Executes an output or feature report on the device.
++ * @ipts: The IPTS driver context.
++ * @buffer: The buffer containing the report.
++ * @size: The size of the buffer.
++ * @report_id: The HID report ID.
++ * @report_type: Whether this report is an output or a feature report.
++ * @request_type: Whether this report requests or sends data.
++ *
++ * Returns: 0 on success, <0 on error.
++ */
++int ipts_eds2_raw_request(struct ipts_context *ipts, u8 *buffer, size_t size, u8 report_id,
++			  enum hid_report_type report_type, enum hid_class_request request_type);
+diff --git a/drivers/hid/ipts/hid.c b/drivers/hid/ipts/hid.c
+index a2471219615b..e34a1a4f9fa7 100644
+--- a/drivers/hid/ipts/hid.c
++++ b/drivers/hid/ipts/hid.c
+@@ -1,12 +1,12 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2022-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+  */
+ 
+ #include <linux/completion.h>
++#include <linux/err.h>
+ #include <linux/gfp.h>
+ #include <linux/hid.h>
+ #include <linux/mutex.h>
+@@ -14,38 +14,30 @@
+ #include <linux/types.h>
+ 
+ #include "context.h"
+-#include "control.h"
+ #include "desc.h"
++#include "eds1.h"
++#include "eds2.h"
+ #include "hid.h"
+ #include "spec-data.h"
+-#include "spec-device.h"
+ #include "spec-hid.h"
+ 
+-static int ipts_hid_start(struct hid_device *hid)
++void ipts_hid_enable(struct ipts_context *ipts)
+ {
+-	return 0;
++	WRITE_ONCE(ipts->hid_active, true);
+ }
+ 
+-static void ipts_hid_stop(struct hid_device *hid)
++void ipts_hid_disable(struct ipts_context *ipts)
+ {
++	WRITE_ONCE(ipts->hid_active, false);
+ }
+ 
+-static int ipts_hid_switch_mode(struct ipts_context *ipts, enum ipts_mode mode)
++static int ipts_hid_start(struct hid_device *hid)
+ {
+-	if (!ipts)
+-		return -EFAULT;
+-
+-	if (ipts->mode == mode)
+-		return 0;
+-
+-	/*
+-	 * This is only allowed on older devices.
+-	 */
+-	if (ipts->info.intf_eds > 1)
+-		return 0;
++	return 0;
++}
+ 
+-	ipts->mode = mode;
+-	return ipts_control_restart(ipts);
++static void ipts_hid_stop(struct hid_device *hid)
++{
+ }
+ 
+ static int ipts_hid_parse(struct hid_device *hid)
+@@ -53,8 +45,6 @@ static int ipts_hid_parse(struct hid_device *hid)
+ 	int ret = 0;
+ 	struct ipts_context *ipts = NULL;
+ 
+-	bool has_native_descriptor = false;
+-
+ 	u8 *buffer = NULL;
+ 	size_t size = 0;
+ 
+@@ -66,26 +56,17 @@ static int ipts_hid_parse(struct hid_device *hid)
+ 	if (!ipts)
+ 		return -EFAULT;
+ 
+-	size = sizeof(ipts_singletouch_descriptor);
+-	has_native_descriptor = ipts->descriptor.address && ipts->descriptor.size > 0;
++	if (!READ_ONCE(ipts->hid_active))
++		return -ENODEV;
+ 
+-	if (has_native_descriptor)
+-		size += ipts->descriptor.size;
++	if (ipts->info.intf_eds == 1)
++		ret = ipts_eds1_get_descriptor(ipts, &buffer, &size);
+ 	else
+-		size += sizeof(ipts_fallback_descriptor);
+-
+-	buffer = kzalloc(size, GFP_KERNEL);
+-	if (!buffer)
+-		return -ENOMEM;
+-
+-	memcpy(buffer, ipts_singletouch_descriptor, sizeof(ipts_singletouch_descriptor));
++		ret = ipts_eds2_get_descriptor(ipts, &buffer, &size);
+ 
+-	if (has_native_descriptor) {
+-		memcpy(&buffer[sizeof(ipts_singletouch_descriptor)], ipts->descriptor.address,
+-		       ipts->descriptor.size);
+-	} else {
+-		memcpy(&buffer[sizeof(ipts_singletouch_descriptor)], ipts_fallback_descriptor,
+-		       sizeof(ipts_fallback_descriptor));
++	if (ret) {
++		dev_err(ipts->dev, "Failed to allocate HID descriptor: %d\n", ret);
++		return ret;
+ 	}
+ 
+ 	ret = hid_parse_report(hid, buffer, size);
+@@ -99,84 +80,11 @@ static int ipts_hid_parse(struct hid_device *hid)
+ 	return 0;
+ }
+ 
+-static int ipts_hid_get_feature(struct ipts_context *ipts, unsigned char reportnum, __u8 *buf,
+-				size_t size, enum ipts_feedback_data_type type)
+-{
+-	int ret = 0;
+-
+-	if (!ipts)
+-		return -EFAULT;
+-
+-	if (!buf)
+-		return -EFAULT;
+-
+-	mutex_lock(&ipts->feature_lock);
+-
+-	memset(buf, 0, size);
+-	buf[0] = reportnum;
+-
+-	memset(&ipts->feature_report, 0, sizeof(ipts->feature_report));
+-	reinit_completion(&ipts->feature_event);
+-
+-	ret = ipts_control_hid2me_feedback(ipts, IPTS_FEEDBACK_CMD_TYPE_NONE, type, buf, size);
+-	if (ret) {
+-		dev_err(ipts->dev, "Failed to send hid2me feedback: %d\n", ret);
+-		goto out;
+-	}
+-
+-	ret = wait_for_completion_timeout(&ipts->feature_event, msecs_to_jiffies(5000));
+-	if (ret == 0) {
+-		dev_warn(ipts->dev, "GET_FEATURES timed out!\n");
+-		ret = -EIO;
+-		goto out;
+-	}
+-
+-	if (!ipts->feature_report.address) {
+-		ret = -EFAULT;
+-		goto out;
+-	}
+-
+-	if (ipts->feature_report.size > size) {
+-		ret = -ETOOSMALL;
+-		goto out;
+-	}
+-
+-	ret = ipts->feature_report.size;
+-	memcpy(buf, ipts->feature_report.address, ipts->feature_report.size);
+-
+-out:
+-	mutex_unlock(&ipts->feature_lock);
+-	return ret;
+-}
+-
+-static int ipts_hid_set_feature(struct ipts_context *ipts, unsigned char reportnum, __u8 *buf,
+-				size_t size, enum ipts_feedback_data_type type)
+-{
+-	int ret = 0;
+-
+-	if (!ipts)
+-		return -EFAULT;
+-
+-	if (!buf)
+-		return -EFAULT;
+-
+-	buf[0] = reportnum;
+-
+-	ret = ipts_control_hid2me_feedback(ipts, IPTS_FEEDBACK_CMD_TYPE_NONE, type, buf, size);
+-	if (ret)
+-		dev_err(ipts->dev, "Failed to send hid2me feedback: %d\n", ret);
+-
+-	return ret;
+-}
+-
+-static int ipts_hid_raw_request(struct hid_device *hid, unsigned char reportnum, __u8 *buf,
+-				size_t size, unsigned char rtype, int reqtype)
++static int ipts_hid_raw_request(struct hid_device *hid, unsigned char report_id, __u8 *buffer,
++				size_t size, unsigned char report_type, int request_type)
+ {
+-	int ret = 0;
+ 	struct ipts_context *ipts = NULL;
+ 
+-	enum ipts_feedback_data_type type = IPTS_FEEDBACK_DATA_TYPE_VENDOR;
+-
+ 	if (!hid)
+ 		return -ENODEV;
+ 
+@@ -185,44 +93,16 @@ static int ipts_hid_raw_request(struct hid_device *hid, unsigned char reportnum,
+ 	if (!ipts)
+ 		return -EFAULT;
+ 
+-	if (!buf)
+-		return -EFAULT;
+-
+-	if (rtype == HID_OUTPUT_REPORT && reqtype == HID_REQ_SET_REPORT)
+-		type = IPTS_FEEDBACK_DATA_TYPE_OUTPUT_REPORT;
+-	else if (rtype == HID_FEATURE_REPORT && reqtype == HID_REQ_GET_REPORT)
+-		type = IPTS_FEEDBACK_DATA_TYPE_GET_FEATURES;
+-	else if (rtype == HID_FEATURE_REPORT && reqtype == HID_REQ_SET_REPORT)
+-		type = IPTS_FEEDBACK_DATA_TYPE_SET_FEATURES;
+-	else
+-		return -EIO;
+-
+-	// Implemente mode switching report for older devices without native HID support
+-	if (type == IPTS_FEEDBACK_DATA_TYPE_SET_FEATURES && reportnum == IPTS_HID_REPORT_SET_MODE) {
+-		ret = ipts_hid_switch_mode(ipts, buf[1]);
+-		if (ret) {
+-			dev_err(ipts->dev, "Failed to switch modes: %d\n", ret);
+-			return ret;
+-		}
+-	}
+-
+-	if (reqtype == HID_REQ_GET_REPORT)
+-		return ipts_hid_get_feature(ipts, reportnum, buf, size, type);
+-	else
+-		return ipts_hid_set_feature(ipts, reportnum, buf, size, type);
+-}
+-
+-static int ipts_hid_output_report(struct hid_device *hid, __u8 *data, size_t size)
+-{
+-	struct ipts_context *ipts = NULL;
+-
+-	if (!hid)
++	if (!READ_ONCE(ipts->hid_active))
+ 		return -ENODEV;
+ 
+-	ipts = hid->driver_data;
+-
+-	return ipts_control_hid2me_feedback(ipts, IPTS_FEEDBACK_CMD_TYPE_NONE,
+-					    IPTS_FEEDBACK_DATA_TYPE_OUTPUT_REPORT, data, size);
++	if (ipts->info.intf_eds == 1) {
++		return ipts_eds1_raw_request(ipts, buffer, size, report_id, report_type,
++					     request_type);
++	} else {
++		return ipts_eds2_raw_request(ipts, buffer, size, report_id, report_type,
++					     request_type);
++	}
+ }
+ 
+ static struct hid_ll_driver ipts_hid_driver = {
+@@ -232,7 +112,6 @@ static struct hid_ll_driver ipts_hid_driver = {
+ 	.close = ipts_hid_stop,
+ 	.parse = ipts_hid_parse,
+ 	.raw_request = ipts_hid_raw_request,
+-	.output_report = ipts_hid_output_report,
+ };
+ 
+ int ipts_hid_input_data(struct ipts_context *ipts, u32 buffer)
+@@ -247,6 +126,9 @@ int ipts_hid_input_data(struct ipts_context *ipts, u32 buffer)
+ 	if (!ipts->hid)
+ 		return -ENODEV;
+ 
++	if (!READ_ONCE(ipts->hid_active))
++		return -ENODEV;
++
+ 	header = (struct ipts_data_header *)ipts->resources.data[buffer].address;
+ 
+ 	temp = ipts->resources.report.address;
+diff --git a/drivers/hid/ipts/hid.h b/drivers/hid/ipts/hid.h
+index 62bf3cd48608..1ebe77447903 100644
+--- a/drivers/hid/ipts/hid.h
++++ b/drivers/hid/ipts/hid.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2022-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+@@ -14,6 +13,9 @@
+ #include "context.h"
+ #include "spec-device.h"
+ 
++void ipts_hid_enable(struct ipts_context *ipts);
++void ipts_hid_disable(struct ipts_context *ipts);
++
+ int ipts_hid_input_data(struct ipts_context *ipts, u32 buffer);
+ 
+ int ipts_hid_init(struct ipts_context *ipts, struct ipts_device_info info);
+diff --git a/drivers/hid/ipts/main.c b/drivers/hid/ipts/main.c
+index 0f20c6c08c38..fb5b5c13ee3e 100644
+--- a/drivers/hid/ipts/main.c
++++ b/drivers/hid/ipts/main.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+diff --git a/drivers/hid/ipts/mei.c b/drivers/hid/ipts/mei.c
+index 26666fd99b0c..1e0395ceae4a 100644
+--- a/drivers/hid/ipts/mei.c
++++ b/drivers/hid/ipts/mei.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+diff --git a/drivers/hid/ipts/mei.h b/drivers/hid/ipts/mei.h
+index eadacae54c40..973bade6b0fd 100644
+--- a/drivers/hid/ipts/mei.h
++++ b/drivers/hid/ipts/mei.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+@@ -31,7 +30,7 @@ struct ipts_mei {
+ 	struct rw_semaphore message_lock;
+ };
+ 
+-/*
++/**
+  * ipts_mei_recv() - Receive data from a MEI device.
+  * @mei: The IPTS MEI device context.
+  * @code: The IPTS command code to look for.
+@@ -45,7 +44,7 @@ struct ipts_mei {
+ int ipts_mei_recv(struct ipts_mei *mei, enum ipts_command_code code, struct ipts_response *rsp,
+ 		  u64 timeout);
+ 
+-/*
++/**
+  * ipts_mei_send() - Send data to a MEI device.
+  * @ipts: The IPTS MEI device context.
+  * @data: The data to send.
+@@ -55,7 +54,7 @@ int ipts_mei_recv(struct ipts_mei *mei, enum ipts_command_code code, struct ipts
+  */
+ int ipts_mei_send(struct ipts_mei *mei, void *data, size_t length);
+ 
+-/*
++/**
+  * ipts_mei_init() - Initialize the MEI device context.
+  * @mei: The MEI device context to initialize.
+  * @cldev: The MEI device the context will be bound to.
+diff --git a/drivers/hid/ipts/receiver.c b/drivers/hid/ipts/receiver.c
+index f56e9ed32d57..ef66c3c9db80 100644
+--- a/drivers/hid/ipts/receiver.c
++++ b/drivers/hid/ipts/receiver.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+@@ -66,7 +65,9 @@ static int ipts_receiver_event_loop(struct ipts_thread *thread)
+ 	dev_info(ipts->dev, "IPTS running in event mode\n");
+ 
+ 	while (!ipts_thread_should_stop(thread)) {
+-		for (int i = 0; i < IPTS_BUFFERS; i++) {
++		int i = 0;
++
++		for (i = 0; i < IPTS_BUFFERS; i++) {
+ 			ret = ipts_control_wait_data(ipts, false);
+ 			if (ret == -EAGAIN)
+ 				break;
+@@ -126,7 +127,7 @@ static int ipts_receiver_event_loop(struct ipts_thread *thread)
+ 	return 0;
+ }
+ 
+-static int ipts_receiver_doorbell_loop(struct ipts_thread *thread)
++static int ipts_receiver_poll_loop(struct ipts_thread *thread)
+ {
+ 	int ret = 0;
+ 	u32 buffer = 0;
+@@ -145,7 +146,7 @@ static int ipts_receiver_doorbell_loop(struct ipts_thread *thread)
+ 	if (!ipts)
+ 		return -EFAULT;
+ 
+-	dev_info(ipts->dev, "IPTS running in doorbell mode\n");
++	dev_info(ipts->dev, "IPTS running in poll mode\n");
+ 
+ 	while (true) {
+ 		if (ipts_thread_should_stop(thread)) {
+@@ -217,9 +218,9 @@ int ipts_receiver_start(struct ipts_context *ipts)
+ 	if (ipts->mode == IPTS_MODE_EVENT) {
+ 		ret = ipts_thread_start(&ipts->receiver_loop, ipts_receiver_event_loop, ipts,
+ 					"ipts_event");
+-	} else if (ipts->mode == IPTS_MODE_DOORBELL) {
+-		ret = ipts_thread_start(&ipts->receiver_loop, ipts_receiver_doorbell_loop, ipts,
+-					"ipts_doorbell");
++	} else if (ipts->mode == IPTS_MODE_POLL) {
++		ret = ipts_thread_start(&ipts->receiver_loop, ipts_receiver_poll_loop, ipts,
++					"ipts_poll");
+ 	} else {
+ 		ret = -EINVAL;
+ 	}
+diff --git a/drivers/hid/ipts/receiver.h b/drivers/hid/ipts/receiver.h
+index 96070f34fbca..3de7da62d40c 100644
+--- a/drivers/hid/ipts/receiver.h
++++ b/drivers/hid/ipts/receiver.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+diff --git a/drivers/hid/ipts/resources.c b/drivers/hid/ipts/resources.c
+index 5e924d58c488..cc14653b2a9f 100644
+--- a/drivers/hid/ipts/resources.c
++++ b/drivers/hid/ipts/resources.c
+@@ -1,12 +1,12 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+  */
+ 
+ #include <linux/dma-mapping.h>
++#include <linux/slab.h>
+ #include <linux/types.h>
+ 
+ #include "desc.h"
+@@ -107,10 +107,6 @@ int ipts_resources_init(struct ipts_resources *res, struct device *dev, size_t d
+ 
+ int ipts_resources_free(struct ipts_resources *res)
+ {
+-	/*
+-	 * Some compilers (AOSP clang) complain about a redefined
+-	 * variable when this is declared inside of the for loop.
+-	 */
+ 	int i = 0;
+ 
+ 	if (!res)
+diff --git a/drivers/hid/ipts/resources.h b/drivers/hid/ipts/resources.h
+index e0c400f420b9..2068e13285f0 100644
+--- a/drivers/hid/ipts/resources.h
++++ b/drivers/hid/ipts/resources.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+diff --git a/drivers/hid/ipts/spec-device.h b/drivers/hid/ipts/spec-device.h
+index 93f673d981f7..41845f9d9025 100644
+--- a/drivers/hid/ipts/spec-device.h
++++ b/drivers/hid/ipts/spec-device.h
+@@ -109,14 +109,14 @@ static_assert(sizeof(struct ipts_command) == 324);
+ 
+ /**
+  * enum ipts_mode - Configures what data the device produces and how its sent.
+- * @IPTS_MODE_EVENT:    The device will send an event once a buffer was filled.
+- *                      Older devices will return singletouch data in this mode.
+- * @IPTS_MODE_DOORBELL: The device will notify the driver by incrementing the doorbell value.
+- *                      Older devices will return multitouch data in this mode.
++ * @IPTS_MODE_EVENT: The device will send an event once a buffer was filled.
++ *                   Older devices will return singletouch data in this mode.
++ * @IPTS_MODE_POLL:  The device will notify the driver by incrementing the doorbell value.
++ *                   Older devices will return multitouch data in this mode.
+  */
+ enum ipts_mode {
+ 	IPTS_MODE_EVENT = 0x00,
+-	IPTS_MODE_DOORBELL = 0x01,
++	IPTS_MODE_POLL = 0x01,
+ };
+ 
+ /**
+@@ -253,14 +253,19 @@ static_assert(sizeof(struct ipts_response) == 88);
+ 
+ /**
+  * struct ipts_device_info - Vendor information of the IPTS device.
+- * @vendor:        Vendor ID of this device.
+- * @product:       Product ID of this device.
+- * @hw_version:    Hardware revision of this device.
+- * @fw_version:    Firmware revision of this device.
+- * @data_size:     Requested size for a data buffer.
+- * @feedback_size: Requested size for a feedback buffer.
+- * @mode:          Mode that the device currently operates in.
+- * @max_contacts:  Maximum amount of concurrent touches the sensor can process.
++ * @vendor:         Vendor ID of this device.
++ * @product:        Product ID of this device.
++ * @hw_version:     Hardware revision of this device.
++ * @fw_version:     Firmware revision of this device.
++ * @data_size:      Requested size for a data buffer.
++ * @feedback_size:  Requested size for a feedback buffer.
++ * @mode:           Mode that the device currently operates in.
++ * @max_contacts:   Maximum amount of concurrent touches the sensor can process.
++ * @sensor_min_eds: The minimum EDS version supported by the sensor.
++ * @sensor_max_eds: The maximum EDS version supported by the sensor.
++ * @me_min_eds:     The minimum EDS version supported by the ME for communicating with the sensor.
++ * @me_max_eds:     The maximum EDS version supported by the ME for communicating with the sensor.
++ * @intf_eds:       The EDS version implemented by the interface between ME and host.
+  */
+ struct ipts_device_info {
+ 	u16 vendor;
+diff --git a/drivers/hid/ipts/spec-hid.h b/drivers/hid/ipts/spec-hid.h
+index ea70f29ff00c..5a58d4a0a610 100644
+--- a/drivers/hid/ipts/spec-hid.h
++++ b/drivers/hid/ipts/spec-hid.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2020-2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+diff --git a/drivers/hid/ipts/thread.c b/drivers/hid/ipts/thread.c
+index 8b46f775c107..355e92bea26f 100644
+--- a/drivers/hid/ipts/thread.c
++++ b/drivers/hid/ipts/thread.c
+@@ -1,6 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+diff --git a/drivers/hid/ipts/thread.h b/drivers/hid/ipts/thread.h
+index a314843599fc..1f966b8b32c4 100644
+--- a/drivers/hid/ipts/thread.h
++++ b/drivers/hid/ipts/thread.h
+@@ -1,6 +1,5 @@
+ /* SPDX-License-Identifier: GPL-2.0-or-later */
+ /*
+- * Copyright (c) 2016 Intel Corporation
+  * Copyright (c) 2023 Dorian Stoll
+  *
+  * Linux driver for Intel Precise Touch & Stylus
+@@ -29,7 +28,7 @@ struct ipts_thread {
+ 	int (*threadfn)(struct ipts_thread *thread);
+ };
+ 
+-/*
++/**
+  * ipts_thread_should_stop() - Returns true if the thread is asked to terminate.
+  * @thread: The current thread.
+  *
+@@ -37,7 +36,7 @@ struct ipts_thread {
+  */
+ bool ipts_thread_should_stop(struct ipts_thread *thread);
+ 
+-/*
++/**
+  * ipts_thread_start() - Starts an IPTS thread.
+  * @thread: The thread to initialize and start.
+  * @threadfn: The function to execute.
+@@ -49,7 +48,7 @@ bool ipts_thread_should_stop(struct ipts_thread *thread);
+ int ipts_thread_start(struct ipts_thread *thread, int (*threadfn)(struct ipts_thread *thread),
+ 		      void *data, const char name[]);
+ 
+-/*
++/**
+  * ipts_thread_stop() - Asks the thread to terminate and waits until it has finished.
+  * @thread: The thread that should stop.
+  *
+-- 
+2.41.0
+
+From 076482103071f96815dea8ef9da74b8cf6a642ae Mon Sep 17 00:00:00 2001
+From: Dorian Stoll <dorian.stoll@tmsp.io>
+Date: Sat, 22 Jul 2023 17:08:56 +0200
+Subject: [PATCH] Update IPTS from module repo
+
+Changes:
+ * Fix allocating the HID descriptor on EDS v2
+
+Idk why I wrote that, for EDS v1 I got it right ...
+
+Based on https://github.com/linux-surface/intel-precise-touch/commit/32622a37f27113067a6c9aff21627859caab43f9
+
+Signed-off-by: Dorian Stoll <dorian.stoll@tmsp.io>
+Patchset: ipts
+---
+ drivers/hid/ipts/eds2.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/hid/ipts/eds2.c b/drivers/hid/ipts/eds2.c
+index e835b460aa79..7c5cbafdb279 100644
+--- a/drivers/hid/ipts/eds2.c
++++ b/drivers/hid/ipts/eds2.c
+@@ -34,7 +34,7 @@ int ipts_eds2_get_descriptor(struct ipts_context *ipts, u8 **desc_buffer, size_t
+ 	size = sizeof(ipts_singletouch_descriptor) + ipts->descriptor.size;
+ 
+ 	buffer = kzalloc(size, GFP_KERNEL);
+-	if (!*buffer)
++	if (!buffer)
+ 		return -ENOMEM;
+ 
+ 	memcpy(buffer, ipts_singletouch_descriptor, sizeof(ipts_singletouch_descriptor));
+-- 
+2.41.0
+
+From c9650eca17f7f7dbd6ea1cfe8a33a30bc00f011f Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Sun, 11 Dec 2022 12:03:38 +0100
 Subject: [PATCH] iommu: intel: Disable source id verification for ITHC
@@ -3812,7 +5101,7 @@ Patchset: ithc
  1 file changed, 16 insertions(+)
 
 diff --git a/drivers/iommu/intel/irq_remapping.c b/drivers/iommu/intel/irq_remapping.c
-index df9e261af0b5..bc2a0aefedf2 100644
+index a1b987335b31..970805409470 100644
 --- a/drivers/iommu/intel/irq_remapping.c
 +++ b/drivers/iommu/intel/irq_remapping.c
 @@ -390,6 +390,22 @@ static int set_msi_sid(struct irte *irte, struct pci_dev *dev)
@@ -3841,7 +5130,7 @@ index df9e261af0b5..bc2a0aefedf2 100644
 -- 
 2.41.0
 
-From 266363946fe76848bea6f22e74578d5b15c4c0a1 Mon Sep 17 00:00:00 2001
+From 6e9262732447276e2e1a19da7701bd32da622ea0 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Sun, 11 Dec 2022 12:10:54 +0100
 Subject: [PATCH] hid: Add support for Intel Touch Host Controller
@@ -5233,553 +6522,7 @@ index 000000000000..6a9b0d480bc1
 -- 
 2.41.0
 
-From 47a59a35c30490ec8a9f2204dbbd61fff55ec636 Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Sat, 4 Mar 2023 20:09:36 +0100
-Subject: [PATCH] platform/surface: aggregator_tabletsw: Properly handle
- different posture source IDs
-
-The device posture subsystem (POS) can provide different posture
-sources. Different sources can provide different posture states and
-sources can be identified by their ID.
-
-For example, screen posture of the Surface Laptop Studio (SLS), which is
-currently the only supported source, uses a source ID of 0x03. The
-Surface Pro 9 uses the same subsystem for its Type-Cover, however,
-provides different states for that under the ID 0x00.
-
-To eventually support the Surface Pro 9 and potential future devices, we
-need to properly disambiguate between source IDs. Therefore, add the
-source ID to the state we carry and determine the tablet-mode state (as
-well as state names) based on that.
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- .../surface/surface_aggregator_tabletsw.c     | 123 ++++++++++++------
- 1 file changed, 84 insertions(+), 39 deletions(-)
-
-diff --git a/drivers/platform/surface/surface_aggregator_tabletsw.c b/drivers/platform/surface/surface_aggregator_tabletsw.c
-index a18e9fc7896b..f9a58db6afde 100644
---- a/drivers/platform/surface/surface_aggregator_tabletsw.c
-+++ b/drivers/platform/surface/surface_aggregator_tabletsw.c
-@@ -20,16 +20,23 @@
- 
- struct ssam_tablet_sw;
- 
-+struct ssam_tablet_sw_state {
-+	u32 source;
-+	u32 state;
-+};
-+
- struct ssam_tablet_sw_ops {
--	int (*get_state)(struct ssam_tablet_sw *sw, u32 *state);
--	const char *(*state_name)(struct ssam_tablet_sw *sw, u32 state);
--	bool (*state_is_tablet_mode)(struct ssam_tablet_sw *sw, u32 state);
-+	int (*get_state)(struct ssam_tablet_sw *sw, struct ssam_tablet_sw_state *state);
-+	const char *(*state_name)(struct ssam_tablet_sw *sw,
-+				  const struct ssam_tablet_sw_state *state);
-+	bool (*state_is_tablet_mode)(struct ssam_tablet_sw *sw,
-+				     const struct ssam_tablet_sw_state *state);
- };
- 
- struct ssam_tablet_sw {
- 	struct ssam_device *sdev;
- 
--	u32 state;
-+	struct ssam_tablet_sw_state state;
- 	struct work_struct update_work;
- 	struct input_dev *mode_switch;
- 
-@@ -45,9 +52,11 @@ struct ssam_tablet_sw_desc {
- 
- 	struct {
- 		u32 (*notify)(struct ssam_event_notifier *nf, const struct ssam_event *event);
--		int (*get_state)(struct ssam_tablet_sw *sw, u32 *state);
--		const char *(*state_name)(struct ssam_tablet_sw *sw, u32 state);
--		bool (*state_is_tablet_mode)(struct ssam_tablet_sw *sw, u32 state);
-+		int (*get_state)(struct ssam_tablet_sw *sw, struct ssam_tablet_sw_state *state);
-+		const char *(*state_name)(struct ssam_tablet_sw *sw,
-+					  const struct ssam_tablet_sw_state *state);
-+		bool (*state_is_tablet_mode)(struct ssam_tablet_sw *sw,
-+					     const struct ssam_tablet_sw_state *state);
- 	} ops;
- 
- 	struct {
-@@ -61,7 +70,7 @@ struct ssam_tablet_sw_desc {
- static ssize_t state_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct ssam_tablet_sw *sw = dev_get_drvdata(dev);
--	const char *state = sw->ops.state_name(sw, sw->state);
-+	const char *state = sw->ops.state_name(sw, &sw->state);
- 
- 	return sysfs_emit(buf, "%s\n", state);
- }
-@@ -79,19 +88,19 @@ static const struct attribute_group ssam_tablet_sw_group = {
- static void ssam_tablet_sw_update_workfn(struct work_struct *work)
- {
- 	struct ssam_tablet_sw *sw = container_of(work, struct ssam_tablet_sw, update_work);
-+	struct ssam_tablet_sw_state state;
- 	int tablet, status;
--	u32 state;
- 
- 	status = sw->ops.get_state(sw, &state);
- 	if (status)
- 		return;
- 
--	if (sw->state == state)
-+	if (sw->state.source == state.source && sw->state.state == state.state)
- 		return;
- 	sw->state = state;
- 
- 	/* Send SW_TABLET_MODE event. */
--	tablet = sw->ops.state_is_tablet_mode(sw, state);
-+	tablet = sw->ops.state_is_tablet_mode(sw, &state);
- 	input_report_switch(sw->mode_switch, SW_TABLET_MODE, tablet);
- 	input_sync(sw->mode_switch);
- }
-@@ -146,7 +155,7 @@ static int ssam_tablet_sw_probe(struct ssam_device *sdev)
- 	sw->mode_switch->id.bustype = BUS_HOST;
- 	sw->mode_switch->dev.parent = &sdev->dev;
- 
--	tablet = sw->ops.state_is_tablet_mode(sw, sw->state);
-+	tablet = sw->ops.state_is_tablet_mode(sw, &sw->state);
- 	input_set_capability(sw->mode_switch, EV_SW, SW_TABLET_MODE);
- 	input_report_switch(sw->mode_switch, SW_TABLET_MODE, tablet);
- 
-@@ -204,9 +213,10 @@ enum ssam_kip_cover_state {
- 	SSAM_KIP_COVER_STATE_BOOK          = 0x06,
- };
- 
--static const char *ssam_kip_cover_state_name(struct ssam_tablet_sw *sw, u32 state)
-+static const char *ssam_kip_cover_state_name(struct ssam_tablet_sw *sw,
-+					     const struct ssam_tablet_sw_state *state)
- {
--	switch (state) {
-+	switch (state->state) {
- 	case SSAM_KIP_COVER_STATE_DISCONNECTED:
- 		return "disconnected";
- 
-@@ -226,14 +236,15 @@ static const char *ssam_kip_cover_state_name(struct ssam_tablet_sw *sw, u32 stat
- 		return "book";
- 
- 	default:
--		dev_warn(&sw->sdev->dev, "unknown KIP cover state: %u\n", state);
-+		dev_warn(&sw->sdev->dev, "unknown KIP cover state: %u\n", state->state);
- 		return "<unknown>";
- 	}
- }
- 
--static bool ssam_kip_cover_state_is_tablet_mode(struct ssam_tablet_sw *sw, u32 state)
-+static bool ssam_kip_cover_state_is_tablet_mode(struct ssam_tablet_sw *sw,
-+						const struct ssam_tablet_sw_state *state)
- {
--	switch (state) {
-+	switch (state->state) {
- 	case SSAM_KIP_COVER_STATE_DISCONNECTED:
- 	case SSAM_KIP_COVER_STATE_FOLDED_CANVAS:
- 	case SSAM_KIP_COVER_STATE_FOLDED_BACK:
-@@ -245,7 +256,7 @@ static bool ssam_kip_cover_state_is_tablet_mode(struct ssam_tablet_sw *sw, u32 s
- 		return false;
- 
- 	default:
--		dev_warn(&sw->sdev->dev, "unknown KIP cover state: %d\n", sw->state);
-+		dev_warn(&sw->sdev->dev, "unknown KIP cover state: %d\n", state->state);
- 		return true;
- 	}
- }
-@@ -257,7 +268,7 @@ SSAM_DEFINE_SYNC_REQUEST_R(__ssam_kip_get_cover_state, u8, {
- 	.instance_id     = 0x00,
- });
- 
--static int ssam_kip_get_cover_state(struct ssam_tablet_sw *sw, u32 *state)
-+static int ssam_kip_get_cover_state(struct ssam_tablet_sw *sw, struct ssam_tablet_sw_state *state)
- {
- 	int status;
- 	u8 raw;
-@@ -268,7 +279,8 @@ static int ssam_kip_get_cover_state(struct ssam_tablet_sw *sw, u32 *state)
- 		return status;
- 	}
- 
--	*state = raw;
-+	state->source = 0;	/* Unused for KIP switch. */
-+	state->state = raw;
- 	return 0;
- }
- 
-@@ -317,11 +329,15 @@ MODULE_PARM_DESC(tablet_mode_in_slate_state, "Enable tablet mode in slate device
- #define SSAM_EVENT_POS_CID_POSTURE_CHANGED	0x03
- #define SSAM_POS_MAX_SOURCES			4
- 
--enum ssam_pos_state {
--	SSAM_POS_POSTURE_LID_CLOSED = 0x00,
--	SSAM_POS_POSTURE_LAPTOP     = 0x01,
--	SSAM_POS_POSTURE_SLATE      = 0x02,
--	SSAM_POS_POSTURE_TABLET     = 0x03,
-+enum ssam_pos_source_id {
-+	SSAM_POS_SOURCE_SLS   = 0x03,
-+};
-+
-+enum ssam_pos_state_sls {
-+	SSAM_POS_SLS_LID_CLOSED = 0x00,
-+	SSAM_POS_SLS_LAPTOP     = 0x01,
-+	SSAM_POS_SLS_SLATE      = 0x02,
-+	SSAM_POS_SLS_TABLET     = 0x03,
- };
- 
- struct ssam_sources_list {
-@@ -329,42 +345,68 @@ struct ssam_sources_list {
- 	__le32 id[SSAM_POS_MAX_SOURCES];
- } __packed;
- 
--static const char *ssam_pos_state_name(struct ssam_tablet_sw *sw, u32 state)
-+static const char *ssam_pos_state_name_sls(struct ssam_tablet_sw *sw, u32 state)
- {
- 	switch (state) {
--	case SSAM_POS_POSTURE_LID_CLOSED:
-+	case SSAM_POS_SLS_LID_CLOSED:
- 		return "closed";
- 
--	case SSAM_POS_POSTURE_LAPTOP:
-+	case SSAM_POS_SLS_LAPTOP:
- 		return "laptop";
- 
--	case SSAM_POS_POSTURE_SLATE:
-+	case SSAM_POS_SLS_SLATE:
- 		return "slate";
- 
--	case SSAM_POS_POSTURE_TABLET:
-+	case SSAM_POS_SLS_TABLET:
- 		return "tablet";
- 
- 	default:
--		dev_warn(&sw->sdev->dev, "unknown device posture: %u\n", state);
-+		dev_warn(&sw->sdev->dev, "unknown device posture for SLS: %u\n", state);
- 		return "<unknown>";
- 	}
- }
- 
--static bool ssam_pos_state_is_tablet_mode(struct ssam_tablet_sw *sw, u32 state)
-+static const char *ssam_pos_state_name(struct ssam_tablet_sw *sw,
-+				       const struct ssam_tablet_sw_state *state)
-+{
-+	switch (state->source) {
-+	case SSAM_POS_SOURCE_SLS:
-+		return ssam_pos_state_name_sls(sw, state->state);
-+
-+	default:
-+		dev_warn(&sw->sdev->dev, "unknown device posture source: %u\n", state->source);
-+		return "<unknown>";
-+	}
-+}
-+
-+static bool ssam_pos_state_is_tablet_mode_sls(struct ssam_tablet_sw *sw, u32 state)
- {
- 	switch (state) {
--	case SSAM_POS_POSTURE_LAPTOP:
--	case SSAM_POS_POSTURE_LID_CLOSED:
-+	case SSAM_POS_SLS_LAPTOP:
-+	case SSAM_POS_SLS_LID_CLOSED:
- 		return false;
- 
--	case SSAM_POS_POSTURE_SLATE:
-+	case SSAM_POS_SLS_SLATE:
- 		return tablet_mode_in_slate_state;
- 
--	case SSAM_POS_POSTURE_TABLET:
-+	case SSAM_POS_SLS_TABLET:
- 		return true;
- 
- 	default:
--		dev_warn(&sw->sdev->dev, "unknown device posture: %u\n", state);
-+		dev_warn(&sw->sdev->dev, "unknown device posture for SLS: %u\n", state);
-+		return true;
-+	}
-+}
-+
-+static bool ssam_pos_state_is_tablet_mode(struct ssam_tablet_sw *sw,
-+					  const struct ssam_tablet_sw_state *state)
-+{
-+	switch (state->source) {
-+	case SSAM_POS_SOURCE_SLS:
-+		return ssam_pos_state_is_tablet_mode_sls(sw, state->state);
-+
-+	default:
-+		dev_warn(&sw->sdev->dev, "unknown device posture source: %u\n", state->source);
- 		return true;
- 	}
- }
-@@ -455,9 +497,10 @@ static int ssam_pos_get_posture_for_source(struct ssam_tablet_sw *sw, u32 source
- 	return 0;
- }
- 
--static int ssam_pos_get_posture(struct ssam_tablet_sw *sw, u32 *state)
-+static int ssam_pos_get_posture(struct ssam_tablet_sw *sw, struct ssam_tablet_sw_state *state)
- {
- 	u32 source_id;
-+	u32 source_state;
- 	int status;
- 
- 	status = ssam_pos_get_source(sw, &source_id);
-@@ -466,13 +509,15 @@ static int ssam_pos_get_posture(struct ssam_tablet_sw *sw, u32 *state)
- 		return status;
- 	}
- 
--	status = ssam_pos_get_posture_for_source(sw, source_id, state);
-+	status = ssam_pos_get_posture_for_source(sw, source_id, &source_state);
- 	if (status) {
- 		dev_err(&sw->sdev->dev, "failed to get posture value for source %u: %d\n",
- 			source_id, status);
- 		return status;
- 	}
- 
-+	state->source = source_id;
-+	state->state = source_state;
- 	return 0;
- }
- 
--- 
-2.41.0
-
-From 57a06f3b8986e92ffe56c063efb95329a41f9208 Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Sun, 19 Feb 2023 23:33:43 +0100
-Subject: [PATCH] platform/surface: aggregator_tabletsw: Add support for
- Type-Cover posture source
-
-Implement support for the Type-Cover posture source (ID 0x00), found on
-the Surface Pro 9.
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- .../surface/surface_aggregator_tabletsw.c     | 57 +++++++++++++++++++
- 1 file changed, 57 insertions(+)
-
-diff --git a/drivers/platform/surface/surface_aggregator_tabletsw.c b/drivers/platform/surface/surface_aggregator_tabletsw.c
-index f9a58db6afde..4a029f5db20a 100644
---- a/drivers/platform/surface/surface_aggregator_tabletsw.c
-+++ b/drivers/platform/surface/surface_aggregator_tabletsw.c
-@@ -330,9 +330,18 @@ MODULE_PARM_DESC(tablet_mode_in_slate_state, "Enable tablet mode in slate device
- #define SSAM_POS_MAX_SOURCES			4
- 
- enum ssam_pos_source_id {
-+	SSAM_POS_SOURCE_COVER = 0x00,
- 	SSAM_POS_SOURCE_SLS   = 0x03,
- };
- 
-+enum ssam_pos_state_cover {
-+	SSAM_POS_COVER_DISCONNECTED  = 0x01,
-+	SSAM_POS_COVER_CLOSED        = 0x02,
-+	SSAM_POS_COVER_LAPTOP        = 0x03,
-+	SSAM_POS_COVER_FOLDED_CANVAS = 0x04,
-+	SSAM_POS_COVER_FOLDED_BACK   = 0x05,
-+};
-+
- enum ssam_pos_state_sls {
- 	SSAM_POS_SLS_LID_CLOSED = 0x00,
- 	SSAM_POS_SLS_LAPTOP     = 0x01,
-@@ -345,6 +354,30 @@ struct ssam_sources_list {
- 	__le32 id[SSAM_POS_MAX_SOURCES];
- } __packed;
- 
-+static const char *ssam_pos_state_name_cover(struct ssam_tablet_sw *sw, u32 state)
-+{
-+	switch (state) {
-+	case SSAM_POS_COVER_DISCONNECTED:
-+		return "disconnected";
-+
-+	case SSAM_POS_COVER_CLOSED:
-+		return "closed";
-+
-+	case SSAM_POS_COVER_LAPTOP:
-+		return "laptop";
-+
-+	case SSAM_POS_COVER_FOLDED_CANVAS:
-+		return "folded-canvas";
-+
-+	case SSAM_POS_COVER_FOLDED_BACK:
-+		return "folded-back";
-+
-+	default:
-+		dev_warn(&sw->sdev->dev, "unknown device posture for type-cover: %u\n", state);
-+		return "<unknown>";
-+	}
-+}
-+
- static const char *ssam_pos_state_name_sls(struct ssam_tablet_sw *sw, u32 state)
- {
- 	switch (state) {
-@@ -370,6 +403,9 @@ static const char *ssam_pos_state_name(struct ssam_tablet_sw *sw,
- 				       const struct ssam_tablet_sw_state *state)
- {
- 	switch (state->source) {
-+	case SSAM_POS_SOURCE_COVER:
-+		return ssam_pos_state_name_cover(sw, state->state);
-+
- 	case SSAM_POS_SOURCE_SLS:
- 		return ssam_pos_state_name_sls(sw, state->state);
- 
-@@ -379,6 +415,24 @@ static const char *ssam_pos_state_name(struct ssam_tablet_sw *sw,
- 	}
- }
- 
-+static bool ssam_pos_state_is_tablet_mode_cover(struct ssam_tablet_sw *sw, u32 state)
-+{
-+	switch (state) {
-+	case SSAM_POS_COVER_DISCONNECTED:
-+	case SSAM_POS_COVER_FOLDED_CANVAS:
-+	case SSAM_POS_COVER_FOLDED_BACK:
-+		return true;
-+
-+	case SSAM_POS_COVER_CLOSED:
-+	case SSAM_POS_COVER_LAPTOP:
-+		return false;
-+
-+	default:
-+		dev_warn(&sw->sdev->dev, "unknown device posture for type-cover: %u\n", state);
-+		return true;
-+	}
-+}
-+
- static bool ssam_pos_state_is_tablet_mode_sls(struct ssam_tablet_sw *sw, u32 state)
- {
- 	switch (state) {
-@@ -402,6 +456,9 @@ static bool ssam_pos_state_is_tablet_mode(struct ssam_tablet_sw *sw,
- 					  const struct ssam_tablet_sw_state *state)
- {
- 	switch (state->source) {
-+	case SSAM_POS_SOURCE_COVER:
-+		return ssam_pos_state_is_tablet_mode_cover(sw, state->state);
-+
- 	case SSAM_POS_SOURCE_SLS:
- 		return ssam_pos_state_is_tablet_mode_sls(sw, state->state);
- 
--- 
-2.41.0
-
-From 56a23672142f7435662e91125ca30d20ae3099c6 Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Sun, 19 Feb 2023 23:41:18 +0100
-Subject: [PATCH] platform/surface: aggregator_registry: Add support for
- tablet-mode switch on Surface Pro 9
-
-Add support for the POS-subsystem tablet-mode switch used on the Surface
-Pro 9.
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- drivers/platform/surface/surface_aggregator_registry.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index 296f72d52e6a..0fe5be539652 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -305,7 +305,7 @@ static const struct software_node *ssam_node_group_sp9[] = {
- 	&ssam_node_bat_ac,
- 	&ssam_node_bat_main,
- 	&ssam_node_tmp_pprof,
--	/* TODO: Tablet mode switch (via POS subsystem) */
-+	&ssam_node_pos_tablet_switch,
- 	&ssam_node_hid_kip_keyboard,
- 	&ssam_node_hid_kip_penstash,
- 	&ssam_node_hid_kip_touchpad,
--- 
-2.41.0
-
-From 5f500b5c2a9cd1b50f6d2e6c8e0018a840fa45ff Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Thu, 18 May 2023 22:33:55 +0200
-Subject: [PATCH] platform/surface: aggregator: Make to_ssam_device_driver()
- respect const-ness
-
-Make to_ssam_device_driver() a bit safer by replacing container_of()
-with container_of_const() to respect the const-ness of the passed in
-pointer, instead of silently discarding any const specifications.
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- include/linux/surface_aggregator/device.h | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-diff --git a/include/linux/surface_aggregator/device.h b/include/linux/surface_aggregator/device.h
-index df81043b9e71..42b249b4c24b 100644
---- a/include/linux/surface_aggregator/device.h
-+++ b/include/linux/surface_aggregator/device.h
-@@ -243,11 +243,7 @@ static inline bool is_ssam_device(struct device *d)
-  * Return: Returns the pointer to the &struct ssam_device_driver wrapping the
-  * given device driver @d.
-  */
--static inline
--struct ssam_device_driver *to_ssam_device_driver(struct device_driver *d)
--{
--	return container_of(d, struct ssam_device_driver, driver);
--}
-+#define to_ssam_device_driver(d)	container_of_const(d, struct ssam_device_driver, driver)
- 
- const struct ssam_device_id *ssam_device_id_match(const struct ssam_device_id *table,
- 						  const struct ssam_device_uid uid);
--- 
-2.41.0
-
-From d642e16932f9d8609d776ad3ca55ce84a4be6d8f Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Thu, 18 May 2023 22:57:17 +0200
-Subject: [PATCH] platform/surface: aggregator_tabletsw: Add support for book
- mode in POS subsystem
-
-Devices with a type-cover have an additional "book" mode, deactivating
-type-cover input and turning off its backlight. This is currently
-unsupported, leading to the warning
-
-  surface_aggregator_tablet_mode_switch 01:26:01:00:01: unknown device posture for type-cover: 6
-
-Therefore, add support for this state and map it to enable tablet-mode.
-
-Fixes: 37ff64cd81ff ("platform/surface: aggregator_tabletsw: Add support for Type-Cover posture source")
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- drivers/platform/surface/surface_aggregator_tabletsw.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/platform/surface/surface_aggregator_tabletsw.c b/drivers/platform/surface/surface_aggregator_tabletsw.c
-index 4a029f5db20a..c0a1a5869246 100644
---- a/drivers/platform/surface/surface_aggregator_tabletsw.c
-+++ b/drivers/platform/surface/surface_aggregator_tabletsw.c
-@@ -340,6 +340,7 @@ enum ssam_pos_state_cover {
- 	SSAM_POS_COVER_LAPTOP        = 0x03,
- 	SSAM_POS_COVER_FOLDED_CANVAS = 0x04,
- 	SSAM_POS_COVER_FOLDED_BACK   = 0x05,
-+	SSAM_POS_COVER_BOOK          = 0x06,
- };
- 
- enum ssam_pos_state_sls {
-@@ -372,6 +373,9 @@ static const char *ssam_pos_state_name_cover(struct ssam_tablet_sw *sw, u32 stat
- 	case SSAM_POS_COVER_FOLDED_BACK:
- 		return "folded-back";
- 
-+	case SSAM_POS_COVER_BOOK:
-+		return "book";
-+
- 	default:
- 		dev_warn(&sw->sdev->dev, "unknown device posture for type-cover: %u\n", state);
- 		return "<unknown>";
-@@ -421,6 +425,7 @@ static bool ssam_pos_state_is_tablet_mode_cover(struct ssam_tablet_sw *sw, u32 s
- 	case SSAM_POS_COVER_DISCONNECTED:
- 	case SSAM_POS_COVER_FOLDED_CANVAS:
- 	case SSAM_POS_COVER_FOLDED_BACK:
-+	case SSAM_POS_COVER_BOOK:
- 		return true;
- 
- 	case SSAM_POS_COVER_CLOSED:
--- 
-2.41.0
-
-From bb11cb65495e2e0cec5e5fd58d006ba8db44c4b4 Mon Sep 17 00:00:00 2001
+From e87bc8644c1f6241309562a27b3d2f5b34054db1 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jul 2020 17:19:53 +0200
 Subject: [PATCH] i2c: acpi: Implement RawBytes read access
@@ -5891,7 +6634,7 @@ index d6037a328669..a290ebc77aea 100644
 -- 
 2.41.0
 
-From b209cc1b4e9eb1796ab3c18868be918b0213eb9f Mon Sep 17 00:00:00 2001
+From 94fe2b2dccbbec57753b3c0750607a650c14b4b9 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 13 Feb 2021 16:41:18 +0100
 Subject: [PATCH] platform/surface: Add driver for Surface Book 1 dGPU switch
@@ -6114,7 +6857,7 @@ index 000000000000..8b816ed8f35c
 -- 
 2.41.0
 
-From 6063b2afbbbaff075d1527af2ba8dbfc4bcb59cf Mon Sep 17 00:00:00 2001
+From c0dbaf869d5119db6838d1fe66f9e06136f69c42 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:05:09 +1100
 Subject: [PATCH] Input: soc_button_array - support AMD variant Surface devices
@@ -6136,10 +6879,10 @@ Patchset: surface-button
  1 file changed, 8 insertions(+), 25 deletions(-)
 
 diff --git a/drivers/input/misc/soc_button_array.c b/drivers/input/misc/soc_button_array.c
-index 09489380afda..0f02411a60f1 100644
+index e79f5497948b..2bddbe6e9ea4 100644
 --- a/drivers/input/misc/soc_button_array.c
 +++ b/drivers/input/misc/soc_button_array.c
-@@ -507,8 +507,8 @@ static const struct soc_device_data soc_device_MSHW0028 = {
+@@ -537,8 +537,8 @@ static const struct soc_device_data soc_device_MSHW0028 = {
   * Both, the Surface Pro 4 (surfacepro3_button.c) and the above mentioned
   * devices use MSHW0040 for power and volume buttons, however the way they
   * have to be addressed differs. Make sure that we only load this drivers
@@ -6150,7 +6893,7 @@ index 09489380afda..0f02411a60f1 100644
   */
  #define MSHW0040_DSM_REVISION		0x01
  #define MSHW0040_DSM_GET_OMPR		0x02	// get OEM Platform Revision
-@@ -519,31 +519,14 @@ static const guid_t MSHW0040_DSM_UUID =
+@@ -549,31 +549,14 @@ static const guid_t MSHW0040_DSM_UUID =
  static int soc_device_check_MSHW0040(struct device *dev)
  {
  	acpi_handle handle = ACPI_HANDLE(dev);
@@ -6191,7 +6934,7 @@ index 09489380afda..0f02411a60f1 100644
 -- 
 2.41.0
 
-From a51b6b99f897f56b914da238e35e56d2b0adb30c Mon Sep 17 00:00:00 2001
+From f4fe09308d0f8c665b30deaaa42ed60333f135cd Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:22:57 +1100
 Subject: [PATCH] platform/surface: surfacepro3_button: don't load on amd
@@ -6263,7 +7006,7 @@ index 2755601f979c..4240c98ca226 100644
 -- 
 2.41.0
 
-From 7282c336fb446159b2ea5736fde824f581673776 Mon Sep 17 00:00:00 2001
+From 785f9b97e9da3623421f5c3986b7fa3469641858 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 18 Feb 2023 01:02:49 +0100
 Subject: [PATCH] USB: quirks: Add USB_QUIRK_DELAY_INIT for Surface Go 3
@@ -6304,7 +7047,7 @@ index 934b3d997702..2c6604c6e8e1 100644
 -- 
 2.41.0
 
-From 1d58249a4afc864ac83e5d2f03311ee262383a5f Mon Sep 17 00:00:00 2001
+From e4faddc8b5b4dfd88fd766e438d455fb7bbccb8c Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 5 Nov 2020 13:09:45 +0100
 Subject: [PATCH] hid/multitouch: Turn off Type Cover keyboard backlight when
@@ -6537,7 +7280,7 @@ index e31be0cb8b85..63fd042aba6b 100644
 -- 
 2.41.0
 
-From 1eab363123e3e4ead0a9dd8bd67dfb1497c26173 Mon Sep 17 00:00:00 2001
+From e5cadf1b77047bd8f004aaa5571437007e39b39c Mon Sep 17 00:00:00 2001
 From: PJungkamp <p.jungkamp@gmail.com>
 Date: Fri, 25 Feb 2022 12:04:25 +0100
 Subject: [PATCH] hid/multitouch: Add support for surface pro type cover tablet
@@ -6837,7 +7580,7 @@ index 63fd042aba6b..508a250ff4bf 100644
 -- 
 2.41.0
 
-From 06cb15eb142592598dad0bd153f4e210e51a7d58 Mon Sep 17 00:00:00 2001
+From c12f7cb4d5133c2a8b8eba90f5f011dddae0a3b2 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sun, 19 Feb 2023 22:12:24 +0100
 Subject: [PATCH] PCI: Add quirk to prevent calling shutdown mehtod
@@ -6862,7 +7605,7 @@ Patchset: surface-shutdown
  3 files changed, 40 insertions(+)
 
 diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index 57ddcc59af30..497cbadd2c6c 100644
+index ae9baf801681..fdfaec2312a0 100644
 --- a/drivers/pci/pci-driver.c
 +++ b/drivers/pci/pci-driver.c
 @@ -507,6 +507,9 @@ static void pci_device_shutdown(struct device *dev)
@@ -6876,10 +7619,10 @@ index 57ddcc59af30..497cbadd2c6c 100644
  
  	if (drv && drv->shutdown)
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index f4e2a88729fd..ad3cf25becfc 100644
+index c525867760bf..b67d9181a608 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
-@@ -6036,3 +6036,39 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9a2d, dpc_log_size);
+@@ -6041,3 +6041,39 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9a2d, dpc_log_size);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9a2f, dpc_log_size);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9a31, dpc_log_size);
  #endif
@@ -6920,7 +7663,7 @@ index f4e2a88729fd..ad3cf25becfc 100644
 +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x466d, quirk_no_shutdown);  // Thunderbolt 4 NHI
 +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x46a8, quirk_no_shutdown);  // GPU
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index a5dda515fcd1..69f6fc707ae5 100644
+index 60b8772b5bd4..cc07be9c7e37 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -464,6 +464,7 @@ struct pci_dev {
@@ -6934,7 +7677,7 @@ index a5dda515fcd1..69f6fc707ae5 100644
 -- 
 2.41.0
 
-From 2a0118e4d2fa251650a5f28a2a4d7aafa2a6cf9e Mon Sep 17 00:00:00 2001
+From c017d94dbc46d648b52e7ff2f66df960b9c2f130 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sun, 12 Mar 2023 01:41:57 +0100
 Subject: [PATCH] platform/surface: gpe: Add support for Surface Pro 9
@@ -6985,7 +7728,7 @@ index c219b840d491..69c4352e8406 100644
 -- 
 2.41.0
 
-From d02ff8df2bc5b85b316c477f935967a7910b8b86 Mon Sep 17 00:00:00 2001
+From d69944e1acb3f417731b5128ba7e9ee1ead0fa8f Mon Sep 17 00:00:00 2001
 From: Hans de Goede <hdegoede@redhat.com>
 Date: Sun, 10 Oct 2021 20:56:57 +0200
 Subject: [PATCH] ACPI: delay enumeration of devices with a _DEP pointing to an
@@ -7061,7 +7804,7 @@ index 0c6f06abe3f4..4fc320f424e8 100644
 -- 
 2.41.0
 
-From 40128e5d83898b9e3ce6a3257255b92a21a086bc Mon Sep 17 00:00:00 2001
+From 23a732b89e9a9572095ebc9bc6d79d1f6a0b3d81 Mon Sep 17 00:00:00 2001
 From: zouxiaoh <xiaohong.zou@intel.com>
 Date: Fri, 25 Jun 2021 08:52:59 +0800
 Subject: [PATCH] iommu: intel-ipu: use IOMMU passthrough mode for Intel IPUs
@@ -7087,7 +7830,7 @@ Patchset: cameras
  1 file changed, 30 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index 3ebd2260cdab..f8937235de4b 100644
+index 0d4542b7365d..c96a9baea21c 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
 @@ -37,6 +37,12 @@
@@ -7118,7 +7861,7 @@ index 3ebd2260cdab..f8937235de4b 100644
  #define IDENTMAP_IPTS		16
  
  const struct iommu_ops intel_iommu_ops;
-@@ -2593,6 +2601,9 @@ static int device_def_domain_type(struct device *dev)
+@@ -2565,6 +2573,9 @@ static int device_def_domain_type(struct device *dev)
  		if ((iommu_identity_mapping & IDENTMAP_GFX) && IS_GFX_DEVICE(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
  
@@ -7128,7 +7871,7 @@ index 3ebd2260cdab..f8937235de4b 100644
  		if ((iommu_identity_mapping & IDENTMAP_IPTS) && IS_IPTS(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
  	}
-@@ -2984,6 +2995,9 @@ static int __init init_dmars(void)
+@@ -2874,6 +2885,9 @@ static int __init init_dmars(void)
  	if (!dmar_map_gfx)
  		iommu_identity_mapping |= IDENTMAP_GFX;
  
@@ -7138,7 +7881,7 @@ index 3ebd2260cdab..f8937235de4b 100644
  	if (!dmar_map_ipts)
  		iommu_identity_mapping |= IDENTMAP_IPTS;
  
-@@ -4829,6 +4843,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
+@@ -4788,6 +4802,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
  	dmar_map_gfx = 0;
  }
  
@@ -7157,7 +7900,7 @@ index 3ebd2260cdab..f8937235de4b 100644
  static void quirk_iommu_ipts(struct pci_dev *dev)
  {
  	if (!IS_IPTS(dev))
-@@ -4840,6 +4866,7 @@ static void quirk_iommu_ipts(struct pci_dev *dev)
+@@ -4799,6 +4825,7 @@ static void quirk_iommu_ipts(struct pci_dev *dev)
  	pci_info(dev, "Passthrough IOMMU for IPTS\n");
  	dmar_map_ipts = 0;
  }
@@ -7165,7 +7908,7 @@ index 3ebd2260cdab..f8937235de4b 100644
  /* G4x/GM45 integrated gfx dmar support is totally busted. */
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
-@@ -4875,6 +4902,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
+@@ -4834,6 +4861,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163A, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
  
@@ -7178,7 +7921,7 @@ index 3ebd2260cdab..f8937235de4b 100644
 -- 
 2.41.0
 
-From cb2e9637479a294e857d1e4b5bc997e6342407f2 Mon Sep 17 00:00:00 2001
+From cb948321e6e2d4a959b6e7890366028c5b4b7938 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Sun, 10 Oct 2021 20:57:02 +0200
 Subject: [PATCH] platform/x86: int3472: Enable I2c daisy chain
@@ -7215,7 +7958,7 @@ index 5b8d1a9620a5..6a0ff035cf20 100644
 -- 
 2.41.0
 
-From e419017be43e68df117c6b576c6e6b037f6f6d26 Mon Sep 17 00:00:00 2001
+From c3df3ab4a47d2ebce9e23be3863709480c6f5247 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Wed, 4 May 2022 23:21:45 +0100
 Subject: [PATCH] media: ipu3-cio2: Move functionality from .complete() to
@@ -7234,10 +7977,10 @@ Patchset: cameras
  1 file changed, 23 insertions(+), 42 deletions(-)
 
 diff --git a/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c b/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
-index 3b76a9d0383a..38f9f4da1922 100644
+index 3c84cb121632..8ba5f78baf9c 100644
 --- a/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
 +++ b/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
-@@ -1383,7 +1383,10 @@ static int cio2_notifier_bound(struct v4l2_async_notifier *notifier,
+@@ -1384,7 +1384,10 @@ static int cio2_notifier_bound(struct v4l2_async_notifier *notifier,
  {
  	struct cio2_device *cio2 = to_cio2_device(notifier);
  	struct sensor_async_subdev *s_asd = to_sensor_asd(asd);
@@ -7248,7 +7991,7 @@ index 3b76a9d0383a..38f9f4da1922 100644
  
  	if (cio2->queue[s_asd->csi2.port].sensor)
  		return -EBUSY;
-@@ -1394,7 +1397,26 @@ static int cio2_notifier_bound(struct v4l2_async_notifier *notifier,
+@@ -1395,7 +1398,26 @@ static int cio2_notifier_bound(struct v4l2_async_notifier *notifier,
  	q->sensor = sd;
  	q->csi_rx_base = cio2->base + CIO2_REG_PIPE_BASE(q->csi2.port);
  
@@ -7276,7 +8019,7 @@ index 3b76a9d0383a..38f9f4da1922 100644
  }
  
  /* The .unbind callback */
-@@ -1408,50 +1430,9 @@ static void cio2_notifier_unbind(struct v4l2_async_notifier *notifier,
+@@ -1409,50 +1431,9 @@ static void cio2_notifier_unbind(struct v4l2_async_notifier *notifier,
  	cio2->queue[s_asd->csi2.port].sensor = NULL;
  }
  
@@ -7330,7 +8073,7 @@ index 3b76a9d0383a..38f9f4da1922 100644
 -- 
 2.41.0
 
-From f0149621cf7afb0fc7cac3a156c1711348333592 Mon Sep 17 00:00:00 2001
+From b551835863227b32672a1d7047f335efe7c1c332 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 2 Jun 2022 22:15:56 +0100
 Subject: [PATCH] media: ipu3-cio2: Re-add .complete() to ipu3-cio2
@@ -7348,10 +8091,10 @@ Patchset: cameras
  1 file changed, 9 insertions(+)
 
 diff --git a/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c b/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
-index 38f9f4da1922..82681df7d794 100644
+index 8ba5f78baf9c..f0b77012641b 100644
 --- a/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
 +++ b/drivers/media/pci/intel/ipu3/ipu3-cio2-main.c
-@@ -1430,9 +1430,18 @@ static void cio2_notifier_unbind(struct v4l2_async_notifier *notifier,
+@@ -1431,9 +1431,18 @@ static void cio2_notifier_unbind(struct v4l2_async_notifier *notifier,
  	cio2->queue[s_asd->csi2.port].sensor = NULL;
  }
  
@@ -7373,7 +8116,7 @@ index 38f9f4da1922..82681df7d794 100644
 -- 
 2.41.0
 
-From 9f0d71c0c043aef69978dc2d8ab21b588c2c0603 Mon Sep 17 00:00:00 2001
+From 134f10f3f9d08098e3b2fed34d894b44bf8b9109 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Thu, 28 Oct 2021 21:55:16 +0100
 Subject: [PATCH] media: i2c: Add driver for DW9719 VCM
@@ -7392,10 +8135,10 @@ Patchset: cameras
  create mode 100644 drivers/media/i2c/dw9719.c
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index c6545eb54104..a197e0a54eed 100644
+index 35e19594640d..7e6631f0b55b 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -6237,6 +6237,13 @@ T:	git git://linuxtv.org/media_tree.git
+@@ -6262,6 +6262,13 @@ T:	git git://linuxtv.org/media_tree.git
  F:	Documentation/devicetree/bindings/media/i2c/dongwoon,dw9714.yaml
  F:	drivers/media/i2c/dw9714.c
  
@@ -7410,10 +8153,10 @@ index c6545eb54104..a197e0a54eed 100644
  M:	Dongchun Zhu <dongchun.zhu@mediatek.com>
  L:	linux-media@vger.kernel.org
 diff --git a/drivers/media/i2c/Kconfig b/drivers/media/i2c/Kconfig
-index c3d5952ca27e..e759470a0b6b 100644
+index 256d55bb2b1d..c9587f500a88 100644
 --- a/drivers/media/i2c/Kconfig
 +++ b/drivers/media/i2c/Kconfig
-@@ -887,6 +887,17 @@ config VIDEO_DW9714
+@@ -835,6 +835,17 @@ config VIDEO_DW9714
  	  capability. This is designed for linear control of
  	  voice coil motors, controlled via I2C serial interface.
  
@@ -7432,10 +8175,10 @@ index c3d5952ca27e..e759470a0b6b 100644
  	tristate "DW9768 lens voice coil support"
  	depends on I2C && VIDEO_DEV
 diff --git a/drivers/media/i2c/Makefile b/drivers/media/i2c/Makefile
-index 4f5e9d9cee85..eef3ee84d7dc 100644
+index b44dacf935f4..2a68bfb621b0 100644
 --- a/drivers/media/i2c/Makefile
 +++ b/drivers/media/i2c/Makefile
-@@ -30,6 +30,7 @@ obj-$(CONFIG_VIDEO_CS5345) += cs5345.o
+@@ -29,6 +29,7 @@ obj-$(CONFIG_VIDEO_CS5345) += cs5345.o
  obj-$(CONFIG_VIDEO_CS53L32A) += cs53l32a.o
  obj-$(CONFIG_VIDEO_CX25840) += cx25840/
  obj-$(CONFIG_VIDEO_DW9714) += dw9714.o
@@ -7877,7 +8620,7 @@ index 000000000000..180b04d2a6b3
 -- 
 2.41.0
 
-From 501fb2689dac380fe75f8f0a4cf1e39b142fdae4 Mon Sep 17 00:00:00 2001
+From 4d00c4ddfa59ab50aace2ffce596f49306d5f05e Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Fri, 15 Jul 2022 23:48:00 +0200
 Subject: [PATCH] drivers/media/i2c: Fix DW9719 dependencies
@@ -7891,10 +8634,10 @@ Patchset: cameras
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/media/i2c/Kconfig b/drivers/media/i2c/Kconfig
-index e759470a0b6b..dbc6d20efbe5 100644
+index c9587f500a88..0e5a69d5d7ff 100644
 --- a/drivers/media/i2c/Kconfig
 +++ b/drivers/media/i2c/Kconfig
-@@ -889,7 +889,7 @@ config VIDEO_DW9714
+@@ -837,7 +837,7 @@ config VIDEO_DW9714
  
  config VIDEO_DW9719
  	tristate "DW9719 lens voice coil support"
@@ -7906,7 +8649,7 @@ index e759470a0b6b..dbc6d20efbe5 100644
 -- 
 2.41.0
 
-From f5d6382ede4a72ae5111bfa7e19f64bd649d0447 Mon Sep 17 00:00:00 2001
+From cc9a03f16748473f0ef48cbf0dea5529023a357e Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Thu, 2 Mar 2023 12:59:39 +0000
 Subject: [PATCH] platform/x86: int3472: Remap reset GPIO for INT347E
@@ -7928,7 +8671,7 @@ Patchset: cameras
  1 file changed, 14 insertions(+)
 
 diff --git a/drivers/platform/x86/intel/int3472/discrete.c b/drivers/platform/x86/intel/int3472/discrete.c
-index f064da74f50a..2064b3bbe530 100644
+index ef020e23e596..d21ef437c2f6 100644
 --- a/drivers/platform/x86/intel/int3472/discrete.c
 +++ b/drivers/platform/x86/intel/int3472/discrete.c
 @@ -98,6 +98,9 @@ static int skl_int3472_map_gpio_to_sensor(struct int3472_discrete_device *int347
@@ -7962,7 +8705,7 @@ index f064da74f50a..2064b3bbe530 100644
 -- 
 2.41.0
 
-From 0acfc3c7d633ec1e8775b83948f3b522c35dcc4e Mon Sep 17 00:00:00 2001
+From 44f08fa3e281a7019ef0a1b2db7c1319cc0da80e Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Tue, 21 Mar 2023 13:45:26 +0000
 Subject: [PATCH] media: i2c: Clarify that gain is Analogue gain in OV7251
@@ -8001,7 +8744,7 @@ index 88e987435285..ff7b2c26da83 100644
 -- 
 2.41.0
 
-From 29a90f7928ca474ff395bee282db671ea2dd5de8 Mon Sep 17 00:00:00 2001
+From d3a4b533b2932bdd6398ea430cfca8fa7d51386c Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Wed, 22 Mar 2023 11:01:42 +0000
 Subject: [PATCH] media: v4l2-core: Acquire privacy led in
@@ -8052,7 +8795,7 @@ index 049c2f2001ea..f8c3e40b2b71 100644
 -- 
 2.41.0
 
-From ded14d1c25d6cb35c6bed91da64bcae1e00d9663 Mon Sep 17 00:00:00 2001
+From 33d5408f18336da004bf9f86d1add568b184624f Mon Sep 17 00:00:00 2001
 From: Kate Hsuan <hpa@redhat.com>
 Date: Tue, 21 Mar 2023 23:37:16 +0800
 Subject: [PATCH] platform: x86: int3472: Add MFD cell for tps68470 LED
@@ -8093,7 +8836,7 @@ index 6a0ff035cf20..2a7d01d3abc8 100644
 -- 
 2.41.0
 
-From a7be9b13df052498a999379eb553c32212096895 Mon Sep 17 00:00:00 2001
+From 414acb5a6b1bb43e1bc2df05a77b4f4cd0e46925 Mon Sep 17 00:00:00 2001
 From: Kate Hsuan <hpa@redhat.com>
 Date: Tue, 21 Mar 2023 23:37:17 +0800
 Subject: [PATCH] include: mfd: tps68470: Add masks for LEDA and LEDB
@@ -8134,7 +8877,7 @@ index 7807fa329db0..2d2abb25b944 100644
 -- 
 2.41.0
 
-From 263177a76164bb5d91dbb993a746df136df93354 Mon Sep 17 00:00:00 2001
+From 405426bd01c4cb3646afb639b945f79844e525fe Mon Sep 17 00:00:00 2001
 From: Kate Hsuan <hpa@redhat.com>
 Date: Tue, 21 Mar 2023 23:37:18 +0800
 Subject: [PATCH] leds: tps68470: Add LED control for tps68470
@@ -8157,10 +8900,10 @@ Patchset: cameras
  create mode 100644 drivers/leds/leds-tps68470.c
 
 diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index aaa9140bc351..1fb892c9acf1 100644
+index 2c5fdf848210..ead139f0df52 100644
 --- a/drivers/leds/Kconfig
 +++ b/drivers/leds/Kconfig
-@@ -827,6 +827,18 @@ config LEDS_TPS6105X
+@@ -841,6 +841,18 @@ config LEDS_TPS6105X
  	  It is a single boost converter primarily for white LEDs and
  	  audio amplifiers.
  
@@ -8180,10 +8923,10 @@ index aaa9140bc351..1fb892c9acf1 100644
  	tristate "LED support for SGI Octane machines"
  	depends on LEDS_CLASS
 diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index d30395d11fd8..515a69953e73 100644
+index c07d1512c745..dd78cb6ef22e 100644
 --- a/drivers/leds/Makefile
 +++ b/drivers/leds/Makefile
-@@ -80,6 +80,7 @@ obj-$(CONFIG_LEDS_TCA6507)		+= leds-tca6507.o
+@@ -81,6 +81,7 @@ obj-$(CONFIG_LEDS_TCA6507)		+= leds-tca6507.o
  obj-$(CONFIG_LEDS_TI_LMU_COMMON)	+= leds-ti-lmu-common.o
  obj-$(CONFIG_LEDS_TLC591XX)		+= leds-tlc591xx.o
  obj-$(CONFIG_LEDS_TPS6105X)		+= leds-tps6105x.o
@@ -8385,7 +9128,7 @@ index 000000000000..35aeb5db89c8
 -- 
 2.41.0
 
-From 671807691f99614cdfe818b58cd57649e5b6a39c Mon Sep 17 00:00:00 2001
+From 985951f1bb8716be7378d83fb285fe23cf86e31f Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Sat, 29 May 2021 17:47:38 +1000
 Subject: [PATCH] ACPI: Add quirk for Surface Laptop 4 AMD missing irq 7
@@ -8408,7 +9151,7 @@ Patchset: amd-gpio
  1 file changed, 17 insertions(+)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 0dac4ab5b55b..9ce909da6db3 100644
+index 21b542a6866c..fdd602e640b5 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
 @@ -22,6 +22,7 @@
@@ -8452,7 +9195,7 @@ index 0dac4ab5b55b..9ce909da6db3 100644
 -- 
 2.41.0
 
-From 2778cb3faeb2e2b143db1c0858671c36db3986e6 Mon Sep 17 00:00:00 2001
+From 8764552bf765a9dfea3d95093e5fdacc6dff3582 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Thu, 3 Jun 2021 14:04:26 +0200
 Subject: [PATCH] ACPI: Add AMD 13" Surface Laptop 4 model to irq 7 override
@@ -8467,7 +9210,7 @@ Patchset: amd-gpio
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 9ce909da6db3..623d94a9cb86 100644
+index fdd602e640b5..4e94eed20088 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
 @@ -1255,12 +1255,19 @@ static void __init mp_config_acpi_legacy_irqs(void)
@@ -8494,7 +9237,7 @@ index 9ce909da6db3..623d94a9cb86 100644
 -- 
 2.41.0
 
-From ea2bc669e1ffc2063044f39143a14ba911f1dc78 Mon Sep 17 00:00:00 2001
+From 79625d878f8615b4e86131c9d539727b6e694894 Mon Sep 17 00:00:00 2001
 From: "Bart Groeneveld | GPX Solutions B.V" <bart@gpxbv.nl>
 Date: Mon, 5 Dec 2022 16:08:46 +0100
 Subject: [PATCH] acpi: allow usage of acpi_tad on HW-reduced platforms

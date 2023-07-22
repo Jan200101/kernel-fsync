@@ -18,7 +18,7 @@ diff --git a/drivers/net/wireless/mediatek/mt76/mt7921/init.c b/drivers/net/wire
 index 91fc41922d95..cfa0bb51004d 100644
 --- a/drivers/net/wireless/mediatek/mt76/mt7921/init.c
 +++ b/drivers/net/wireless/mediatek/mt76/mt7921/init.c
-@@ -98,7 +98,8 @@
+@@ -99,7 +99,8 @@
  		wiphy->n_iface_combinations = ARRAY_SIZE(if_comb);
  	}
  	wiphy->flags &= ~(WIPHY_FLAG_IBSS_RSN | WIPHY_FLAG_4ADDR_AP |
@@ -26,9 +26,9 @@ index 91fc41922d95..cfa0bb51004d 100644
 +			  WIPHY_FLAG_4ADDR_STATION |
 +			  WIPHY_FLAG_PS_ON_BY_DEFAULT);
  	wiphy->interface_modes = BIT(NL80211_IFTYPE_STATION) |
- 				 BIT(NL80211_IFTYPE_AP);
- 	wiphy->max_remain_on_channel_duration = 5000;
-@@ -369,12 +370,6 @@
+ 				 BIT(NL80211_IFTYPE_AP) |
+ 				 BIT(NL80211_IFTYPE_P2P_CLIENT) |
+@@ -408,12 +409,6 @@
  	dev->pm.idle_timeout = MT7921_PM_TIMEOUT;
  	dev->pm.stats.last_wake_event = jiffies;
  	dev->pm.stats.last_doze_event = jiffies;

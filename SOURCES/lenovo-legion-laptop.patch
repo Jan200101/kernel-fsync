@@ -15,7 +15,7 @@ diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
 index f5312f51d..74e24e5ab 100644
 --- a/drivers/platform/x86/Kconfig
 +++ b/drivers/platform/x86/Kconfig
-@@ -683,6 +683,16 @@ config THINKPAD_LMI
+@@ -642,6 +642,16 @@ config THINKPAD_LMI
  	  To compile this driver as a module, choose M here: the module will
  	  be called think-lmi.
  
@@ -31,7 +31,7 @@ index f5312f51d..74e24e5ab 100644
 +
  source "drivers/platform/x86/intel/Kconfig"
  
- config MSI_LAPTOP
+ config MSI_EC
 diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 index 5a428caa6..cfd07f9f3 100644
 --- a/drivers/platform/x86/Makefile
