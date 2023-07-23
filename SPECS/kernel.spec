@@ -180,7 +180,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 4
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.4.4
 
@@ -1050,6 +1050,19 @@ Patch411: 0001-Revert-b0cb56fc6e3096c9da04c30d9b501da84dae2b4f.patch
 Patch412: 0002-Revert-1ca399f127e0a372537625b1d462ed586f5d9139.patch
 Patch413: 0003-Revert-da2d907e051d591717d00e28e67ab341b961fd05.patch
 
+# Allow to set custom USB pollrate for specific devices like so:
+# usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
+# useful for setting polling rate of wired PS4/PS5 controller to 1000Hz
+# https://github.com/KarsMulder/Linux-Pollrate-Patch
+# https://gitlab.com/GloriousEggroll/nobara-images/-/issues/64
+Patch506: 0001-Allow-to-set-custom-USB-pollrate-for-specific-device.patch
+
+# Also set the PS controller bluetooth polling rate to 1000Hz
+Patch507: set-ps4-bt-poll-rate-1000hz.patch
+
+# xbox controller update
+Patch510: xbox-controller-update.patch
+
 %endif
 
 # empty final patch to facilitate testing of kernel patches
@@ -1811,6 +1824,19 @@ ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.pat
 ApplyOptionalPatch 0001-Revert-b0cb56fc6e3096c9da04c30d9b501da84dae2b4f.patch
 ApplyOptionalPatch 0002-Revert-1ca399f127e0a372537625b1d462ed586f5d9139.patch
 ApplyOptionalPatch 0003-Revert-da2d907e051d591717d00e28e67ab341b961fd05.patch
+
+# Allow to set custom USB pollrate for specific devices like so:
+# usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
+# useful for setting polling rate of wired PS4/PS5 controller to 1000Hz
+# https://github.com/KarsMulder/Linux-Pollrate-Patch
+# https://gitlab.com/GloriousEggroll/nobara-images/-/issues/64
+ApplyOptionalPatch 0001-Allow-to-set-custom-USB-pollrate-for-specific-device.patch
+
+# Also set the PScontroller bluetooth polling rate to 1000Hz
+ApplyOptionalPatch set-ps4-bt-poll-rate-1000hz.patch
+
+# xbox controller update
+ApplyOptionalPatch xbox-controller-update.patch
 
 %endif
 
@@ -3790,6 +3816,9 @@ fi\
 #
 #
 %changelog
+* Sun Jul 23 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.4.4-202.fsync
+- Adopt nobara kernel patches
+
 * Sat Jul 22 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.4.4-201.fsync
 - kernel-fsync v6.4.4
 
