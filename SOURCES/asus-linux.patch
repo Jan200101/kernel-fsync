@@ -1,8 +1,39 @@
-From 5195a8ad57e5076ce520f725a49f595fe617b6d2 Mon Sep 17 00:00:00 2001
+From 60c4d6d8392d9f3f78b8a56bae349f1f9fffa81e Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Thu, 6 Jul 2023 21:11:00 +1200
+Subject: [PATCH] ALSA: hda/realtek: Add quirk for ASUS ROG GZ301V
+
+Adds the required quirk to enable the Cirrus amp and correct pins
+on the ASUS ROG GZ301V series which uses an SPI connected Cirrus amp.
+
+While this works if the related _DSD properties are made available, these
+aren't included in the ACPI of these laptops (yet).
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ sound/pci/hda/patch_realtek.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index 1547c40dc7e9..969eb0736bca 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -9607,6 +9607,7 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
+ 	SND_PCI_QUIRK(0x1043, 0x1483, "ASUS GU603V", ALC285_FIXUP_ASUS_HEADSET_MIC),
+ 	SND_PCI_QUIRK(0x1043, 0x1493, "ASUS GV601V", ALC285_FIXUP_ASUS_HEADSET_MIC),
+ 	SND_PCI_QUIRK(0x1043, 0x1517, "Asus Zenbook UX31A", ALC269VB_FIXUP_ASUS_ZENBOOK_UX31A),
++	SND_PCI_QUIRK(0x1043, 0x1573, "ASUS GZ301V", ALC285_FIXUP_ASUS_HEADSET_MIC),
+ 	SND_PCI_QUIRK(0x1043, 0x1662, "ASUS GV301QH", ALC294_FIXUP_ASUS_DUAL_SPK),
+ 	SND_PCI_QUIRK(0x1043, 0x1683, "ASUS UM3402YAR", ALC287_FIXUP_CS35L41_I2C_2),
+ 	SND_PCI_QUIRK(0x1043, 0x16b2, "ASUS GU603", ALC289_FIXUP_ASUS_GA401),
+-- 
+2.41.0
+
+From 56e04226a7083c234b1bb04f7c0dca6f15e9ca2b Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Sun, 4 Jun 2023 18:48:11 +1200
-Subject: [PATCH v2 1/8] platform/x86: asus-wmi: add support for showing
- charger mode
+Subject: [PATCH 01/15] platform/x86: asus-wmi: add support for showing charger
+ mode
 
 Expose a WMI method in sysfs platform for showing which connected
 charger the laptop is currently using.
@@ -110,10 +141,10 @@ index 28234dc9fa6a..f90cafe26af1 100644
 -- 
 2.41.0
 
-From dcc493d84f202bbdf97eb48660179724f744c76d Mon Sep 17 00:00:00 2001
+From 098acb8fe7bb5cea142002f0c855cc5e3bd220e8 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Sun, 4 Jun 2023 19:07:31 +1200
-Subject: [PATCH v2 2/8] platform/x86: asus-wmi: add support for showing middle
+Subject: [PATCH 02/15] platform/x86: asus-wmi: add support for showing middle
  fan RPM
 
 Some newer ASUS ROG laptops now have a middle/center fan in addition
@@ -307,10 +338,10 @@ index f90cafe26af1..2c03bda7703f 100644
 -- 
 2.41.0
 
-From 3b638cb413bfa9f50433676fdc82bf63ef0fb3d9 Mon Sep 17 00:00:00 2001
+From a23870110a38146cc951435c9955f3484df7a0b5 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Sun, 4 Jun 2023 19:37:34 +1200
-Subject: [PATCH v2 3/8] platform/x86: asus-wmi: support middle fan custom
+Subject: [PATCH 03/15] platform/x86: asus-wmi: support middle fan custom
  curves
 
 Adds support for fan curves defined for the middle fan which
@@ -481,10 +512,10 @@ index 2c03bda7703f..329efc086993 100644
 -- 
 2.41.0
 
-From c43a477f701c2c97e13f1a2ee6e1304beeddbf56 Mon Sep 17 00:00:00 2001
+From 54101e21219d5fcda1cd2dc752be1f1335138d0d Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Sun, 4 Jun 2023 20:01:57 +1200
-Subject: [PATCH v2 4/8] platform/x86: asus-wmi: add WMI method to show if egpu
+Subject: [PATCH 04/15] platform/x86: asus-wmi: add WMI method to show if egpu
  connected
 
 Exposes the WMI method which tells if the eGPU is properly connected
@@ -595,10 +626,10 @@ index 329efc086993..2034648f8cdf 100644
 -- 
 2.41.0
 
-From ba1fcbaa4037e2523c40a7aaa0cab9d75bf75e10 Mon Sep 17 00:00:00 2001
+From b6c07d4c56c033ea46baa8519160e1e20ba4cba3 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Tue, 20 Jun 2023 12:26:51 +1200
-Subject: [PATCH v2 5/8] platform/x86: asus-wmi: don't allow eGPU switching if
+Subject: [PATCH 05/15] platform/x86: asus-wmi: don't allow eGPU switching if
  eGPU not connected
 
 Check the ASUS_WMI_DEVID_EGPU_CONNECTED method for eGPU connection
@@ -632,10 +663,10 @@ index 0c8a4a46b121..821addb284d7 100644
 -- 
 2.41.0
 
-From 391b0757f19890d67ec0ade558a255421588047e Mon Sep 17 00:00:00 2001
+From 5dacc507c4d14c70f167a38a1cfef82c75a1b113 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Tue, 20 Jun 2023 12:48:31 +1200
-Subject: [PATCH v2 6/8] platform/x86: asus-wmi: add safety checks to gpu
+Subject: [PATCH 06/15] platform/x86: asus-wmi: add safety checks to gpu
  switching
 
 Add safety checking to dgpu_disable, egpu_enable, gpu_mux_mode.
@@ -736,10 +767,10 @@ index 821addb284d7..602426a7fb41 100644
 -- 
 2.41.0
 
-From 7e181ab671dc4c63eb2b2df5cc50dd3218d9b37d Mon Sep 17 00:00:00 2001
+From 2a4ae00343f45138df9df345e74d91acf3ae5d30 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Sun, 4 Jun 2023 20:21:10 +1200
-Subject: [PATCH v2 7/8] platform/x86: asus-wmi: support setting mini-LED mode
+Subject: [PATCH 07/15] platform/x86: asus-wmi: support setting mini-LED mode
 
 Support changing the mini-LED mode on some of the newer ASUS laptops.
 
@@ -874,10 +905,10 @@ index 2034648f8cdf..ea80361ac6c7 100644
 -- 
 2.41.0
 
-From b297ff51a7a10ed07f176cc8ba8ea7a653c5b725 Mon Sep 17 00:00:00 2001
+From dc9ce2ef7dfadafbd5bc0a2d55ff76c28f6e4b87 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Tue, 6 Jun 2023 15:05:01 +1200
-Subject: [PATCH v2 8/8] platform/x86: asus-wmi: expose dGPU and CPU tunables
+Subject: [PATCH 08/15] platform/x86: asus-wmi: expose dGPU and CPU tunables
  for ROG
 
 Expose various CPU and dGPU tunables that are available on many ASUS
@@ -1317,10 +1348,10 @@ index ea80361ac6c7..16e99a1c37fc 100644
 -- 
 2.41.0
 
-From 43d8c3f0139b08cd3c0c31ed463d7ae57fcf552c Mon Sep 17 00:00:00 2001
+From 3e5c9979491f0d7d405e98728c111e12c93aefed Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Sun, 30 Apr 2023 10:56:34 +1200
-Subject: [PATCH v4 1/1] platform/x86: asus-wmi: add support for ASUS screenpad
+Subject: [PATCH 09/15] platform/x86: asus-wmi: add support for ASUS screenpad
 
 Add support for the WMI methods used to turn off and adjust the
 brightness of the secondary "screenpad" device found on some high-end
@@ -1336,7 +1367,7 @@ Signed-off-by: Luke D. Jones <luke@ljones.dev>
  3 files changed, 133 insertions(+)
 
 diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
-index 62cee13f5576..967c92ceb041 100644
+index d9a353081f91..d14d0ea9d65f 100644
 --- a/drivers/platform/x86/asus-wmi.c
 +++ b/drivers/platform/x86/asus-wmi.c
 @@ -25,6 +25,7 @@
@@ -1355,7 +1386,7 @@ index 62cee13f5576..967c92ceb041 100644
  	struct platform_device *platform_device;
  
  	struct led_classdev wlan_led;
-@@ -3839,6 +3841,123 @@ static int is_display_toggle(int code)
+@@ -3769,6 +3771,123 @@ static int is_display_toggle(int code)
  	return 0;
  }
  
@@ -1479,7 +1510,7 @@ index 62cee13f5576..967c92ceb041 100644
  /* Fn-lock ********************************************************************/
  
  static bool asus_wmi_has_fnlock_key(struct asus_wmi *asus)
-@@ -4504,6 +4623,12 @@ static int asus_wmi_add(struct platform_device *pdev)
+@@ -4424,6 +4543,12 @@ static int asus_wmi_add(struct platform_device *pdev)
  	} else if (asus->driver->quirks->wmi_backlight_set_devstate)
  		err = asus_wmi_set_devstate(ASUS_WMI_DEVID_BACKLIGHT, 2, NULL);
  
@@ -1492,7 +1523,7 @@ index 62cee13f5576..967c92ceb041 100644
  	if (asus_wmi_has_fnlock_key(asus)) {
  		asus->fnlock_locked = fnlock_default;
  		asus_wmi_fnlock_update(asus);
-@@ -4527,6 +4652,8 @@ static int asus_wmi_add(struct platform_device *pdev)
+@@ -4447,6 +4572,8 @@ static int asus_wmi_add(struct platform_device *pdev)
  	asus_wmi_backlight_exit(asus);
  fail_backlight:
  	asus_wmi_rfkill_exit(asus);
@@ -1501,7 +1532,7 @@ index 62cee13f5576..967c92ceb041 100644
  fail_rfkill:
  	asus_wmi_led_exit(asus);
  fail_leds:
-@@ -4553,6 +4680,7 @@ static int asus_wmi_remove(struct platform_device *device)
+@@ -4473,6 +4600,7 @@ static int asus_wmi_remove(struct platform_device *device)
  	asus = platform_get_drvdata(device);
  	wmi_remove_notify_handler(asus->driver->event_guid);
  	asus_wmi_backlight_exit(asus);
@@ -1522,7 +1553,7 @@ index a478ebfd34df..5fbdd0eafa02 100644
  
  	const char		*name;
 diff --git a/include/linux/platform_data/x86/asus-wmi.h b/include/linux/platform_data/x86/asus-wmi.h
-index d17ae2eb0f8d..61ba70b32846 100644
+index 16e99a1c37fc..63e630276499 100644
 --- a/include/linux/platform_data/x86/asus-wmi.h
 +++ b/include/linux/platform_data/x86/asus-wmi.h
 @@ -58,6 +58,10 @@
@@ -1539,10 +1570,10 @@ index d17ae2eb0f8d..61ba70b32846 100644
 -- 
 2.41.0
 
-From 3f62172395b381b53e76dd8bcb8f202f8bad3720 Mon Sep 17 00:00:00 2001
+From 6245df2816f6f2d99e21ae3eb6b0c64d4df1c298 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Fri, 30 Jun 2023 16:24:05 +1200
-Subject: [PATCH v2 1/5] ALSA: hda/realtek: Add quirk for ASUS ROG GX650P
+Subject: [PATCH 10/15] ALSA: hda/realtek: Add quirk for ASUS ROG GX650P
 
 Adds the required quirk to enable the Cirrus amp and correct pins
 on the ASUS ROG GV601V series which uses an I2C connected Cirrus amp.
@@ -1602,10 +1633,10 @@ index afe8253f9a4f..b41fdf22157c 100644
 -- 
 2.41.0
 
-From c0a696a80313e239f092dcda8c24f26c93eb9167 Mon Sep 17 00:00:00 2001
+From 49b44a6e2bcf5617052cf5215475db209641f1c9 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Fri, 30 Jun 2023 16:25:02 +1200
-Subject: [PATCH v2 2/5] ALSA: hda/realtek: Add quirk for ASUS ROG GA402X
+Subject: [PATCH 11/15] ALSA: hda/realtek: Add quirk for ASUS ROG GA402X
 
 Adds the required quirk to enable the Cirrus amp and correct pins
 on the ASUS ROG GA402X series which uses an I2C connected Cirrus amp.
@@ -1633,10 +1664,64 @@ index b41fdf22157c..1fae8e8b1234 100644
 -- 
 2.41.0
 
-From 64411d8f62ef78bb45167fb7f10f87c662148a7c Mon Sep 17 00:00:00 2001
+From a67d5c467f9648701e8e80b7465bc288d18bdd57 Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Tue, 4 Jul 2023 16:01:58 +1200
+Subject: [PATCH 12/15] ALSA: hda/realtek: Amend G634 quirk to enable rear
+ speakers
+
+Amends the last quirk for the G634 with 0x1caf subsys to enable the rear
+speakers via pincfg.
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ sound/pci/hda/patch_realtek.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index 1fae8e8b1234..50becdc86daa 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -7068,6 +7068,7 @@ enum {
+ 	ALC285_FIXUP_SPEAKER2_TO_DAC1,
+ 	ALC285_FIXUP_ASUS_SPEAKER2_TO_DAC1,
+ 	ALC285_FIXUP_ASUS_HEADSET_MIC,
++	ALC285_FIXUP_ASUS_SPI_REAR_SPEAKERS,
+ 	ALC285_FIXUP_ASUS_I2C_SPEAKER2_TO_DAC1,
+ 	ALC285_FIXUP_ASUS_I2C_HEADSET_MIC,
+ 	ALC280_FIXUP_HP_HEADSET_MIC,
+@@ -8060,6 +8061,15 @@ static const struct hda_fixup alc269_fixups[] = {
+ 		.chained = true,
+ 		.chain_id = ALC285_FIXUP_ASUS_SPEAKER2_TO_DAC1
+ 	},
++	[ALC285_FIXUP_ASUS_SPI_REAR_SPEAKERS] = {
++		.type = HDA_FIXUP_PINS,
++		.v.pins = (const struct hda_pintbl[]) {
++			{ 0x14, 0x90170120 },
++			{ }
++		},
++		.chained = true,
++		.chain_id = ALC285_FIXUP_ASUS_HEADSET_MIC
++	},
+ 	[ALC285_FIXUP_ASUS_I2C_SPEAKER2_TO_DAC1] = {
+ 		.type = HDA_FIXUP_FUNC,
+ 		.v.func = alc285_fixup_speaker2_to_dac1,
+@@ -9622,7 +9632,7 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
+ 	SND_PCI_QUIRK(0x1043, 0x1c23, "Asus X55U", ALC269_FIXUP_LIMIT_INT_MIC_BOOST),
+ 	SND_PCI_QUIRK(0x1043, 0x1c62, "ASUS GU603", ALC289_FIXUP_ASUS_GA401),
+ 	SND_PCI_QUIRK(0x1043, 0x1c92, "ASUS ROG Strix G15", ALC285_FIXUP_ASUS_G533Z_PINS),
+-	SND_PCI_QUIRK(0x1043, 0x1caf, "ASUS G634JYR/JZR", ALC285_FIXUP_ASUS_HEADSET_MIC),
++	SND_PCI_QUIRK(0x1043, 0x1caf, "ASUS G634JYR/JZR", ALC285_FIXUP_ASUS_SPI_REAR_SPEAKERS),
+ 	SND_PCI_QUIRK(0x1043, 0x1ccd, "ASUS X555UB", ALC256_FIXUP_ASUS_MIC),
+ 	SND_PCI_QUIRK(0x1043, 0x1d42, "ASUS Zephyrus G14 2022", ALC289_FIXUP_ASUS_GA401),
+ 	SND_PCI_QUIRK(0x1043, 0x1d4e, "ASUS TM420", ALC256_FIXUP_ASUS_HPE),
+-- 
+2.41.0
+
+From 8a047029b95af218469ec083490f5682c01852e0 Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Tue, 4 Jul 2023 16:06:46 +1200
-Subject: [PATCH v2 4/5] ALSA: hda/realtek: Add quirk for ASUS ROG G614Jx
+Subject: [PATCH 13/15] ALSA: hda/realtek: Add quirk for ASUS ROG G614Jx
 
 Adds the required quirk to enable the Cirrus amp and correct pins
 on the ASUS ROG G614J series which uses an SPI connected Cirrus amp.
@@ -1653,21 +1738,21 @@ diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
 index 50becdc86daa..ba3c113f0be1 100644
 --- a/sound/pci/hda/patch_realtek.c
 +++ b/sound/pci/hda/patch_realtek.c
-@@ -9573,6 +9573,7 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
+@@ -9632,6 +9632,7 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
  	SND_PCI_QUIRK(0x1043, 0x1c23, "Asus X55U", ALC269_FIXUP_LIMIT_INT_MIC_BOOST),
  	SND_PCI_QUIRK(0x1043, 0x1c62, "ASUS GU603", ALC289_FIXUP_ASUS_GA401),
  	SND_PCI_QUIRK(0x1043, 0x1c92, "ASUS ROG Strix G15", ALC285_FIXUP_ASUS_G533Z_PINS),
 +	SND_PCI_QUIRK(0x1043, 0x1c9f, "ASUS G614JI", ALC285_FIXUP_ASUS_HEADSET_MIC),
- 	SND_PCI_QUIRK(0x1043, 0x1caf, "ASUS G634JYR/JZR", ALC285_FIXUP_ASUS_HEADSET_MIC),
+ 	SND_PCI_QUIRK(0x1043, 0x1caf, "ASUS G634JYR/JZR", ALC285_FIXUP_ASUS_SPI_REAR_SPEAKERS),
  	SND_PCI_QUIRK(0x1043, 0x1ccd, "ASUS X555UB", ALC256_FIXUP_ASUS_MIC),
  	SND_PCI_QUIRK(0x1043, 0x1d42, "ASUS Zephyrus G14 2022", ALC289_FIXUP_ASUS_GA401),
 -- 
 2.41.0
 
-From fb720ee87adcf7ab507b46299652ebd8f0f04f12 Mon Sep 17 00:00:00 2001
+From 44d4dc37d2311e4bc0cf5be59925391c3b6b2b9c Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Tue, 4 Jul 2023 16:34:23 +1200
-Subject: [PATCH v2 5/5] Fixes: 31278997add6 (ALSA: hda/realtek - Add headset
+Subject: [PATCH 14/15] Fixes: 31278997add6 (ALSA: hda/realtek - Add headset
  quirk for Dell DT)
 
 Remove an erroneous whitespace.
@@ -1690,6 +1775,207 @@ index ba3c113f0be1..1547c40dc7e9 100644
  	else
  		alc_fixup_headset_mode(codec, fix, action);
  }
+-- 
+2.41.0
+
+From 0e153d43f60bfcfb24d004781339fdb49fba94ac Mon Sep 17 00:00:00 2001
+From: "Luke D. Jones" <luke@ljones.dev>
+Date: Sun, 23 Jul 2023 21:29:11 +1200
+Subject: [PATCH] platform/x86: asus-wmi: Fix and cleanup custom fan curve
+ functions
+
+After the addition of the mid fan custom curve functionality various
+incorrect behaviour was uncovered. This commit fixes these areas.
+
+- Ensure mid fan attributes actually use the correct fan ID
+- Correction to a bit mask for selecting the correct fan data
+- Refactor the curve show/store functions to be cleaner and and
+  match each others layout
+
+Signed-off-by: Luke D. Jones <luke@ljones.dev>
+---
+ drivers/platform/x86/asus-wmi.c | 78 ++++++++++++++++-----------------
+ 1 file changed, 38 insertions(+), 40 deletions(-)
+
+diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
+index d14d0ea9d65f..14ee43c61eb2 100644
+--- a/drivers/platform/x86/asus-wmi.c
++++ b/drivers/platform/x86/asus-wmi.c
+@@ -2902,9 +2902,8 @@ static int fan_curve_get_factory_default(struct asus_wmi *asus, u32 fan_dev)
+ {
+ 	struct fan_curve_data *curves;
+ 	u8 buf[FAN_CURVE_BUF_LEN];
+-	int fan_idx = 0;
++	int err, fan_idx;
+ 	u8 mode = 0;
+-	int err;
+ 
+ 	if (asus->throttle_thermal_policy_available)
+ 		mode = asus->throttle_thermal_policy_mode;
+@@ -2914,13 +2913,6 @@ static int fan_curve_get_factory_default(struct asus_wmi *asus, u32 fan_dev)
+ 	else if (mode == 1)
+ 		mode = 2;
+ 
+-	if (fan_dev == ASUS_WMI_DEVID_GPU_FAN_CURVE)
+-		fan_idx = FAN_CURVE_DEV_GPU;
+-
+-	if (fan_dev == ASUS_WMI_DEVID_MID_FAN_CURVE)
+-		fan_idx = FAN_CURVE_DEV_MID;
+-
+-	curves = &asus->custom_fan_curves[fan_idx];
+ 	err = asus_wmi_evaluate_method_buf(asus->dsts_id, fan_dev, mode, buf,
+ 					   FAN_CURVE_BUF_LEN);
+ 	if (err) {
+@@ -2928,9 +2920,17 @@ static int fan_curve_get_factory_default(struct asus_wmi *asus, u32 fan_dev)
+ 		return err;
+ 	}
+ 
+-	fan_curve_copy_from_buf(curves, buf);
++	fan_idx = FAN_CURVE_DEV_CPU;
++	if (fan_dev == ASUS_WMI_DEVID_GPU_FAN_CURVE)
++		fan_idx = FAN_CURVE_DEV_GPU;
++
++	if (fan_dev == ASUS_WMI_DEVID_MID_FAN_CURVE)
++		fan_idx = FAN_CURVE_DEV_MID;
++
++	curves = &asus->custom_fan_curves[fan_idx];
+ 	curves->device_id = fan_dev;
+ 
++	fan_curve_copy_from_buf(curves, buf);
+ 	return 0;
+ }
+ 
+@@ -2960,7 +2960,7 @@ static struct fan_curve_data *fan_curve_attr_select(struct asus_wmi *asus,
+ {
+ 	int index = to_sensor_dev_attr(attr)->index;
+ 
+-	return &asus->custom_fan_curves[index & FAN_CURVE_DEV_GPU];
++	return &asus->custom_fan_curves[index];
+ }
+ 
+ /* Determine which fan the attribute is for if SENSOR_ATTR_2 */
+@@ -2969,7 +2969,7 @@ static struct fan_curve_data *fan_curve_attr_2_select(struct asus_wmi *asus,
+ {
+ 	int nr = to_sensor_dev_attr_2(attr)->nr;
+ 
+-	return &asus->custom_fan_curves[nr & FAN_CURVE_DEV_GPU];
++	return &asus->custom_fan_curves[nr & ~FAN_CURVE_PWM_MASK];
+ }
+ 
+ static ssize_t fan_curve_show(struct device *dev,
+@@ -2978,13 +2978,13 @@ static ssize_t fan_curve_show(struct device *dev,
+ 	struct sensor_device_attribute_2 *dev_attr = to_sensor_dev_attr_2(attr);
+ 	struct asus_wmi *asus = dev_get_drvdata(dev);
+ 	struct fan_curve_data *data;
+-	int value, index, nr;
++	int value, pwm, index;
+ 
+ 	data = fan_curve_attr_2_select(asus, attr);
++	pwm = dev_attr->nr & FAN_CURVE_PWM_MASK;
+ 	index = dev_attr->index;
+-	nr = dev_attr->nr;
+ 
+-	if (nr & FAN_CURVE_PWM_MASK)
++	if (pwm)
+ 		value = data->percents[index];
+ 	else
+ 		value = data->temps[index];
+@@ -3027,23 +3027,21 @@ static ssize_t fan_curve_store(struct device *dev,
+ 	struct sensor_device_attribute_2 *dev_attr = to_sensor_dev_attr_2(attr);
+ 	struct asus_wmi *asus = dev_get_drvdata(dev);
+ 	struct fan_curve_data *data;
++	int err, pwm, index;
+ 	u8 value;
+-	int err;
+-
+-	int pwm = dev_attr->nr & FAN_CURVE_PWM_MASK;
+-	int index = dev_attr->index;
+ 
+ 	data = fan_curve_attr_2_select(asus, attr);
++	pwm = dev_attr->nr & FAN_CURVE_PWM_MASK;
++	index = dev_attr->index;
+ 
+ 	err = kstrtou8(buf, 10, &value);
+ 	if (err < 0)
+ 		return err;
+ 
+-	if (pwm) {
++	if (pwm)
+ 		data->percents[index] = value;
+-	} else {
++	else
+ 		data->temps[index] = value;
+-	}
+ 
+ 	/*
+ 	 * Mark as disabled so the user has to explicitly enable to apply a
+@@ -3156,7 +3154,7 @@ static SENSOR_DEVICE_ATTR_2_RW(pwm1_auto_point8_temp, fan_curve,
+ 			       FAN_CURVE_DEV_CPU, 7);
+ 
+ static SENSOR_DEVICE_ATTR_2_RW(pwm1_auto_point1_pwm, fan_curve,
+-			       FAN_CURVE_DEV_CPU | FAN_CURVE_PWM_MASK, 0);
++				FAN_CURVE_DEV_CPU | FAN_CURVE_PWM_MASK, 0);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm1_auto_point2_pwm, fan_curve,
+ 			       FAN_CURVE_DEV_CPU | FAN_CURVE_PWM_MASK, 1);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm1_auto_point3_pwm, fan_curve,
+@@ -3209,40 +3207,40 @@ static SENSOR_DEVICE_ATTR_2_RW(pwm2_auto_point8_pwm, fan_curve,
+ 			       FAN_CURVE_DEV_GPU | FAN_CURVE_PWM_MASK, 7);
+ 
+ /* MID */
+-static SENSOR_DEVICE_ATTR_RW(pwm3_enable, fan_curve_enable, FAN_CURVE_DEV_GPU);
++static SENSOR_DEVICE_ATTR_RW(pwm3_enable, fan_curve_enable, FAN_CURVE_DEV_MID);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point1_temp, fan_curve,
+-			       FAN_CURVE_DEV_GPU, 0);
++			       FAN_CURVE_DEV_MID, 0);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point2_temp, fan_curve,
+-			       FAN_CURVE_DEV_GPU, 1);
++			       FAN_CURVE_DEV_MID, 1);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point3_temp, fan_curve,
+-			       FAN_CURVE_DEV_GPU, 2);
++			       FAN_CURVE_DEV_MID, 2);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point4_temp, fan_curve,
+-			       FAN_CURVE_DEV_GPU, 3);
++			       FAN_CURVE_DEV_MID, 3);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point5_temp, fan_curve,
+-			       FAN_CURVE_DEV_GPU, 4);
++			       FAN_CURVE_DEV_MID, 4);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point6_temp, fan_curve,
+-			       FAN_CURVE_DEV_GPU, 5);
++			       FAN_CURVE_DEV_MID, 5);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point7_temp, fan_curve,
+-			       FAN_CURVE_DEV_GPU, 6);
++			       FAN_CURVE_DEV_MID, 6);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point8_temp, fan_curve,
+-			       FAN_CURVE_DEV_GPU, 7);
++			       FAN_CURVE_DEV_MID, 7);
+ 
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point1_pwm, fan_curve,
+-			       FAN_CURVE_DEV_GPU | FAN_CURVE_PWM_MASK, 0);
++			       FAN_CURVE_DEV_MID | FAN_CURVE_PWM_MASK, 0);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point2_pwm, fan_curve,
+-			       FAN_CURVE_DEV_GPU | FAN_CURVE_PWM_MASK, 1);
++			       FAN_CURVE_DEV_MID | FAN_CURVE_PWM_MASK, 1);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point3_pwm, fan_curve,
+-			       FAN_CURVE_DEV_GPU | FAN_CURVE_PWM_MASK, 2);
++			       FAN_CURVE_DEV_MID | FAN_CURVE_PWM_MASK, 2);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point4_pwm, fan_curve,
+-			       FAN_CURVE_DEV_GPU | FAN_CURVE_PWM_MASK, 3);
++			       FAN_CURVE_DEV_MID | FAN_CURVE_PWM_MASK, 3);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point5_pwm, fan_curve,
+-			       FAN_CURVE_DEV_GPU | FAN_CURVE_PWM_MASK, 4);
++			       FAN_CURVE_DEV_MID | FAN_CURVE_PWM_MASK, 4);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point6_pwm, fan_curve,
+-			       FAN_CURVE_DEV_GPU | FAN_CURVE_PWM_MASK, 5);
++			       FAN_CURVE_DEV_MID | FAN_CURVE_PWM_MASK, 5);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point7_pwm, fan_curve,
+-			       FAN_CURVE_DEV_GPU | FAN_CURVE_PWM_MASK, 6);
++			       FAN_CURVE_DEV_MID | FAN_CURVE_PWM_MASK, 6);
+ static SENSOR_DEVICE_ATTR_2_RW(pwm3_auto_point8_pwm, fan_curve,
+-			       FAN_CURVE_DEV_GPU | FAN_CURVE_PWM_MASK, 7);
++			       FAN_CURVE_DEV_MID | FAN_CURVE_PWM_MASK, 7);
+ 
+ static struct attribute *asus_fan_curve_attr[] = {
+ 	/* CPU */
 -- 
 2.41.0
 
