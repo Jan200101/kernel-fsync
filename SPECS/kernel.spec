@@ -171,18 +171,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.4.9
-%define specversion 6.4.9
+%define specrpmversion 6.4.10
+%define specversion 6.4.10
 %define patchversion 6.4
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.4.9
+%define tarfile_release 6.4.10
 # This is needed to do merge window version magic
 %define patchlevel 4
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.4.9
+%define kabiversion 6.4.10
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -3816,8 +3816,19 @@ fi\
 #
 #
 %changelog
-* Sun Aug 13 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.4.9-200.1
-- kernel-fsync v6.4.9
+* Sun Aug 13 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.4.10-200.1
+- kernel-fsync v6.4.10
+
+* Fri Aug 11 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.4.10-0]
+- More security bug fixes for 6.4.10 (Justin M. Forbes)
+- KVM: SEV: remove ghcb variable declarations (Paolo Bonzini)
+- KVM: SEV: only access GHCB fields once (Paolo Bonzini)
+- KVM: SEV: snapshot the GHCB before accessing it (Paolo Bonzini)
+- Add another bug fixed by the 6.4.10 release (Justin M. Forbes)
+- drm/amd/display: Fix a regression on Polaris cards (Mario Limonciello)
+- redhat/configs: Remove `CONFIG_HZ_1000 is not set` for aarch64 (Enric Balletbo i Serra)
+- Add new CVEs fixed in 6.4.9 to BugsFixed (Justin M. Forbes)
+- Linux v6.4.10
 
 * Tue Aug 08 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.4.9-0]
 - Config updates for 6.4.9 (Justin M. Forbes)
