@@ -171,18 +171,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.4.12
-%define specversion 6.4.12
+%define specrpmversion 6.4.13
+%define specversion 6.4.13
 %define patchversion 6.4
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.4.12
+%define tarfile_release 6.4.13
 # This is needed to do merge window version magic
 %define patchlevel 4
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.4.12
+%define kabiversion 6.4.13
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -3893,8 +3893,12 @@ fi\
 #
 #
 %changelog
-* Thu Aug 24 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.4.12-201.fsync
-- kernel-fsync v6.4.12
+* Sat Sep 02 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.4.13-201.fsync
+- kernel-fsync v6.4.13
+
+* Wed Aug 30 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.4.13-0]
+- Add CVE-2023-4563 bugs to BugsFixed (Justin M. Forbes)
+- Linux v6.4.13
 
 * Wed Aug 23 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.4.12-0]
 - ASoC: SOF: intel: hda: Clean up link DMA for IPC3 during stop (Ranjani Sridharan)
