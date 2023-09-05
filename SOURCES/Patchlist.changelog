@@ -1,3 +1,6 @@
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/96a82a41ac7aafd328375d3391873f0c3b2cb7e8
+ 96a82a41ac7aafd328375d3391873f0c3b2cb7e8 erofs: ensure that the post-EOF tails are all zeroed
+
 "https://gitlab.com/cki-project/kernel-ark/-/commit"/3646d21c389ec7834fc09907787bf597342b7678
  3646d21c389ec7834fc09907787bf597342b7678 ASoC: SOF: intel: hda: Clean up link DMA for IPC3 during stop
 

@@ -22,6 +22,7 @@
  drivers/iommu/iommu.c                              |  22 ++++
  drivers/pci/quirks.c                               |  24 ++++
  drivers/usb/core/hub.c                             |   7 ++
+ fs/erofs/zdata.c                                   |   2 +
  include/linux/efi.h                                |  22 ++--
  include/linux/lsm_hook_defs.h                      |   2 +
  include/linux/module.h                             |   1 +
@@ -37,10 +38,10 @@
  security/lockdown/Kconfig                          |  13 +++
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |  12 ++
- 39 files changed, 518 insertions(+), 191 deletions(-)
+ 40 files changed, 520 insertions(+), 191 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 900e515b87cf..5da008e699ef 100644
+index 97611fe99c8f..d10c062e632d 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -1104,6 +1105,19 @@ index 97a0f8faea6e..d837548d2024 100644
  	/* Lock the device, then check to see if we were
  	 * disconnected while waiting for the lock to succeed. */
  	usb_lock_device(hdev);
+diff --git a/fs/erofs/zdata.c b/fs/erofs/zdata.c
+index 470988bb7867..9a7c8bb0590f 100644
+--- a/fs/erofs/zdata.c
++++ b/fs/erofs/zdata.c
+@@ -993,6 +993,8 @@ static int z_erofs_do_read_page(struct z_erofs_decompress_frontend *fe,
+ 	cur = end - min_t(erofs_off_t, offset + end - map->m_la, end);
+ 	if (!(map->m_flags & EROFS_MAP_MAPPED)) {
+ 		zero_user_segment(page, cur, end);
++		++spiltted;
++		tight = false;
+ 		goto next_part;
+ 	}
+ 	if (map->m_flags & EROFS_MAP_FRAGMENT) {
 diff --git a/include/linux/efi.h b/include/linux/efi.h
 index 571d1a6e1b74..8f786e38de3f 100644
 --- a/include/linux/efi.h
@@ -1250,7 +1264,7 @@ index 8103ffd217e9..00bc9fa0828b 100644
  	uprobe_dup_mmap(oldmm, mm);
  	/*
 diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 4e2cf784cf8c..66782bc8bc65 100644
+index f1facc898a64..e1b9c2f1a3bd 100644
 --- a/kernel/module/main.c
 +++ b/kernel/module/main.c
 @@ -528,6 +528,7 @@ static struct module_attribute modinfo_##field = {                    \
