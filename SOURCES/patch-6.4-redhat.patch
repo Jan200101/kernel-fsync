@@ -12,6 +12,7 @@
  drivers/ata/libahci.c                              |  18 +++
  drivers/char/ipmi/ipmi_dmi.c                       |  15 +++
  drivers/char/ipmi/ipmi_msghandler.c                |  16 ++-
+ drivers/char/tpm/tpm_crb.c                         |  33 ++----
  drivers/firmware/efi/Makefile                      |   1 +
  drivers/firmware/efi/efi.c                         | 124 +++++++++++++++------
  drivers/firmware/efi/secureboot.c                  |  38 +++++++
@@ -22,7 +23,6 @@
  drivers/iommu/iommu.c                              |  22 ++++
  drivers/pci/quirks.c                               |  24 ++++
  drivers/usb/core/hub.c                             |   7 ++
- fs/erofs/zdata.c                                   |   2 +
  include/linux/efi.h                                |  22 ++--
  include/linux/lsm_hook_defs.h                      |   2 +
  include/linux/module.h                             |   1 +
@@ -38,10 +38,10 @@
  security/lockdown/Kconfig                          |  13 +++
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |  12 ++
- 40 files changed, 520 insertions(+), 191 deletions(-)
+ 40 files changed, 526 insertions(+), 216 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 97611fe99c8f..d10c062e632d 100644
+index 212d1c7e4a1a..85f5a8b70878 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -430,6 +430,57 @@ index 186f1fee7534..93e3a76596ff 100644
  	mutex_lock(&ipmi_interfaces_mutex);
  	rv = ipmi_register_driver();
  	mutex_unlock(&ipmi_interfaces_mutex);
+diff --git a/drivers/char/tpm/tpm_crb.c b/drivers/char/tpm/tpm_crb.c
+index 9eb1a1859012..a5dbebb1acfc 100644
+--- a/drivers/char/tpm/tpm_crb.c
++++ b/drivers/char/tpm/tpm_crb.c
+@@ -463,28 +463,6 @@ static bool crb_req_canceled(struct tpm_chip *chip, u8 status)
+ 	return (cancel & CRB_CANCEL_INVOKE) == CRB_CANCEL_INVOKE;
+ }
+
+-static int crb_check_flags(struct tpm_chip *chip)
+-{
+-	u32 val;
+-	int ret;
+-
+-	ret = crb_request_locality(chip, 0);
+-	if (ret)
+-		return ret;
+-
+-	ret = tpm2_get_tpm_pt(chip, TPM2_PT_MANUFACTURER, &val, NULL);
+-	if (ret)
+-		goto release;
+-
+-	if (val == 0x414D4400U /* AMD */)
+-		chip->flags |= TPM_CHIP_FLAG_HWRNG_DISABLED;
+-
+-release:
+-	crb_relinquish_locality(chip, 0);
+-
+-	return ret;
+-}
+-
+ static const struct tpm_class_ops tpm_crb = {
+ 	.flags = TPM_OPS_AUTO_STARTUP,
+ 	.status = crb_status,
+@@ -826,9 +804,14 @@ static int crb_acpi_add(struct acpi_device *device)
+ 	if (rc)
+ 		goto out;
+
+-	rc = crb_check_flags(chip);
+-	if (rc)
+-		goto out;
++#ifdef CONFIG_X86
++	/* A quirk for https://www.amd.com/en/support/kb/faq/pa-410 */
++	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
++	    priv->sm != ACPI_TPM2_COMMAND_BUFFER_WITH_PLUTON) {
++		dev_info(dev, "Disabling hwrng\n");
++		chip->flags |= TPM_CHIP_FLAG_HWRNG_DISABLED;
++	}
++#endif /* CONFIG_X86 */
+
+ 	rc = tpm_chip_register(chip);
+
 diff --git a/drivers/firmware/efi/Makefile b/drivers/firmware/efi/Makefile
 index b51f2a4c821e..be31d32aba53 100644
 --- a/drivers/firmware/efi/Makefile
@@ -1105,19 +1156,6 @@ index 97a0f8faea6e..d837548d2024 100644
  	/* Lock the device, then check to see if we were
  	 * disconnected while waiting for the lock to succeed. */
  	usb_lock_device(hdev);
-diff --git a/fs/erofs/zdata.c b/fs/erofs/zdata.c
-index 470988bb7867..9a7c8bb0590f 100644
---- a/fs/erofs/zdata.c
-+++ b/fs/erofs/zdata.c
-@@ -993,6 +993,8 @@ static int z_erofs_do_read_page(struct z_erofs_decompress_frontend *fe,
- 	cur = end - min_t(erofs_off_t, offset + end - map->m_la, end);
- 	if (!(map->m_flags & EROFS_MAP_MAPPED)) {
- 		zero_user_segment(page, cur, end);
-+		++spiltted;
-+		tight = false;
- 		goto next_part;
- 	}
- 	if (map->m_flags & EROFS_MAP_FRAGMENT) {
 diff --git a/include/linux/efi.h b/include/linux/efi.h
 index 571d1a6e1b74..8f786e38de3f 100644
 --- a/include/linux/efi.h
@@ -1264,7 +1302,7 @@ index 8103ffd217e9..00bc9fa0828b 100644
  	uprobe_dup_mmap(oldmm, mm);
  	/*
 diff --git a/kernel/module/main.c b/kernel/module/main.c
-index f1facc898a64..e1b9c2f1a3bd 100644
+index a04e94c9f8a4..f5bd4217cd6f 100644
 --- a/kernel/module/main.c
 +++ b/kernel/module/main.c
 @@ -528,6 +528,7 @@ static struct module_attribute modinfo_##field = {                    \

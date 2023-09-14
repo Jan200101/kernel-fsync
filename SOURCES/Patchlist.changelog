@@ -1,3 +1,6 @@
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/f1d87b42e9ac0ca6233ba1906ddcec6407510018
+ f1d87b42e9ac0ca6233ba1906ddcec6407510018 tpm: Enable hwrng only for Pluton on AMD CPUs
+
 "https://gitlab.com/cki-project/kernel-ark/-/commit"/96a82a41ac7aafd328375d3391873f0c3b2cb7e8
  96a82a41ac7aafd328375d3391873f0c3b2cb7e8 erofs: ensure that the post-EOF tails are all zeroed
 
