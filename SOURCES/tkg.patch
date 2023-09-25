@@ -30,7 +30,7 @@ diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
 index f788cd61df21..2bfbb4213707 100644
 --- a/kernel/sched/rt.c
 +++ b/kernel/sched/rt.c
-@@ -15,9 +15,9 @@ __read_mostly int scheduler_running;
+@@ -20,9 +20,9 @@
  
  /*
   * part of the period that we allow rt tasks to run in us.
@@ -41,7 +41,7 @@ index f788cd61df21..2bfbb4213707 100644
 +int sysctl_sched_rt_runtime = 980000;
  
  #ifdef CONFIG_SYSCTL
- static int sysctl_sched_rr_timeslice = (MSEC_PER_SEC / HZ) * RR_TIMESLICE;
+ static int sysctl_sched_rr_timeslice = (MSEC_PER_SEC * RR_TIMESLICE) / HZ;
 -- 
 2.28.0
 
@@ -484,16 +484,17 @@ diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/adm
 index fb95fad81c79..3e92fee81e33 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -1857,6 +1857,9 @@
+@@ -2133,6 +2133,9 @@
  			disable
  			  Do not enable intel_pstate as the default
  			  scaling driver for the supported processors
 +			enable
 +			  Enable intel_pstate in-case "disable" was passed
 +			  previously in the kernel boot parameters
- 			passive
- 			  Use intel_pstate as a scaling driver, but configure it
- 			  to work with generic cpufreq governors (instead of
+                         active
+                           Use intel_pstate driver to bypass the scaling
+                           governors layer of cpufreq and provides it own
+
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
 index 36a469150ff9..aee891c9b78a 100644
 --- a/drivers/cpufreq/intel_pstate.c
