@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.5.4
-%define specversion 6.5.4
+%define specrpmversion 6.5.5
+%define specversion 6.5.5
 %define patchversion 6.5
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.5.4
+%define tarfile_release 6.5.5
 # This is needed to do merge window version magic
 %define patchlevel 5
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.5.4
+%define kabiversion 6.5.5
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1551,7 +1551,7 @@ Provides: installonlypkg(kernel)\
 Provides: kernel-%{?1:%{1}-}uname-r = %{KVERREL}%{uname_suffix %{?1:+%{1}}}\
 Requires: kernel%{?1:-%{1}}-modules-core-uname-r = %{KVERREL}%{uname_suffix %{?1:+%{1}}}\
 Requires(pre): %{kernel_prereq}\
-Requires(pre): systemd >= 254-1\
+Requires(pre): systemd\
 %endif\
 %endif\
 %if %{with_gcov}\
@@ -3419,7 +3419,7 @@ fi\
 %endif
 
 %if %{with_debug} && %{with_arm64_16k}
-%kernel_variant_preun 16k-debug
+%kernel_variant_preun -v 16k-debug
 %kernel_variant_post -v 16k-debug
 %endif
 
@@ -3779,8 +3779,19 @@ fi\
 #
 #
 %changelog
-* Mon Sep 25 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.5.4-201.fsync
-- kernel-fsync v6.5.4
+* Sun Oct 01 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.5.5-201.fsync
+- kernel-fsync v6.5.5
+
+* Sat Sep 23 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.5.5-0]
+- iommu/apple-dart: Handle DMA_FQ domains in attach_dev() (Hector Martin)
+- Note fix for atomic locking in BugsFixed (Justin M. Forbes)
+- locking/atomic: scripts: fix fallback ifdeffery (Mark Rutland)
+- redhat: spec: Fix typo for kernel_variant_preun for 16k-debug flavor (Neal Gompa)
+- Fix installreq for UKI (Justin M. Forbes)
+- Add btrfs bug to BugsFixed for 6.5.5 (Justin M. Forbes)
+- btrfs: adjust overcommit logic when very close to full (Josef Bacik)
+- btrfs: properly report 0 avail for very full file systems (Josef Bacik)
+- Linux v6.5.5
 
 * Tue Sep 19 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.5.4-0]
 - Add F38 and F37 as release targets (Justin M. Forbes)
