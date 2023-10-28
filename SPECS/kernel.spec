@@ -163,13 +163,13 @@ Summary: The Linux kernel
 %define specrpmversion 6.5.9
 %define specversion 6.5.9
 %define patchversion 6.5
-%define pkgrelease 200
+%define pkgrelease 300
 %define kversion 6
 %define tarfile_release 6.5.9
 # This is needed to do merge window version magic
 %define patchlevel 5
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 301%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.5.9
 
@@ -3779,7 +3779,7 @@ fi\
 #
 #
 %changelog
-* Sat Oct 28 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.5.9-201.fsync
+* Sat Oct 28 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.5.9-301.fsync
 - kernel-fsync v6.5.9
 
 * Wed Oct 25 2023 Augusto Caringi <acaringi@redhat.com> [6.5.9-0]
