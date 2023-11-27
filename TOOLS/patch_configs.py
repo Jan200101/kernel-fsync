@@ -159,6 +159,10 @@ for file in CONFIG_FILES:
         print(f"{file} does not have the right number of segments")
         exit(1)
 
+    if namesegs[0] != "kernel":
+        print(f"{file} does not appear to be a kernel config")
+        exit(1)
+
 for file in CONFIG_FILES:
     filename = os.path.basename(file)
     print(f"Processing {filename}...")
