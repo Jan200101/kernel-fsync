@@ -17,6 +17,7 @@ GENERIC_PATCHES = [
     ["FB_EFI", UNSET, ENABLE],
     ["FB_VESA", UNSET, ENABLE],
     ["ACPI_EC_DEBUGFS", UNSET, MODULE],
+    ["WINESYNC", None, ENABLE],
 
     # device specific config
     # Microsoft Surface
@@ -43,6 +44,7 @@ ARCH_PATCHES = {
         ["USB_DWC3_DUAL_ROLE", None, ENABLE],
         ["USB_DWC3_PCI", None, MODULE],
         ["USB_DWC3_HAPS", None, MODULE],
+        ["USB_DWC3_HOST", ENABLE, UNSET, "fedora"],
         ["USB_DWC2", None, MODULE],
         ["USB_DWC2_DUAL_ROLE", None, ENABLE],
         ["USB_DWC2_PCI", None, MODULE],
@@ -100,7 +102,6 @@ def apply_patches(data: str, patches, flags = None) -> str:
         u = f"# {c} "
 
         if len(val) == 3 and val[2] not in flags:
-            print(f"    Skipping {name}")
             continue
 
         if any(x in data for x in [s, u]):
@@ -173,6 +174,8 @@ for file in CONFIG_FILES:
     arch = namesegs.pop(0)
     flavor = namesegs.pop(-1)
     flags = namesegs
+
+    flags.append(flavor)
     if "debug" not in flags:
         flags.append("release")
 
