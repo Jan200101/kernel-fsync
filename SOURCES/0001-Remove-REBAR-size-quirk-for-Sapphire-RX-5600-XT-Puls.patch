@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jan200101 <sentrycraft123@gmail.com>
+Date: Fri, 1 Dec 2023 20:31:09 +0100
+Subject: [PATCH] Remove REBAR size quirk for Sapphire RX 5600 XT Pulse
+
+This partially reverts commit 907830b0fc9e374d00f3c83de5e426157b482c01.
+
+Signed-off-by: Jan200101 <sentrycraft123@gmail.com>
+---
+ drivers/pci/pci.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 55bc3576a985..aca636182525 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -3755,11 +3755,6 @@ u32 pci_rebar_get_possible_sizes(struct pci_dev *pdev, int bar)
+ 	pci_read_config_dword(pdev, pos + PCI_REBAR_CAP, &cap);
+ 	cap = FIELD_GET(PCI_REBAR_CAP_SIZES, cap);
+ 
+-	/* Sapphire RX 5600 XT Pulse has an invalid cap dword for BAR 0 */
+-	if (pdev->vendor == PCI_VENDOR_ID_ATI && pdev->device == 0x731f &&
+-	    bar == 0 && cap == 0x700)
+-		return 0x3f00;
+-
+ 	return cap;
+ }
+ EXPORT_SYMBOL(pci_rebar_get_possible_sizes);

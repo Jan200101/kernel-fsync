@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.6.2
-%define specversion 6.6.2
+%define specrpmversion 6.6.3
+%define specversion 6.6.3
 %define patchversion 6.6
-%define pkgrelease 201
+%define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.6.2
+%define tarfile_release 6.6.3
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.6.2
+%define kabiversion 6.6.3
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -984,7 +984,6 @@ Patch200: tkg.patch
 Patch202: fsync.patch
 Patch203: OpenRGB.patch
 Patch206: amdgpu-si-cik-default.patch
-Patch207: acso.patch
 Patch208: winesync.patch
 
 # device specific patches
@@ -992,23 +991,43 @@ Patch300: linux-surface.patch
 Patch301: steam-deck.patch
 Patch302: asus-linux.patch
 Patch303: lenovo-legion-laptop.patch
-Patch306: rog-ally-side-keys-fix.patch
-Patch308: rog-ally-alsa.patch
+#  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
+Patch308: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
+Patch309: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
+# ROG Ally
+Patch315: rog-ally-audio-fix.patch
+Patch316: 0001-hid-asus-nero-patches-rogue.patch
+Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
+Patch318: v10-0001-HID-asus-fix-more-n-key-report-descriptors-if-n-.patch
+Patch319: v10-0002-HID-asus-make-asus_kbd_init-generic-remove-rog_n.patch
+Patch320: v10-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
+Patch321: v10-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
+Patch322: 0001-add-acpi_call.patch
+Patch323: rog-ally-bmc150.patch
+Patch324: uinput.patch
+Patch325: v2-0001-platform-x86-asus-wmi-disable-USB0-hub-on-ROG-All.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
 Patch407: 0001-amd-hdr.patch
 
+# steamdeck oled patches
+Patch310: steamdeck-oled-wifi.patch
+Patch311: steamdeck-oled-bt.patch
+Patch312: steamdeck-oled-audio.patch
+Patch314: steamdeck-oled-hw-quirks.patch
+
 # temporary patches
-Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
+Patch401: 0001-Remove-REBAR-size-quirk-for-Sapphire-RX-5600-XT-Puls.patch
 Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
 Patch408: 0001-acpi-proc-idle-skip-dummy-wait.patch
-#  async flipping on PRIME systems can introduce problems
-Patch409: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
-Patch410: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
 # Fixes the steam deck not coming back from hibernation
 Patch411: 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
 # Allows corectl to work out of the box
 Patch412: 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
+# steam deck: https://gitlab.com/evlaV/linux-integration/-/commit/d6935e6d62b35ec14d2187c2cfdc19934d66db6d
+Patch415: 0001-NOT-FOR-UPSTREAM-PM-suspend-Disable-s2idle-on-Steam-.patch
+# amdgpu bug fix: https://gitlab.freedesktop.org/drm/amd/-/issues/2733
+Patch416: amdgpu-bug-fix.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -1772,7 +1791,6 @@ ApplyOptionalPatch tkg.patch
 ApplyOptionalPatch fsync.patch
 ApplyOptionalPatch OpenRGB.patch
 ApplyOptionalPatch amdgpu-si-cik-default.patch
-ApplyOptionalPatch acso.patch
 ApplyOptionalPatch winesync.patch
 
 # device specific patches
@@ -1780,23 +1798,43 @@ ApplyOptionalPatch linux-surface.patch
 ApplyOptionalPatch steam-deck.patch
 ApplyOptionalPatch asus-linux.patch
 ApplyOptionalPatch lenovo-legion-laptop.patch
-ApplyOptionalPatch rog-ally-side-keys-fix.patch
-ApplyOptionalPatch rog-ally-alsa.patch
+#  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
+ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
+ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
+# ROG Ally
+ApplyOptionalPatch rog-ally-audio-fix.patch
+ApplyOptionalPatch 0001-hid-asus-nero-patches-rogue.patch
+ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
+ApplyOptionalPatch v10-0001-HID-asus-fix-more-n-key-report-descriptors-if-n-.patch
+ApplyOptionalPatch v10-0002-HID-asus-make-asus_kbd_init-generic-remove-rog_n.patch
+ApplyOptionalPatch v10-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
+#ApplyOptionalPatch v10-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
+ApplyOptionalPatch 0001-add-acpi_call.patch
+ApplyOptionalPatch rog-ally-bmc150.patch
+ApplyOptionalPatch uinput.patch
+ApplyOptionalPatch v2-0001-platform-x86-asus-wmi-disable-USB0-hub-on-ROG-All.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
 ApplyOptionalPatch 0001-amd-hdr.patch
 
-# temporary patche
-ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
+# steamdeck oled patches
+ApplyOptionalPatch steamdeck-oled-wifi.patch
+ApplyOptionalPatch steamdeck-oled-bt.patch
+ApplyOptionalPatch steamdeck-oled-audio.patch
+ApplyOptionalPatch steamdeck-oled-hw-quirks.patch
+
+# temporary patches
+ApplyOptionalPatch 0001-Remove-REBAR-size-quirk-for-Sapphire-RX-5600-XT-Puls.patch
 ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
 ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
-#  async flipping on PRIME systems can introduce problems
-ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
-ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
 # Fixes the steam deck not coming back from hibernation
 ApplyOptionalPatch 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
 # Allows corectl to work out of the box
 ApplyOptionalPatch 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
+# steam deck: https://gitlab.com/evlaV/linux-integration/-/commit/d6935e6d62b35ec14d2187c2cfdc19934d66db6d
+ApplyOptionalPatch 0001-NOT-FOR-UPSTREAM-PM-suspend-Disable-s2idle-on-Steam-.patch
+# amdgpu bug fix: https://gitlab.freedesktop.org/drm/amd/-/issues/2733
+ApplyOptionalPatch amdgpu-bug-fix.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -1805,7 +1843,7 @@ ApplyOptionalPatch 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 # https://gitlab.com/GloriousEggroll/nobara-images/-/issues/64
 ApplyOptionalPatch 0001-Allow-to-set-custom-USB-pollrate-for-specific-device.patch
 
-# Also set the PScontroller bluetooth polling rate to 1000Hz
+# Also set the PS controller bluetooth polling rate to 1000Hz
 ApplyOptionalPatch set-ps4-bt-poll-rate-1000hz.patch
 
 %endif
@@ -3793,10 +3831,12 @@ fi\
 #
 #
 %changelog
-* Mon Nov 27 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.2-202.fsync
-- kernel-fsync v6.6.2
+* Fri Dec 01 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.3-201.fsync
+- kernel-fsync v6.6.3
 
-* Wed Nov 22 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.6.2-201]
+* Tue Nov 28 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.6.3-0]
+- Add BugsFixed for 6.6.3 (Justin M. Forbes)
+- Update BugsFixed (Justin M. Forbes)
 - Turn on USB_DWC3 for Fedora (rhbz 2250955) (Justin M. Forbes)
 - Revert "netfilter: nf_tables: remove catchall element in GC sync path" (Justin M. Forbes)
 - More BugsFixed (Justin M. Forbes)
@@ -3804,6 +3844,7 @@ fi\
 - frop the build number back to 200 for fedora-srpm.sh (Justin M. Forbes)
 - ACPI: video: Use acpi_device_fix_up_power_children() (Hans de Goede)
 - ACPI: PM: Add acpi_device_fix_up_power_children() function (Hans de Goede)
+- Linux v6.6.3
 
 * Mon Nov 20 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.6.2-0]
 - Add bug for AMD ACPI alarm (Justin M. Forbes)

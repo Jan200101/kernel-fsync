@@ -8074,14 +8074,13 @@ index 51ec9e7e784f0..40554890d7211 100644
  
  	if (drv && drv->shutdown)
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index e3e915329510f..666ff1e9b6d7b 100644
+index ae95d0950..7a6d76c41 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
-@@ -6190,3 +6190,39 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9a31, dpc_log_size);
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_XILINX, 0x5020, of_pci_make_dev_node);
+@@ -6212,6 +6212,42 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_XILINX, 0x5020, of_pci_make_dev_node);
  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_XILINX, 0x5021, of_pci_make_dev_node);
  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_REDHAT, 0x0005, of_pci_make_dev_node);
-+
+
 +static const struct dmi_system_id no_shutdown_dmi_table[] = {
 +	/*
 +	 * Systems on which some devices should not be touched during shutdown.
@@ -8117,6 +8116,11 @@ index e3e915329510f..666ff1e9b6d7b 100644
 +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x462f, quirk_no_shutdown);  // Thunderbolt 4 PCI Express Root Port
 +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x466d, quirk_no_shutdown);  // Thunderbolt 4 NHI
 +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x46a8, quirk_no_shutdown);  // GPU
++
+ /*
+  * Devices known to require a longer delay before first config space access
+  * after reset recovery or resume from D3cold:
+
 diff --git a/include/linux/pci.h b/include/linux/pci.h
 index 8c7c2c3c6c652..0c223b04dff91 100644
 --- a/include/linux/pci.h

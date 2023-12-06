@@ -27,12 +27,14 @@ GENERIC_PATCHES = [
     ["VIDEO_DW9719", None, MODULE],
     ["IPC_CLASSES", None, ENABLE],
     ["LEDS_TPS68470", None, MODULE],
-    # Lenovo Legion
-    ["LEGION_LAPTOP", None, MODULE],
 ]
 
 ARCH_PATCHES = {
     "x86_64": [
+        # Lenovo Legion
+        ["LEGION_LAPTOP", None, MODULE],
+        ["ACPI_CALL", None, MODULE],
+
         # Steam Deck
         ["MFD_STEAMDECK", None, MODULE],
         ["SENSORS_STEAMDECK", None, MODULE],
@@ -81,6 +83,23 @@ ARCH_PATCHES = {
         ["USB_DUMMY_HCD", None, UNSET],
         ["USB_CONFIGFS", None, UNSET],
         ["PHY_SAMSUNG_USB2", None, UNSET],
+        # Deck Sound stuff?
+        ["SND_SOC_AMD_ACP_COMMON", None, MODULE],
+        ["SND_SPI", None, ENABLE],
+        ["SND_SOC_AMD_SOF_MACH", None, MODULE],
+        ["SND_SOC_AMD_MACH_COMMON", None, MODULE],
+        ["SND_SOC_SOF", None, MODULE],
+        ["SND_SOC_SOF_PROBE_WORK_QUEUE", None, ENABLE],
+        ["SND_SOC_SOF_IPC3", None, ENABLE],
+        ["SND_SOC_SOF_INTEL_IPC4", None, ENABLE],
+        ["SND_SOC_SOF_AMD_COMMON", None, MODULE],
+        ["SND_SOC_SOF_AMD_ACP63", None, MODULE],
+        ["SND_SOC_AMD_ACP_PCI", None, UNSET],
+        ["SND_AMD_ASOC_RENOIR", None, UNSET],
+        ["SND_AMD_ASOC_REMBRANDT", None, UNSET],
+        ["SND_SOC_AMD_LEGACY_MACH", None, UNSET],
+        ["SND_SOC_TOPOLOGY", None, ENABLE],
+
     ],
 }
 
