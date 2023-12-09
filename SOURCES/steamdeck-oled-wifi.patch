@@ -1,145 +1,99 @@
-From 127870bd4c46edfc7bbc58476d7e02cf9a25ea05 Mon Sep 17 00:00:00 2001
-From: Thomas Crider <gloriouseggroll@gmail.com>
-Date: Sat, 2 Dec 2023 03:04:44 -0500
-Subject: [PATCH] steamdeck-wifi-unified
+From 01fd63d2e9b32cd917c9036dfb703b5c4bbd872d Mon Sep 17 00:00:00 2001
+From: "neil.shi" <neil.shi@quectel.com>
+Date: Tue, 23 May 2023 16:58:08 +0800
+Subject: [PATCH] wifi: ath11k: [DBS PATCH 1/6]: Indicate NAN support to
+ firmware
+
+Signed-off-by: neil.shi <neil.shi@quectel.com>
+---
+ drivers/net/wireless/ath/ath11k/hw.c  |  1 +
+ drivers/net/wireless/ath/ath11k/wmi.c |  1 +
+ drivers/net/wireless/ath/ath11k/wmi.h | 19 +++++++++++++++++++
+ 3 files changed, 21 insertions(+)
+
+diff --git a/drivers/net/wireless/ath/ath11k/hw.c b/drivers/net/wireless/ath/ath11k/hw.c
+index dbcc0c4035b62..6309efe4b7c1f 100644
+--- a/drivers/net/wireless/ath/ath11k/hw.c
++++ b/drivers/net/wireless/ath/ath11k/hw.c
+@@ -100,6 +100,7 @@ static void ath11k_init_wmi_config_qca6390(struct ath11k_base *ab,
+ 	config->num_wow_filters = 0x16;
+ 	config->num_keep_alive_pattern = 0;
+ 	config->flag1 |= WMI_RSRC_CFG_FLAG1_BSS_CHANNEL_INFO_64;
++	config->host_service_flags |= WMI_RSRC_CFG_HOST_SERVICE_FLAG_NAN_IFACE_SUPPORT;
+ }
+
+ static void ath11k_hw_ipq8074_reo_setup(struct ath11k_base *ab)
+diff --git a/drivers/net/wireless/ath/ath11k/wmi.c b/drivers/net/wireless/ath/ath11k/wmi.c
+index 3e0a47f4a3ebd..64648e0d9484d 100644
+--- a/drivers/net/wireless/ath/ath11k/wmi.c
++++ b/drivers/net/wireless/ath/ath11k/wmi.c
+@@ -4069,6 +4132,7 @@ ath11k_wmi_copy_resource_config(struct wmi_resource_config *wmi_cfg,
+ 	wmi_cfg->sched_params = tg_cfg->sched_params;
+ 	wmi_cfg->twt_ap_pdev_count = tg_cfg->twt_ap_pdev_count;
+ 	wmi_cfg->twt_ap_sta_count = tg_cfg->twt_ap_sta_count;
++	wmi_cfg->host_service_flags = tg_cfg->host_service_flags;
+ 	wmi_cfg->host_service_flags &=
+ 		~(1 << WMI_CFG_HOST_SERVICE_FLAG_REG_CC_EXT);
+ 	wmi_cfg->host_service_flags |= (tg_cfg->is_reg_cc_ext_event_supported <<
+diff --git a/drivers/net/wireless/ath/ath11k/wmi.h b/drivers/net/wireless/ath/ath11k/wmi.h
+index 8f2c07d70a4a2..042c7b0d16631 100644
+--- a/drivers/net/wireless/ath/ath11k/wmi.h
++++ b/drivers/net/wireless/ath/ath11k/wmi.h
+@@ -2330,6 +2330,7 @@ struct wmi_init_cmd {
+ #define WMI_RSRC_CFG_FLAG1_BSS_CHANNEL_INFO_64 BIT(5)
+ #define WMI_RSRC_CFG_FLAG2_CALC_NEXT_DTIM_COUNT_SET BIT(9)
+ #define WMI_RSRC_CFG_FLAG1_ACK_RSSI BIT(18)
++#define WMI_RSRC_CFG_HOST_SERVICE_FLAG_NAN_IFACE_SUPPORT       BIT(0)
+
+ #define WMI_CFG_HOST_SERVICE_FLAG_REG_CC_EXT 4
+
+@@ -5700,6 +5710,15 @@ struct target_resource_config {
+ 	u8 is_reg_cc_ext_event_supported;
+ 	u32 ema_max_vap_cnt;
+ 	u32 ema_max_profile_period;
++	u32 max_nlo_ssids;
++	u32 num_packet_filters;
++	u32 num_max_sta_vdevs;
++	u32 max_bssid_indicator;
++	u32 ul_resp_config;
++	u32 msdu_flow_override_config0;
++	u32 msdu_flow_override_config1;
++	u32 flags2;
++	u32 host_service_flags;
+ };
+
+ enum wmi_debug_log_param {
+--
+GitLab
+
+From bc6d3226e567630188a41a78a12514c74babdea9 Mon Sep 17 00:00:00 2001
+From: "neil.shi" <neil.shi@quectel.com>
+Date: Tue, 23 May 2023 17:01:06 +0800
+Subject: [PATCH] wifi: ath11k: [DBS PATCH 2/6] wifi: ath11k: add support for
+ QCA206X
 
 ---
- drivers/net/wireless/ath/ath11k/Makefile   |   4 +-
- drivers/net/wireless/ath/ath11k/ce.c       |   6 +-
- drivers/net/wireless/ath/ath11k/core.c     | 159 +++++
- drivers/net/wireless/ath/ath11k/core.h     |  60 ++
- drivers/net/wireless/ath/ath11k/debugfs.c  |  79 +++
- drivers/net/wireless/ath/ath11k/dp.c       |  12 +-
- drivers/net/wireless/ath/ath11k/dp_rx.c    |   2 +-
- drivers/net/wireless/ath/ath11k/hal.c      |   9 +-
- drivers/net/wireless/ath/ath11k/hif.h      |   8 +
- drivers/net/wireless/ath/ath11k/hw.c       |  13 +
- drivers/net/wireless/ath/ath11k/hw.h       |   8 +
- drivers/net/wireless/ath/ath11k/mac.c      | 709 +++++++++++++++++++--
- drivers/net/wireless/ath/ath11k/mac.h      |   7 +-
- drivers/net/wireless/ath/ath11k/mhi.c      |  18 +-
- drivers/net/wireless/ath/ath11k/mhi.h      |   1 +
- drivers/net/wireless/ath/ath11k/pci.c      | 181 +++++-
- drivers/net/wireless/ath/ath11k/pci.h      |  63 ++
- drivers/net/wireless/ath/ath11k/pcic.c     |  22 +-
- drivers/net/wireless/ath/ath11k/qmi.c      |  65 +-
- drivers/net/wireless/ath/ath11k/qmi.h      |   1 +
- drivers/net/wireless/ath/ath11k/reg.c      | 189 ++++--
- drivers/net/wireless/ath/ath11k/reg.h      |   7 +-
- drivers/net/wireless/ath/ath11k/testmode.h |  18 +-
- drivers/net/wireless/ath/ath11k/unitest.c  |  96 +++
- drivers/net/wireless/ath/ath11k/unitest.h  |  44 ++
- drivers/net/wireless/ath/ath11k/wmi.c      | 307 +++++++--
- drivers/net/wireless/ath/ath11k/wmi.h      | 182 ++++++
- include/net/cfg80211.h                     |   5 +
- include/net/regulatory.h                   |   1 +
- include/uapi/linux/nl80211.h               |  11 +-
- kernel/dma/direct.c                        |   1 +
- net/wireless/nl80211.c                     |  18 +
- net/wireless/reg.c                         |  17 +
- 33 files changed, 2131 insertions(+), 192 deletions(-)
- create mode 100644 drivers/net/wireless/ath/ath11k/unitest.c
- create mode 100644 drivers/net/wireless/ath/ath11k/unitest.h
+ drivers/net/wireless/ath/ath11k/core.c | 64 ++++++++++++++++++++++++++
+ drivers/net/wireless/ath/ath11k/core.h |  1 +
+ drivers/net/wireless/ath/ath11k/mhi.c  |  1 +
+ drivers/net/wireless/ath/ath11k/pci.c  | 17 ++++++-
+ 4 files changed, 82 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/wireless/ath/ath11k/Makefile b/drivers/net/wireless/ath/ath11k/Makefile
-index cc47e0114..f591a12a8 100644
---- a/drivers/net/wireless/ath/ath11k/Makefile
-+++ b/drivers/net/wireless/ath/ath11k/Makefile
-@@ -17,7 +17,9 @@ ath11k-y += core.o \
- 	    peer.o \
- 	    dbring.o \
- 	    hw.o \
--	    pcic.o
-+	    pcic.o \
-+            wow.o \
-+            unitest.o
-
- ath11k-$(CONFIG_ATH11K_DEBUGFS) += debugfs.o debugfs_htt_stats.o debugfs_sta.o
- ath11k-$(CONFIG_NL80211_TESTMODE) += testmode.o
-diff --git a/drivers/net/wireless/ath/ath11k/ce.c b/drivers/net/wireless/ath/ath11k/ce.c
-index 289d47ae9..4d04c49ee 100644
---- a/drivers/net/wireless/ath/ath11k/ce.c
-+++ b/drivers/net/wireless/ath/ath11k/ce.c
-@@ -627,9 +627,9 @@ ath11k_ce_alloc_ring(struct ath11k_base *ab, int nentries, int desc_sz)
- 	 * coherent DMA are unsupported
- 	 */
- 	ce_ring->base_addr_owner_space_unaligned =
--		dma_alloc_coherent(ab->dev,
--				   nentries * desc_sz + CE_DESC_RING_ALIGN,
--				   &base_addr, GFP_KERNEL);
-+		ath11k_core_dma_alloc_coherent(ab->dev,
-+						nentries * desc_sz + CE_DESC_RING_ALIGN,
-+						&base_addr, GFP_KERNEL | GFP_DMA32);
- 	if (!ce_ring->base_addr_owner_space_unaligned) {
- 		kfree(ce_ring);
- 		return ERR_PTR(-ENOMEM);
 diff --git a/drivers/net/wireless/ath/ath11k/core.c b/drivers/net/wireless/ath/ath11k/core.c
-index fc7c4564a..2cbfd20bd 100644
+index 893fefadbba96..96ed5b7cd0048 100644
 --- a/drivers/net/wireless/ath/ath11k/core.c
 +++ b/drivers/net/wireless/ath/ath11k/core.c
-@@ -9,6 +9,7 @@
- #include <linux/remoteproc.h>
- #include <linux/firmware.h>
- #include <linux/of.h>
-+#include <linux/dma-direct.h>
-
- #include "core.h"
- #include "dp_tx.h"
-@@ -16,6 +17,7 @@
- #include "debug.h"
- #include "hif.h"
- #include "wow.h"
-+#include "wmi.h"
-
- unsigned int ath11k_debug_mask;
- EXPORT_SYMBOL(ath11k_debug_mask);
-@@ -121,6 +123,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
- 		.tcl_ring_retry = true,
- 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
- 		.smp2p_wow_exit = false,
-+		.coex_isolation = true,
- 	},
- 	{
- 		.hw_rev = ATH11K_HW_IPQ6018_HW10,
-@@ -204,6 +207,8 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
- 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
- 		.smp2p_wow_exit = false,
- 		.support_fw_mac_sequence = false,
-+		.coex_isolation = false,
-+		.support_fw_mac_sequence = false,
- 	},
- 	{
- 		.name = "qca6390 hw2.0",
-@@ -288,6 +293,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
- 		.tcl_ring_retry = true,
- 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
- 		.smp2p_wow_exit = false,
-+		.coex_isolation = false,
- 		.support_fw_mac_sequence = true,
- 	},
- 	{
-@@ -371,6 +377,8 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
- 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
- 		.smp2p_wow_exit = false,
- 		.support_fw_mac_sequence = false,
-+		.coex_isolation = false,
-+		.support_fw_mac_sequence = false,
- 	},
- 	{
- 		.name = "wcn6855 hw2.0",
-@@ -410,6 +418,78 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
+@@ -394,6 +394,70 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
  			.fragment_160mhz = false,
  		},
 
 +		.interface_modes = BIT(NL80211_IFTYPE_STATION) |
 +					BIT(NL80211_IFTYPE_AP),
 +		.supports_monitor = false,
-+		.full_monitor_mode = false,
 +		.supports_shadow_regs = true,
 +		.idle_ps = true,
 +		.supports_sta_ps = true,
-+		.coldboot_cal_mm = false,
-+		.coldboot_cal_ftm = false,
++		.cold_boot_calib = false,
 +		.fw_mem_mode = 0,
 +		.num_vdevs = 16 + 1,
 +		.num_peers = 512,
@@ -152,20 +106,11 @@ index fc7c4564a..2cbfd20bd 100644
 +		.hal_params = &ath11k_hw_hal_params_qca6390,
 +		.supports_dynamic_smps_6ghz = false,
 +		.alloc_cacheable_memory = false,
++		.wakeup_mhi = true,
 +		.supports_rssi_stats = true,
 +		.fw_wmi_diag_event = true,
 +		.current_cc_support = true,
 +		.dbr_debug_support = false,
-+		.coex_isolation = false,
-+                .global_reset = true,
-+		.bios_sar_capa = &ath11k_hw_sar_capa_wcn6855,
-+		.m3_fw_support = true,
-+		.fixed_bdf_addr = false,
-+		.fixed_mem_region = false,
-+		.static_window_map = false,
-+		.hybrid_bus_type = false,
-+		.fixed_fw_mem = false,
-+		.support_off_channel_tx = true,
 +	},
 +	{
 +		.name = "qca206x hw2.1",
@@ -188,6 +133,9 @@ index fc7c4564a..2cbfd20bd 100644
 +		.target_ce_count = 9,
 +		.svc_to_ce_map = ath11k_target_service_to_ce_map_wlan_qca6390,
 +		.svc_to_ce_map_len = 14,
++		.rfkill_pin = 0,
++		.rfkill_cfg = 0,
++		.rfkill_on_level = 0,
 +		.single_pdev_only = true,
 +		.rxdma1_enable = false,
 +		.num_rxmda_per_pdev = 2,
@@ -206,143 +154,8 @@ index fc7c4564a..2cbfd20bd 100644
  		.interface_modes = BIT(NL80211_IFTYPE_STATION) |
  					BIT(NL80211_IFTYPE_AP),
  		.supports_monitor = false,
-@@ -456,6 +536,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
- 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
- 		.smp2p_wow_exit = false,
- 		.support_fw_mac_sequence = true,
-+		.coex_isolation = true,
- 	},
- 	{
- 		.name = "wcn6855 hw2.1",
-@@ -497,6 +578,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
- 		.interface_modes = BIT(NL80211_IFTYPE_STATION) |
- 					BIT(NL80211_IFTYPE_AP),
- 		.supports_monitor = false,
-+		.full_monitor_mode = false,
- 		.supports_shadow_regs = true,
- 		.idle_ps = true,
- 		.supports_sta_ps = true,
-@@ -538,6 +620,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
- 		.tcl_ring_retry = true,
- 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
- 		.smp2p_wow_exit = false,
-+		.coex_isolation = false,
- 		.support_fw_mac_sequence = true,
- 	},
- 	{
-@@ -619,6 +702,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
- 		.tcl_ring_retry = false,
- 		.tx_ring_size = DP_TCL_DATA_RING_SIZE_WCN6750,
- 		.smp2p_wow_exit = true,
-+		.coex_isolation = false,
- 		.support_fw_mac_sequence = true,
- 	},
- 	{
-@@ -704,6 +788,40 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
- 	},
- };
-
-+static const struct dma_map_ops *ath11k_core_get_dma_ops(struct device *dev)
-+{
-+	if (dev->dma_ops)
-+		return dev->dma_ops;
-+	return NULL;
-+}
-+
-+void *ath11k_core_dma_alloc_coherent(struct device *dev, size_t size,
-+				     dma_addr_t *dma_handle, gfp_t flag)
-+{
-+	unsigned long attrs = (flag & __GFP_NOWARN) ? DMA_ATTR_NO_WARN : 0;
-+	const struct dma_map_ops *ops = ath11k_core_get_dma_ops(dev);
-+	void *cpu_addr;
-+
-+	WARN_ON_ONCE(!dev->coherent_dma_mask);
-+
-+	/*
-+	 * DMA allocations can never be turned back into a page pointer, so
-+	 * requesting compound pages doesn't make sense (and can't even be
-+	 * supported at all by various backends).
-+	 */
-+	if (WARN_ON_ONCE(flag & __GFP_COMP))
-+		return NULL;
-+
-+	if (!ops)
-+		cpu_addr = dma_direct_alloc(dev, size, dma_handle, flag, attrs);
-+	else if (ops->alloc)
-+		cpu_addr = ops->alloc(dev, size, dma_handle, flag, attrs);
-+	else
-+		return NULL;
-+
-+	return cpu_addr;
-+}
-+
- static inline struct ath11k_pdev *ath11k_core_get_single_pdev(struct ath11k_base *ab)
- {
- 	WARN_ON(!ab->hw_params.single_pdev_only);
-@@ -1505,6 +1623,30 @@ static void ath11k_core_pdev_destroy(struct ath11k_base *ab)
- 	ath11k_debugfs_pdev_destroy(ab);
- }
-
-+static int ath11k_core_config_coex_isolation(struct ath11k_base *ab)
-+{
-+       struct ath11k *ar = ath11k_ab_to_ar(ab, 0);
-+       struct wmi_coex_config_params param;
-+
-+       memset(&param, 0, sizeof(struct wmi_coex_config_params));
-+       param.config_type = WMI_COEX_CONFIG_ANTENNA_ISOLATION;
-+       param.config_arg1 = WMI_COEX_ISOLATION_ARG1_DEFAUT;
-+
-+       return ath11k_wmi_send_coex_config(ar, &param);
-+}
-+
-+static int ath11k_core_config_btc_mode(struct ath11k_base *ab)
-+{
-+	struct ath11k *ar = ath11k_ab_to_ar(ab, 0);
-+	struct wmi_coex_config_params param;
-+
-+	memset(&param, 0, sizeof(struct wmi_coex_config_params));
-+	param.config_type = WMI_COEX_CONFIG_BTC_MODE;
-+	param.config_arg1 = WMI_COEX_BTC_MODE_ARG1_DEFAULT;
-+
-+	return ath11k_wmi_send_coex_config(ar, &param);
-+}
-+
- static int ath11k_core_start(struct ath11k_base *ab)
- {
- 	int ret;
-@@ -1602,6 +1744,22 @@ static int ath11k_core_start(struct ath11k_base *ab)
- 		goto err_reo_cleanup;
- 	}
-
-+	if (ab->hw_params.coex_isolation) {
-+		ret = ath11k_core_config_coex_isolation(ab);
-+		if (ret) {
-+			ath11k_err(ab, "failed to set coex isolation: %d\n",
-+					ret);
-+			goto err_reo_cleanup;
-+		}
-+	}
-+
-+	ret = ath11k_core_config_btc_mode(ab);
-+	if (ret) {
-+		ath11k_err(ab, "failed to set btc mode: %d\n",
-+				ret);
-+		goto err_reo_cleanup;
-+	}
-+
- 	return 0;
-
- err_reo_cleanup:
-@@ -1751,6 +1909,7 @@ void ath11k_core_halt(struct ath11k *ar)
- 	ath11k_mac_scan_finish(ar);
- 	ath11k_mac_peer_cleanup_all(ar);
- 	cancel_delayed_work_sync(&ar->scan.timeout);
-+	cancel_work_sync(&ar->channel_update_work);
- 	cancel_work_sync(&ar->regd_update_work);
- 	cancel_work_sync(&ab->update_11d_work);
-
 diff --git a/drivers/net/wireless/ath/ath11k/core.h b/drivers/net/wireless/ath/ath11k/core.h
-index b04447762..bac6624f3 100644
+index bd06536f82a64..ab120329619c0 100644
 --- a/drivers/net/wireless/ath/ath11k/core.h
 +++ b/drivers/net/wireless/ath/ath11k/core.h
 @@ -144,6 +144,7 @@ enum ath11k_hw_rev {
@@ -353,1145 +166,83 @@ index b04447762..bac6624f3 100644
  };
 
  enum ath11k_firmware_mode {
-@@ -311,6 +312,43 @@ struct ath11k_rekey_data {
- 	bool enable_offload;
- };
+diff --git a/drivers/net/wireless/ath/ath11k/mhi.c b/drivers/net/wireless/ath/ath11k/mhi.c
+index a62ee05c54097..c76f665dc369d 100644
+--- a/drivers/net/wireless/ath/ath11k/mhi.c
++++ b/drivers/net/wireless/ath/ath11k/mhi.c
+@@ -434,6 +434,7 @@ int ath11k_mhi_register(struct ath11k_pci *ab_pci)
+ 	case ATH11K_HW_QCA6390_HW20:
+ 	case ATH11K_HW_WCN6855_HW20:
+ 	case ATH11K_HW_WCN6855_HW21:
++	case ATH11K_HW_QCA206X_HW21:
+ 		ath11k_mhi_config = &ath11k_mhi_config_qca6390;
+ 		break;
+ 	default:
+diff --git a/drivers/net/wireless/ath/ath11k/pci.c b/drivers/net/wireless/ath/ath11k/pci.c
+index 3c6005ab9a717..93dd259bd85ad 100644
+--- a/drivers/net/wireless/ath/ath11k/pci.c
++++ b/drivers/net/wireless/ath/ath11k/pci.c
+@@ -27,6 +27,8 @@
+ #define QCN9074_DEVICE_ID		0x1104
+ #define WCN6855_DEVICE_ID		0x1103
 
-+/**
-+ * struct chan_power_info - TPE containing power info per channel chunk
-+ * @chan_cfreq: channel center freq (MHz)
-+ * e.g.
-+ * channel 37/20 MHz,  it is 6135
-+ * channel 37/40 MHz,  it is 6125
-+ * channel 37/80 MHz,  it is 6145
-+ * channel 37/160 MHz, it is 6185
-+ * @tx_power: transmit power (dBm)
-+ */
-+struct chan_power_info {
-+	u16 chan_cfreq;
-+	s8 tx_power;
-+};
++#define SUB_VERSION	0x1910010
 +
-+/**
-+ * struct reg_tpc_power_info - regulatory TPC power info
-+ * @is_psd_power: is PSD power or not
-+ * @eirp_power: Maximum EIRP power (dBm), valid only if power is PSD
-+ * @power_type_6g: type of power (SP/LPI/VLP)
-+ * @num_pwr_levels: number of power levels
-+ * @reg_max: Array of maximum TX power (dBm) per PSD value
-+ * @ap_constraint_power: AP constraint power (dBm)
-+ * @tpe: TPE values processed from TPE IE
-+ * @chan_power_info: power info to send to firmware
-+ */
-+struct ath11k_reg_tpc_power_info {
-+	bool is_psd_power;
-+	u8 eirp_power;
-+	enum wmi_reg_6ghz_ap_type power_type_6g;
-+	u8 num_pwr_levels;
-+	u8 reg_max[IEEE80211_MAX_NUM_PWR_LEVEL];
-+	u8 ap_constraint_power;
-+	s8 tpe[IEEE80211_MAX_NUM_PWR_LEVEL];
-+	struct chan_power_info chan_power_info[IEEE80211_MAX_NUM_PWR_LEVEL];
-+};
-+
- struct ath11k_vif {
- 	u32 vdev_id;
- 	enum wmi_vdev_type vdev_type;
-@@ -369,6 +407,7 @@ struct ath11k_vif {
- #ifdef CONFIG_ATH11K_DEBUGFS
- 	struct dentry *debugfs_twt;
- #endif /* CONFIG_ATH11K_DEBUGFS */
-+	struct ath11k_reg_tpc_power_info reg_tpc_info;
- };
-
- struct ath11k_vif_iter {
-@@ -697,6 +736,10 @@ struct ath11k {
- 	struct completion bss_survey_done;
-
- 	struct work_struct regd_update_work;
-+	struct work_struct channel_update_work;
-+	struct list_head channel_update_queue;
-+	/* protects channel_update_queue data */
-+	spinlock_t channel_update_lock;
-
- 	struct work_struct wmi_mgmt_tx_work;
- 	struct sk_buff_head wmi_mgmt_tx_queue;
-@@ -737,6 +780,7 @@ struct ath11k {
- 	/* protected by conf_mutex */
- 	bool ps_state_enable;
- 	bool ps_timekeeper_enable;
-+	s8 max_allowed_tx_power;
- };
-
- struct ath11k_band_cap {
-@@ -840,6 +884,16 @@ struct ath11k_msi_config {
- 	u16 hw_rev;
- };
-
-+struct fw_remote_mem {
-+	size_t size;
-+	void *vaddr;
-+};
-+
-+struct fw_remote_crash_data {
-+	u8 *remote_buf;
-+	size_t remote_buf_len;
-+};
-+
- /* Master structure to hold the hw data which may be used in core module */
- struct ath11k_base {
- 	enum ath11k_hw_rev hw_rev;
-@@ -923,6 +977,7 @@ struct ath11k_base {
- 	 * This may or may not be used during the runtime
- 	 */
- 	struct ieee80211_regdomain *new_regd[MAX_RADIOS];
-+	struct cur_regulatory_info *reg_info_store;
-
- 	/* Current DFS Regulatory */
- 	enum ath11k_dfs_region dfs_region;
-@@ -992,6 +1047,9 @@ struct ath11k_base {
- 	} testmode;
- #endif
-
-+	struct fw_remote_mem remote_mem[ATH11K_QMI_WLANFW_MAX_NUM_MEM_SEG_V01];
-+	struct fw_remote_crash_data remote_crash_data;
-+
- 	/* must be last */
- 	u8 drv_priv[] __aligned(sizeof(void *));
- };
-@@ -1251,4 +1309,6 @@ static inline const char *ath11k_bus_str(enum ath11k_bus bus)
- 	return "unknown";
- }
-
-+void *ath11k_core_dma_alloc_coherent(struct device *dev, size_t size,
-+				     dma_addr_t *dma_handle, gfp_t flag);
- #endif /* _CORE_H_ */
-diff --git a/drivers/net/wireless/ath/ath11k/debugfs.c b/drivers/net/wireless/ath/ath11k/debugfs.c
-index 5bb6fd17f..7fad6e447 100644
---- a/drivers/net/wireless/ath/ath11k/debugfs.c
-+++ b/drivers/net/wireless/ath/ath11k/debugfs.c
-@@ -468,6 +468,78 @@ static const struct file_operations fops_bcn_stats = {
- 	.llseek = default_llseek,
- };
-
-+static ssize_t ath11k_debugfs_write_coex_config(struct file *file,
-+		const char __user *user_buf,
-+		size_t count, loff_t *ppos)
-+{
-+	struct ath11k_base *ab = file->private_data;
-+	struct ath11k *ar = ath11k_ab_to_ar(ab, 0);
-+	char buf[64] = {0};
-+	ssize_t ret;
-+	int rc;
-+	u32 config_type, config_arg1;
-+	char sep[] = " ";
-+	char *token, *cur;
-+	struct wmi_coex_config_params param;
-+
-+	if (*ppos != 0 || count >= sizeof(buf) || count == 0) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ret = simple_write_to_buffer(buf, sizeof(buf) - 1, ppos, user_buf, count);
-+	if (ret < 0)
-+		goto out;
-+
-+	/* drop the possible '\n' from the end */
-+	if (buf[*ppos - 1] == '\n')
-+		buf[*ppos - 1] = '\0';
-+
-+	ath11k_info(ab, "%s: %s\n", __func__, buf);
-+	ret = count;
-+	cur = buf;
-+
-+	token = strsep(&cur, sep);
-+	rc = kstrtou32(token, 0, &config_type);
-+	if (rc) {
-+		ath11k_warn(ab, "%s convert error: config_type %s\n", __func__, token);
-+		ret = -EFAULT;
-+		goto out;
-+	}
-+
-+	token = strim(cur);
-+	rc = kstrtou32(token, 0, &config_arg1);
-+	if (rc) {
-+		ath11k_warn(ab, "%s convert error: config_arg1 %s\n", __func__, token);
-+		ret = -EFAULT;
-+		goto out;
-+	}
-+
-+
-+	memset(&param, 0, sizeof(struct wmi_coex_config_params));
-+	param.config_type = config_type;
-+	param.config_arg1 = config_arg1;
-+
-+	mutex_lock(&ar->conf_mutex);
-+
-+	rc = ath11k_mac_send_coex_config(ar, &param);
-+	if (rc) {
-+		ath11k_warn(ab, "failed to send coex config using debugfs %d\n", rc);
-+		ret = -EFAULT;
-+	}
-+
-+	mutex_unlock(&ar->conf_mutex);
-+out:
-+	return ret;
-+}
-+
-+static const struct file_operations fops_coex_config = {
-+	.write = ath11k_debugfs_write_coex_config,
-+	.open = simple_open,
-+	.owner = THIS_MODULE,
-+	.llseek = default_llseek,
-+};
-+
- static ssize_t ath11k_read_simulate_fw_crash(struct file *file,
- 					     char __user *user_buf,
- 					     size_t count, loff_t *ppos)
-@@ -532,6 +604,10 @@ static ssize_t ath11k_write_simulate_fw_crash(struct file *file,
- 		ath11k_info(ab, "user requested hw restart\n");
- 		queue_work(ab->workqueue_aux, &ab->reset_work);
- 		ret = 0;
-+	} else if (!strcmp(buf, "mhi-rddm")) {
-+		ath11k_info(ab, "force target rddm\n");
-+		ath11k_hif_force_rddm(ab);
-+		ret = 0;
- 	} else {
- 		ret = -EINVAL;
- 		goto exit;
-@@ -957,9 +1033,12 @@ static ssize_t ath11k_read_sram_dump(struct file *file,
-
- static int ath11k_release_sram_dump(struct inode *inode, struct file *file)
+ static const struct pci_device_id ath11k_pci_id_table[] = {
+ 	{ PCI_VDEVICE(QCOM, QCA6390_DEVICE_ID) },
+ 	{ PCI_VDEVICE(QCOM, WCN6855_DEVICE_ID) },
+@@ -806,7 +808,19 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
+ 				break;
+ 			case 0x10:
+ 			case 0x11:
+-				ab->hw_rev = ATH11K_HW_WCN6855_HW21;
++				//ab->hw_rev = ATH11K_HW_WCN6855_HW21;
++				sub_version = ath11k_pci_read32(ab, SUB_VERSION);
++				ath11k_dbg(ab, ATH11K_DBG_PCI, "sub_version 0x%x\n", sub_version);
++				switch (sub_version) {
++				case 0x1019A0E1:
++				case 0x1019B0E1:
++				case 0x1019C0E1:
++				case 0x1019D0E1:
++					ab->hw_rev = ATH11K_HW_QCA206X_HW21;
++					break;
++				default:
++					ab->hw_rev = ATH11K_HW_WCN6855_HW21;
++				}
+ 				break;
+ 			default:
+ 				goto unsupported_wcn6855_soc;
+@@ -1017,6 +1031,7 @@ static struct pci_driver ath11k_pci_driver = {
+ static int ath11k_pci_init(void)
  {
-+	struct ath11k_base *ab = inode->i_private;
- 	vfree(file->private_data);
- 	file->private_data = NULL;
+ 	int ret;
++	u32 sub_version;
 
-+	debugfs_create_file("coex_config", 0600, ab->debugfs_soc, ab,
-+			    &fops_coex_config);
- 	return 0;
- }
+ 	ret = pci_register_driver(&ath11k_pci_driver);
+ 	if (ret)
+--
+GitLab
 
-diff --git a/drivers/net/wireless/ath/ath11k/dp.c b/drivers/net/wireless/ath/ath11k/dp.c
-index d070bcb3f..6b6d0ce4f 100644
---- a/drivers/net/wireless/ath/ath11k/dp.c
-+++ b/drivers/net/wireless/ath/ath11k/dp.c
-@@ -254,9 +254,9 @@ int ath11k_dp_srng_setup(struct ath11k_base *ab, struct dp_srng *ring,
- 	}
+From 707933ef2a20db8f7c3d9d3c654a8dcb2f582436 Mon Sep 17 00:00:00 2001
+From: "neil.shi" <neil.shi@quectel.com>
+Date: Tue, 23 May 2023 17:04:27 +0800
+Subject: [PATCH] wifi: ath11k: [DBS PATCH 3/6]: support 2 stations and report
+ addresses
 
- 	if (!cached)
--		ring->vaddr_unaligned = dma_alloc_coherent(ab->dev, ring->size,
-+		ring->vaddr_unaligned = ath11k_core_dma_alloc_coherent(ab->dev, ring->size,
- 							   &ring->paddr_unaligned,
--							   GFP_KERNEL);
-+							   GFP_KERNEL | GFP_DMA32);
+Report 2 station interfaces if chip has more than 1
+num_rxmda_per_pdev in hw_params, and report addresses
+for these interfaces.
 
- 	if (!ring->vaddr_unaligned)
- 		return -ENOMEM;
-@@ -527,9 +527,9 @@ static int ath11k_dp_scatter_idle_link_desc_setup(struct ath11k_base *ab,
- 		return -EINVAL;
+Signed-off-by: neil.shi <neil.shi@quectel.com>
+---
+ drivers/net/wireless/ath/ath11k/mac.c | 83 ++++++++++++++++++++-------
+ 1 file changed, 63 insertions(+), 20 deletions(-)
 
- 	for (i = 0; i < num_scatter_buf; i++) {
--		slist[i].vaddr = dma_alloc_coherent(ab->dev,
-+		slist[i].vaddr = ath11k_core_dma_alloc_coherent(ab->dev,
- 						    HAL_WBM_IDLE_SCATTER_BUF_SIZE_MAX,
--						    &slist[i].paddr, GFP_KERNEL);
-+						    &slist[i].paddr, GFP_KERNEL | GFP_DMA32);
- 		if (!slist[i].vaddr) {
- 			ret = -ENOMEM;
- 			goto err;
-@@ -607,9 +607,9 @@ static int ath11k_dp_link_desc_bank_alloc(struct ath11k_base *ab,
- 			desc_sz = last_bank_sz;
-
- 		desc_bank[i].vaddr_unaligned =
--					dma_alloc_coherent(ab->dev, desc_sz,
-+					ath11k_core_dma_alloc_coherent(ab->dev, desc_sz,
- 							   &desc_bank[i].paddr_unaligned,
--							   GFP_KERNEL);
-+							   GFP_KERNEL | GFP_DMA32);
- 		if (!desc_bank[i].vaddr_unaligned) {
- 			ret = -ENOMEM;
- 			goto err;
-diff --git a/drivers/net/wireless/ath/ath11k/dp_rx.c b/drivers/net/wireless/ath/ath11k/dp_rx.c
-index a993e74bb..5b1320b4b 100644
---- a/drivers/net/wireless/ath/ath11k/dp_rx.c
-+++ b/drivers/net/wireless/ath/ath11k/dp_rx.c
-@@ -2549,7 +2549,7 @@ static int ath11k_dp_rx_process_msdu(struct ath11k *ar,
- 	lrx_desc = (struct hal_rx_desc *)last_buf->data;
- 	rx_attention = ath11k_dp_rx_get_attention(ab, lrx_desc);
- 	if (!ath11k_dp_rx_h_attn_msdu_done(rx_attention)) {
--		ath11k_warn(ab, "msdu_done bit in attention is not set\n");
-+		ath11k_dbg(ab, ATH11K_DBG_DATA, "msdu_done bit in attention is not set\n");
- 		ret = -EIO;
- 		goto free_out;
- 	}
-diff --git a/drivers/net/wireless/ath/ath11k/hal.c b/drivers/net/wireless/ath/ath11k/hal.c
-index 0a99aa7dd..efff993c9 100644
---- a/drivers/net/wireless/ath/ath11k/hal.c
-+++ b/drivers/net/wireless/ath/ath11k/hal.c
-@@ -8,6 +8,7 @@
- #include "debug.h"
- #include "hal_desc.h"
- #include "hif.h"
-+#include "core.h"
-
- static const struct hal_srng_config hw_srng_config_template[] = {
- 	/* TODO: max_rings can populated by querying HW capabilities */
-@@ -196,8 +197,8 @@ static int ath11k_hal_alloc_cont_rdp(struct ath11k_base *ab)
- 	size_t size;
-
- 	size = sizeof(u32) * HAL_SRNG_RING_ID_MAX;
--	hal->rdp.vaddr = dma_alloc_coherent(ab->dev, size, &hal->rdp.paddr,
--					    GFP_KERNEL);
-+	hal->rdp.vaddr = ath11k_core_dma_alloc_coherent(ab->dev, size, &hal->rdp.paddr,
-+					    GFP_KERNEL | GFP_DMA32);
- 	if (!hal->rdp.vaddr)
- 		return -ENOMEM;
-
-@@ -224,8 +225,8 @@ static int ath11k_hal_alloc_cont_wrp(struct ath11k_base *ab)
- 	size_t size;
-
- 	size = sizeof(u32) * HAL_SRNG_NUM_LMAC_RINGS;
--	hal->wrp.vaddr = dma_alloc_coherent(ab->dev, size, &hal->wrp.paddr,
--					    GFP_KERNEL);
-+	hal->wrp.vaddr = ath11k_core_dma_alloc_coherent(ab->dev, size, &hal->wrp.paddr,
-+					    GFP_KERNEL | GFP_DMA32);
- 	if (!hal->wrp.vaddr)
- 		return -ENOMEM;
-
-diff --git a/drivers/net/wireless/ath/ath11k/hif.h b/drivers/net/wireless/ath/ath11k/hif.h
-index 659b80d2a..7eca43a91 100644
---- a/drivers/net/wireless/ath/ath11k/hif.h
-+++ b/drivers/net/wireless/ath/ath11k/hif.h
-@@ -30,6 +30,7 @@ struct ath11k_hif_ops {
- 	void (*ce_irq_enable)(struct ath11k_base *ab);
- 	void (*ce_irq_disable)(struct ath11k_base *ab);
- 	void (*get_ce_msi_idx)(struct ath11k_base *ab, u32 ce_id, u32 *msi_idx);
-+	int (*target_crash)(struct ath11k_base *ab);
- };
-
- static inline void ath11k_hif_ce_irq_enable(struct ath11k_base *ab)
-@@ -90,6 +91,13 @@ static inline int ath11k_hif_resume(struct ath11k_base *ab)
- 	return 0;
- }
-
-+static inline int ath11k_hif_force_rddm(struct ath11k_base *ab)
-+{
-+	if (ab->hif.ops->target_crash)
-+		return ab->hif.ops->target_crash(ab);
-+	return 0;
-+}
-+
- static inline u32 ath11k_hif_read32(struct ath11k_base *sc, u32 address)
- {
- 	return sc->hif.ops->read32(sc, address);
-diff --git a/drivers/net/wireless/ath/ath11k/hw.c b/drivers/net/wireless/ath/ath11k/hw.c
-index d7b5ec6e6..1e82683f9 100644
---- a/drivers/net/wireless/ath/ath11k/hw.c
-+++ b/drivers/net/wireless/ath/ath11k/hw.c
-@@ -100,6 +100,7 @@ static void ath11k_init_wmi_config_qca6390(struct ath11k_base *ab,
- 	config->num_wow_filters = 0x16;
- 	config->num_keep_alive_pattern = 0;
- 	config->flag1 |= WMI_RSRC_CFG_FLAG1_BSS_CHANNEL_INFO_64;
-+	config->host_service_flags |= WMI_RSRC_CFG_HOST_SERVICE_FLAG_NAN_IFACE_SUPPORT;
- }
-
- static void ath11k_hw_ipq8074_reo_setup(struct ath11k_base *ab)
-@@ -900,6 +901,18 @@ static u32 ath11k_hw_wcn6750_get_tcl_ring_selector(struct sk_buff *skb)
- 	return skb_get_hash(skb);
- }
-
-+bool ath11k_hw_supports_6g_cc_ext(struct ath11k *ar)
-+{
-+	return (test_bit(WMI_TLV_SERVICE_REG_CC_EXT_EVENT_SUPPORT,
-+			 ar->ab->wmi_ab.svc_map)) && ar->supports_6ghz;
-+}
-+
-+bool ath11k_hw_supports_tpc_ext(struct ath11k *ar)
-+{
-+	return ath11k_hw_supports_6g_cc_ext(ar) &&
-+	       test_bit(WMI_TLV_SERVICE_EXT_TPC_REG_SUPPORT, ar->ab->wmi_ab.svc_map);
-+}
-+
- const struct ath11k_hw_ops ipq8074_ops = {
- 	.get_hw_mac_from_pdev_id = ath11k_hw_ipq8074_mac_from_pdev_id,
- 	.wmi_init_config = ath11k_init_wmi_config_ipq8074,
-diff --git a/drivers/net/wireless/ath/ath11k/hw.h b/drivers/net/wireless/ath/ath11k/hw.h
-index d51a99669..b23494409 100644
---- a/drivers/net/wireless/ath/ath11k/hw.h
-+++ b/drivers/net/wireless/ath/ath11k/hw.h
-@@ -225,6 +225,11 @@ struct ath11k_hw_params {
- 	bool tcl_ring_retry;
- 	u32 tx_ring_size;
- 	bool smp2p_wow_exit;
-+	bool wakeup_mhi;
-+        u32 rfkill_pin;
-+        u32 rfkill_cfg;
-+        u32 rfkill_on_level;
-+	bool coex_isolation;
- 	bool support_fw_mac_sequence;
- };
-
-@@ -321,6 +326,9 @@ static inline int ath11k_hw_mac_id_to_srng_id(struct ath11k_hw_params *hw,
- 	return 0;
- }
-
-+bool ath11k_hw_supports_6g_cc_ext(struct ath11k *ar);
-+bool ath11k_hw_supports_tpc_ext(struct ath11k *ar);
-+
- struct ath11k_fw_ie {
- 	__le32 id;
- 	__le32 len;
 diff --git a/drivers/net/wireless/ath/ath11k/mac.c b/drivers/net/wireless/ath/ath11k/mac.c
-index b328a0599..8a034a971 100644
+index cb77dd6ce9665..c7fa31deefacd 100644
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -23,6 +23,7 @@
- #include "debugfs_sta.h"
- #include "hif.h"
- #include "wow.h"
-+#include "unitest.h"
-
- #define CHAN2G(_channel, _freq, _flags) { \
- 	.band                   = NL80211_BAND_2GHZ, \
-@@ -254,6 +255,10 @@ static const u32 ath11k_smps_map[] = {
- 	[WLAN_HT_CAP_SM_PS_DISABLED] = WMI_PEER_SMPS_PS_NONE,
- };
-
-+static struct wiphy_vendor_command ath11k_vendor_cmds[] = {
-+	ath11k_unit_test_command,
-+};
-+
- static int ath11k_start_vdev_delay(struct ieee80211_hw *hw,
- 				   struct ieee80211_vif *vif);
-
-@@ -629,6 +634,17 @@ struct ath11k *ath11k_mac_get_ar_by_vdev_id(struct ath11k_base *ab, u32 vdev_id)
- 	return NULL;
- }
-
-+enum wmi_vdev_type ath11k_mac_get_ar_vdev_type(struct ath11k *ar)
-+{
-+	struct ath11k_vif *arvif;
-+
-+	list_for_each_entry(arvif, &ar->arvifs, list) {
-+		return arvif->vdev_type;
-+	}
-+
-+	return WMI_VDEV_TYPE_UNSPEC;
-+}
-+
- struct ath11k *ath11k_mac_get_ar_by_pdev_id(struct ath11k_base *ab, u32 pdev_id)
- {
- 	int i;
-@@ -2980,6 +2996,27 @@ static bool ath11k_mac_vif_recalc_sta_he_txbf(struct ath11k *ar,
- 			hemode |= FIELD_PREP(HE_MODE_SU_TX_BFER, HE_SU_BFER_ENABLE);
- 	}
-
-+	ath11k_info(ar->ab, "mac0-5 cap %x-%x-%x-%x-%x-%x\n",
-+		he_cap_elem.mac_cap_info[0],
-+		he_cap_elem.mac_cap_info[1],
-+		he_cap_elem.mac_cap_info[2],
-+		he_cap_elem.mac_cap_info[3],
-+		he_cap_elem.mac_cap_info[4],
-+		he_cap_elem.mac_cap_info[5]);
-+	ath11k_info(ar->ab, "phy0-5 cap %x-%x-%x-%x-%x-%x\n",
-+		he_cap_elem.phy_cap_info[0],
-+		he_cap_elem.phy_cap_info[1],
-+		he_cap_elem.phy_cap_info[2],
-+		he_cap_elem.phy_cap_info[3],
-+		he_cap_elem.phy_cap_info[4],
-+		he_cap_elem.phy_cap_info[5]);
-+	ath11k_info(ar->ab, "phy6-10 cap %x-%x-%x-%x-%x\n",
-+		he_cap_elem.phy_cap_info[6],
-+		he_cap_elem.phy_cap_info[7],
-+		he_cap_elem.phy_cap_info[8],
-+		he_cap_elem.phy_cap_info[9],
-+		he_cap_elem.phy_cap_info[10]);
-+	ath11k_info(ar->ab, "WMI_VDEV_PARAM_SET_HEMU_MODE 3 0x%x\n", hemode);
- 	ret = ath11k_wmi_vdev_set_param_cmd(ar, arvif->vdev_id, param, hemode);
- 	if (ret) {
- 		ath11k_warn(ar->ab, "failed to submit vdev param txbf 0x%x: %d\n",
-@@ -3025,7 +3062,14 @@ static void ath11k_bss_assoc(struct ieee80211_hw *hw,
-
- 	rcu_read_unlock();
-
-+	if (!ath11k_mac_vif_recalc_sta_he_txbf(ar, vif, &he_cap)) {
-+		ath11k_warn(ar->ab, "failed to recalc he txbf for vdev %i on bss %pM\n",
-+			    arvif->vdev_id, bss_conf->bssid);
-+		return;
-+	}
-+
- 	peer_arg.is_assoc = true;
-+
- 	ret = ath11k_wmi_send_peer_assoc_cmd(ar, &peer_arg);
- 	if (ret) {
- 		ath11k_warn(ar->ab, "failed to run peer assoc for %pM vdev %i: %d\n",
-@@ -3048,12 +3092,6 @@ static void ath11k_bss_assoc(struct ieee80211_hw *hw,
- 		return;
- 	}
-
--	if (!ath11k_mac_vif_recalc_sta_he_txbf(ar, vif, &he_cap)) {
--		ath11k_warn(ar->ab, "failed to recalc he txbf for vdev %i on bss %pM\n",
--			    arvif->vdev_id, bss_conf->bssid);
--		return;
--	}
--
- 	WARN_ON(arvif->is_up);
-
- 	arvif->aid = vif->cfg.aid;
-@@ -3396,6 +3434,16 @@ static int ath11k_mac_config_obss_pd(struct ath11k *ar,
- 	return 0;
- }
-
-+static bool ath11k_mac_supports_station_tpc(struct ath11k *ar,
-+					    struct ath11k_vif *arvif,
-+					    const struct cfg80211_chan_def *chandef)
-+{
-+	return ath11k_hw_supports_tpc_ext(ar) &&
-+	       arvif->vdev_type == WMI_VDEV_TYPE_STA &&
-+	       chandef->chan &&
-+	       chandef->chan->band == NL80211_BAND_6GHZ;
-+}
-+
- static void ath11k_mac_op_bss_info_changed(struct ieee80211_hw *hw,
- 					   struct ieee80211_vif *vif,
- 					   struct ieee80211_bss_conf *info,
-@@ -3596,8 +3644,13 @@ static void ath11k_mac_op_bss_info_changed(struct ieee80211_hw *hw,
- 		ath11k_dbg(ar->ab, ATH11K_DBG_MAC, "vdev_id %i txpower %d\n",
- 			   arvif->vdev_id, info->txpower);
-
--		arvif->txpower = info->txpower;
--		ath11k_mac_txpower_recalc(ar);
-+		if (ath11k_mac_supports_station_tpc(ar, arvif, &info->chandef)) {
-+			ath11k_dbg(ar->ab, ATH11K_DBG_MAC,
-+				   "discard tx power, change to set TPC power\n");
-+		} else {
-+			arvif->txpower = info->txpower;
-+			ath11k_mac_txpower_recalc(ar);
-+		}
- 	}
-
- 	if (changed & BSS_CHANGED_PS &&
-@@ -5463,8 +5516,6 @@ static int ath11k_mac_set_txbf_conf(struct ath11k_vif *arvif)
- 	if (vht_cap & (IEEE80211_VHT_CAP_SU_BEAMFORMEE_CAPABLE)) {
- 		nsts = vht_cap & IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK;
- 		nsts >>= IEEE80211_VHT_CAP_BEAMFORMEE_STS_SHIFT;
--		if (nsts > (ar->num_rx_chains - 1))
--			nsts = ar->num_rx_chains - 1;
- 		value |= SM(nsts, WMI_TXBF_STS_CAP_OFFSET);
- 	}
-
-@@ -5505,7 +5556,7 @@ static int ath11k_mac_set_txbf_conf(struct ath11k_vif *arvif)
- static void ath11k_set_vht_txbf_cap(struct ath11k *ar, u32 *vht_cap)
- {
- 	bool subfer, subfee;
--	int sound_dim = 0, nsts = 0;
-+	int sound_dim = 0;
-
- 	subfer = !!(*vht_cap & (IEEE80211_VHT_CAP_SU_BEAMFORMER_CAPABLE));
- 	subfee = !!(*vht_cap & (IEEE80211_VHT_CAP_SU_BEAMFORMEE_CAPABLE));
-@@ -5515,11 +5566,6 @@ static void ath11k_set_vht_txbf_cap(struct ath11k *ar, u32 *vht_cap)
- 		subfer = false;
- 	}
-
--	if (ar->num_rx_chains < 2) {
--		*vht_cap &= ~(IEEE80211_VHT_CAP_SU_BEAMFORMEE_CAPABLE);
--		subfee = false;
--	}
--
- 	/* If SU Beaformer is not set, then disable MU Beamformer Capability */
- 	if (!subfer)
- 		*vht_cap &= ~(IEEE80211_VHT_CAP_MU_BEAMFORMER_CAPABLE);
-@@ -5532,9 +5578,7 @@ static void ath11k_set_vht_txbf_cap(struct ath11k *ar, u32 *vht_cap)
- 	sound_dim >>= IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_SHIFT;
- 	*vht_cap &= ~IEEE80211_VHT_CAP_SOUNDING_DIMENSIONS_MASK;
-
--	nsts = (*vht_cap & IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK);
--	nsts >>= IEEE80211_VHT_CAP_BEAMFORMEE_STS_SHIFT;
--	*vht_cap &= ~IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK;
-+	/* TODO: Need to check invalid STS and Sound_dim values set by FW? */
-
- 	/* Enable Sounding Dimension Field only if SU BF is enabled */
- 	if (subfer) {
-@@ -5546,15 +5590,9 @@ static void ath11k_set_vht_txbf_cap(struct ath11k *ar, u32 *vht_cap)
- 		*vht_cap |= sound_dim;
- 	}
-
--	/* Enable Beamformee STS Field only if SU BF is enabled */
--	if (subfee) {
--		if (nsts > (ar->num_rx_chains - 1))
--			nsts = ar->num_rx_chains - 1;
--
--		nsts <<= IEEE80211_VHT_CAP_BEAMFORMEE_STS_SHIFT;
--		nsts &=  IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK;
--		*vht_cap |= nsts;
--	}
-+	/* Use the STS advertised by FW unless SU Beamformee is not supported*/
-+	if (!subfee)
-+		*vht_cap &= ~(IEEE80211_VHT_CAP_BEAMFORMEE_STS_MASK);
- }
-
- static struct ieee80211_sta_vht_cap
-@@ -6386,6 +6424,14 @@ static int ath11k_mac_op_start(struct ieee80211_hw *hw)
- 		}
- 	}
-
-+	if (ath11k_hw_supports_6g_cc_ext(ar)) {
-+		struct cur_regulatory_info *reg_info;
-+
-+		reg_info = &ab->reg_info_store[ar->pdev_idx];
-+		ath11k_dbg(ab, ATH11K_DBG_MAC, "mac interface added to change reg rules\n");
-+		ath11k_reg_handle_chan_list(ab, reg_info, IEEE80211_REG_LPI_AP);
-+	}
-+
- 	mutex_unlock(&ar->conf_mutex);
-
- 	rcu_assign_pointer(ab->pdevs_active[ar->pdev_idx],
-@@ -6404,6 +6450,7 @@ static void ath11k_mac_op_stop(struct ieee80211_hw *hw)
- {
- 	struct ath11k *ar = hw->priv;
- 	struct htt_ppdu_stats_info *ppdu_stats, *tmp;
-+	struct scan_chan_list_params *params, *tmp_ch;
- 	int ret;
-
- 	ath11k_mac_drain_tx(ar);
-@@ -6419,6 +6466,7 @@ static void ath11k_mac_op_stop(struct ieee80211_hw *hw)
- 	mutex_unlock(&ar->conf_mutex);
-
- 	cancel_delayed_work_sync(&ar->scan.timeout);
-+	cancel_work_sync(&ar->channel_update_work);
- 	cancel_work_sync(&ar->regd_update_work);
- 	cancel_work_sync(&ar->ab->update_11d_work);
-
-@@ -6434,6 +6482,13 @@ static void ath11k_mac_op_stop(struct ieee80211_hw *hw)
- 	}
- 	spin_unlock_bh(&ar->data_lock);
-
-+	spin_lock_bh(&ar->channel_update_lock);
-+	list_for_each_entry_safe(params, tmp_ch, &ar->channel_update_queue, list) {
-+		list_del(&params->list);
-+		kfree(params);
-+	}
-+	spin_unlock_bh(&ar->channel_update_lock);
-+
- 	rcu_assign_pointer(ar->ab->pdevs_active[ar->pdev_idx], NULL);
-
- 	synchronize_rcu();
-@@ -7266,6 +7321,12 @@ ath11k_mac_vdev_start_restart(struct ath11k_vif *arvif,
- 		return ret;
- 	}
-
-+	if (ath11k_mac_supports_station_tpc(ar, arvif, chandef)) {
-+		ath11k_mac_fill_reg_tpc_info(ar, arvif->vif, &arvif->chanctx);
-+		ath11k_wmi_send_vdev_set_tpc_power(ar, arvif->vdev_id,
-+						   &arvif->reg_tpc_info);
-+	}
-+
- 	if (!restart)
- 		ar->num_started_vdevs++;
-
-@@ -7588,6 +7649,469 @@ static int ath11k_start_vdev_delay(struct ieee80211_hw *hw,
- 	return 0;
- }
-
-+static u8 ath11k_mac_get_tpe_count(u8 txpwr_intrprt, u8 txpwr_cnt)
-+{
-+	switch (txpwr_intrprt) {
-+	/* Refer "Table 9-276-Meaning of Maximum Transmit Power Count subfield
-+	 * if the Maximum Transmit Power Interpretation subfield is 0 or 2" of
-+	 * "IEEE Std 802.11ax 2021".
-+	 */
-+	case IEEE80211_TPE_LOCAL_EIRP:
-+	case IEEE80211_TPE_REG_CLIENT_EIRP:
-+		txpwr_cnt = txpwr_cnt <= 3 ? txpwr_cnt : 3;
-+		txpwr_cnt = txpwr_cnt + 1;
-+		break;
-+	/* Refer "Table 9-277-Meaning of Maximum Transmit Power Count subfield
-+	 * if Maximum Transmit Power Interpretation subfield is 1 or 3" of
-+	 * "IEEE Std 802.11ax 2021".
-+	 */
-+	case IEEE80211_TPE_LOCAL_EIRP_PSD:
-+	case IEEE80211_TPE_REG_CLIENT_EIRP_PSD:
-+		txpwr_cnt = txpwr_cnt <= 4 ? txpwr_cnt : 4;
-+		txpwr_cnt = txpwr_cnt ? (BIT(txpwr_cnt - 1)) : 1;
-+		break;
-+	}
-+
-+	return txpwr_cnt;
-+}
-+
-+static u8 ath11k_mac_get_num_pwr_levels(struct cfg80211_chan_def *chan_def)
-+{
-+	if (chan_def->chan->flags & IEEE80211_CHAN_PSD) {
-+		switch (chan_def->width) {
-+		case NL80211_CHAN_WIDTH_20:
-+			return 1;
-+		case NL80211_CHAN_WIDTH_40:
-+			return 2;
-+		case NL80211_CHAN_WIDTH_80:
-+			return 4;
-+		case NL80211_CHAN_WIDTH_80P80:
-+		case NL80211_CHAN_WIDTH_160:
-+			return 8;
-+		default:
-+			return 1;
-+		}
-+	} else {
-+		switch (chan_def->width) {
-+		case NL80211_CHAN_WIDTH_20:
-+			return 1;
-+		case NL80211_CHAN_WIDTH_40:
-+			return 2;
-+		case NL80211_CHAN_WIDTH_80:
-+			return 3;
-+		case NL80211_CHAN_WIDTH_80P80:
-+		case NL80211_CHAN_WIDTH_160:
-+			return 4;
-+		default:
-+			return 1;
-+		}
-+	}
-+}
-+
-+static u16 ath11k_mac_get_6g_start_frequency(struct cfg80211_chan_def *chan_def)
-+{
-+	u16 diff_seq;
-+
-+	/* It is to get the lowest channel number's center frequency of the chan.
-+	 * For example,
-+	 * bandwidth=40 MHz, center frequency is 5965, lowest channel is 1
-+	 * with center frequency 5955, its diff is 5965 - 5955 = 10.
-+	 * bandwidth=80 MHz, center frequency is 5985, lowest channel is 1
-+	 * with center frequency 5955, its diff is 5985 - 5955 = 30.
-+	 * bandwidth=160 MHz, center frequency is 6025, lowest channel is 1
-+	 * with center frequency 5955, its diff is 6025 - 5955 = 70.
-+	 */
-+	switch (chan_def->width) {
-+	case NL80211_CHAN_WIDTH_160:
-+		diff_seq = 70;
-+		break;
-+	case NL80211_CHAN_WIDTH_80:
-+	case NL80211_CHAN_WIDTH_80P80:
-+		diff_seq = 30;
-+		break;
-+	case NL80211_CHAN_WIDTH_40:
-+		diff_seq = 10;
-+		break;
-+	default:
-+		diff_seq = 0;
-+	}
-+
-+	return chan_def->center_freq1 - diff_seq;
-+}
-+
-+static u16 ath11k_mac_get_seg_freq(struct cfg80211_chan_def *chan_def,
-+				   u16 start_seq, u8 seq)
-+{
-+	u16 seg_seq;
-+
-+	/* It is to get the center frequency of the specific bandwidth.
-+	 * start_seq means the lowest channel number's center frequency.
-+	 * seq 0/1/2/3 means 20 MHz/40 MHz/80 MHz/160 MHz&80P80.
-+	 * For example,
-+	 * lowest channel is 1, its center frequency 5955,
-+	 * center frequency is 5955 when bandwidth=20 MHz, its diff is 5955 - 5955 = 0.
-+	 * lowest channel is 1, its center frequency 5955,
-+	 * center frequency is 5965 when bandwidth=40 MHz, its diff is 5965 - 5955 = 10.
-+	 * lowest channel is 1, its center frequency 5955,
-+	 * center frequency is 5985 when bandwidth=80 MHz, its diff is 5985 - 5955 = 30.
-+	 * lowest channel is 1, its center frequency 5955,
-+	 * center frequency is 6025 when bandwidth=160 MHz, its diff is 6025 - 5955 = 70.
-+	 */
-+	if (chan_def->width == NL80211_CHAN_WIDTH_80P80 && seq == 3)
-+		return chan_def->center_freq2;
-+
-+	seg_seq = 10 * (BIT(seq) - 1);
-+	return seg_seq + start_seq;
-+}
-+
-+static void ath11k_mac_get_psd_channel(struct ath11k *ar,
-+				       u16 step_freq,
-+				       u16 *start_freq,
-+				       u16 *center_freq,
-+				       u8 i,
-+				       struct ieee80211_channel **temp_chan,
-+				       s8 *tx_power)
-+{
-+	/* It is to get the the center frequency for each 20 MHz.
-+	 * For example, if the chan is 160 MHz and center frequency is 6025,
-+	 * then it include 8 channels, they are 1/5/9/13/17/21/25/29,
-+	 * channel number 1's center frequency is 5955, it is parameter start_freq.
-+	 * parameter i is the step of the 8 channels. i is 0~7 for the 8 channels.
-+	 * the channel 1/5/9/13/17/21/25/29 maps i=0/1/2/3/4/5/6/7,
-+	 * and maps its center frequency is 5955/5975/5995/6015/6035/6055/6075/6095,
-+	 * the gap is 20 for each channel, parameter step_freq means the gap.
-+	 * after get the center frequency of each channel, it is easy to find the
-+	 * struct ieee80211_channel of it and get the max_reg_power.
-+	 */
-+	*center_freq = *start_freq + i * step_freq;
-+	*temp_chan = ieee80211_get_channel(ar->hw->wiphy, *center_freq);
-+	*tx_power = (*temp_chan)->max_reg_power;
-+}
-+
-+static void ath11k_mac_get_eirp_power(struct ath11k *ar,
-+				      u16 *start_freq,
-+				      u16 *center_freq,
-+				      u8 i,
-+				      struct ieee80211_channel **temp_chan,
-+				      struct cfg80211_chan_def *def,
-+				      s8 *tx_power)
-+{
-+	/* It is to get the the center frequency for 20 MHz/40 MHz/80 MHz/
-+	 * 160 MHz&80P80 bandwidth, and then plus 10 to the center frequency,
-+	 * it is the center frequency of a channel number.
-+	 * For example, when configured channel number is 1.
-+	 * center frequency is 5965 when bandwidth=40 MHz, after plus 10, it is 5975,
-+	 * then it is channel number 5.
-+	 * center frequency is 5985 when bandwidth=80 MHz, after plus 10, it is 5995,
-+	 * then it is channel number 9.
-+	 * center frequency is 6025 when bandwidth=160 MHz, after plus 10, it is 6035,
-+	 * then it is channel number 17.
-+	 * after get the center frequency of each channel, it is easy to find the
-+	 * struct ieee80211_channel of it and get the max_reg_power.
-+	 */
-+	*center_freq = ath11k_mac_get_seg_freq(def, *start_freq, i);
-+
-+	/* For the 20 MHz, its center frequency is same with same channel */
-+	if (i != 0)
-+		*center_freq += 10;
-+
-+	*temp_chan = ieee80211_get_channel(ar->hw->wiphy, *center_freq);
-+	*tx_power = (*temp_chan)->max_reg_power;
-+}
-+
-+void ath11k_mac_fill_reg_tpc_info(struct ath11k *ar,
-+				  struct ieee80211_vif *vif,
-+				  struct ieee80211_chanctx_conf *ctx)
-+{
-+	struct ath11k_base *ab = ar->ab;
-+	struct ath11k_vif *arvif = (void *)vif->drv_priv;
-+	struct ieee80211_bss_conf *bss_conf = &vif->bss_conf;
-+	struct ath11k_reg_tpc_power_info *reg_tpc_info = &arvif->reg_tpc_info;
-+	struct ieee80211_channel *chan, *temp_chan;
-+	u8 pwr_lvl_idx, num_pwr_levels, pwr_reduction;
-+	bool is_psd_power = false, is_tpe_present = false;
-+	s8 max_tx_power[IEEE80211_MAX_NUM_PWR_LEVEL],
-+		psd_power, tx_power, eirp_power;
-+	u16 oper_freq, start_freq, center_freq;
-+
-+	chan = ctx->def.chan;
-+	oper_freq = ctx->def.chan->center_freq;
-+	start_freq = ath11k_mac_get_6g_start_frequency(&ctx->def);
-+	pwr_reduction = bss_conf->pwr_reduction;
-+
-+	if (arvif->reg_tpc_info.num_pwr_levels) {
-+		is_tpe_present = true;
-+		num_pwr_levels = arvif->reg_tpc_info.num_pwr_levels;
-+	} else {
-+		num_pwr_levels = ath11k_mac_get_num_pwr_levels(&ctx->def);
-+	}
-+
-+	for (pwr_lvl_idx = 0; pwr_lvl_idx < num_pwr_levels; pwr_lvl_idx++) {
-+		/* STA received TPE IE*/
-+		if (is_tpe_present) {
-+			/* local power is PSD power*/
-+			if (chan->flags & IEEE80211_CHAN_PSD) {
-+				/* Connecting AP is psd power */
-+				if (reg_tpc_info->is_psd_power) {
-+					is_psd_power = true;
-+					ath11k_mac_get_psd_channel(ar, 20,
-+								   &start_freq,
-+								   &center_freq,
-+								   pwr_lvl_idx,
-+								   &temp_chan,
-+								   &tx_power);
-+					psd_power = temp_chan->psd;
-+					eirp_power = tx_power;
-+					max_tx_power[pwr_lvl_idx] =
-+						min_t(s8,
-+						      psd_power,
-+						      reg_tpc_info->tpe[pwr_lvl_idx]);
-+				/* Connecting AP is not psd power */
-+				} else {
-+					ath11k_mac_get_eirp_power(ar,
-+								  &start_freq,
-+								  &center_freq,
-+								  pwr_lvl_idx,
-+								  &temp_chan,
-+								  &ctx->def,
-+								  &tx_power);
-+					psd_power = temp_chan->psd;
-+					/* convert psd power to EIRP power based
-+					 * on channel width
-+					 */
-+					tx_power =
-+						min_t(s8, tx_power,
-+						      psd_power + 13 + pwr_lvl_idx * 3);
-+					max_tx_power[pwr_lvl_idx] =
-+						min_t(s8,
-+						      tx_power,
-+						      reg_tpc_info->tpe[pwr_lvl_idx]);
-+				}
-+			/* local power is not PSD power */
-+			} else {
-+				/* Connecting AP is psd power */
-+				if (reg_tpc_info->is_psd_power) {
-+					is_psd_power = true;
-+					ath11k_mac_get_psd_channel(ar, 20,
-+								   &start_freq,
-+								   &center_freq,
-+								   pwr_lvl_idx,
-+								   &temp_chan,
-+								   &tx_power);
-+					eirp_power = tx_power;
-+					max_tx_power[pwr_lvl_idx] =
-+						reg_tpc_info->tpe[pwr_lvl_idx];
-+				/* Connecting AP is not psd power */
-+				} else {
-+					ath11k_mac_get_eirp_power(ar,
-+								  &start_freq,
-+								  &center_freq,
-+								  pwr_lvl_idx,
-+								  &temp_chan,
-+								  &ctx->def,
-+								  &tx_power);
-+					max_tx_power[pwr_lvl_idx] =
-+						min_t(s8,
-+						      tx_power,
-+						      reg_tpc_info->tpe[pwr_lvl_idx]);
-+				}
-+			}
-+		/* STA not received TPE IE */
-+		} else {
-+			/* local power is PSD power*/
-+			if (chan->flags & IEEE80211_CHAN_PSD) {
-+				is_psd_power = true;
-+				ath11k_mac_get_psd_channel(ar, 20,
-+							   &start_freq,
-+							   &center_freq,
-+							   pwr_lvl_idx,
-+							   &temp_chan,
-+							   &tx_power);
-+				psd_power = temp_chan->psd;
-+				eirp_power = tx_power;
-+				max_tx_power[pwr_lvl_idx] = psd_power;
-+			} else {
-+				ath11k_mac_get_eirp_power(ar,
-+							  &start_freq,
-+							  &center_freq,
-+							  pwr_lvl_idx,
-+							  &temp_chan,
-+							  &ctx->def,
-+							  &tx_power);
-+				max_tx_power[pwr_lvl_idx] =
-+					min_t(s8,
-+					      tx_power,
-+					      reg_tpc_info->tpe[pwr_lvl_idx]);
-+			}
-+		}
-+
-+		if (is_psd_power) {
-+			/* If AP local power constraint is present */
-+			if (pwr_reduction)
-+				eirp_power = eirp_power - pwr_reduction;
-+
-+			/* If firmware updated max tx power is non zero, then take
-+			 * the min of firmware updated ap tx power
-+			 * and max power derived from above mentioned parameters.
-+			 */
-+			ath11k_dbg(ab, ATH11K_DBG_MAC,
-+				   "eirp power : %d firmware report power : %d\n",
-+				   eirp_power, ar->max_allowed_tx_power);
-+			if (ar->max_allowed_tx_power)
-+				eirp_power = min_t(s8,
-+						   eirp_power,
-+						   ar->max_allowed_tx_power);
-+		} else {
-+			/* If AP local power constraint is present */
-+			if (pwr_reduction)
-+				max_tx_power[pwr_lvl_idx] =
-+					max_tx_power[pwr_lvl_idx] - pwr_reduction;
-+			/* If firmware updated max tx power is non zero, then take
-+			 * the min of firmware updated ap tx power
-+			 * and max power derived from above mentioned parameters.
-+			 */
-+			if (ar->max_allowed_tx_power)
-+				max_tx_power[pwr_lvl_idx] =
-+					min_t(s8,
-+					      max_tx_power[pwr_lvl_idx],
-+					      ar->max_allowed_tx_power);
-+		}
-+		reg_tpc_info->chan_power_info[pwr_lvl_idx].chan_cfreq = center_freq;
-+		reg_tpc_info->chan_power_info[pwr_lvl_idx].tx_power =
-+			max_tx_power[pwr_lvl_idx];
-+	}
-+
-+	reg_tpc_info->num_pwr_levels = num_pwr_levels;
-+	reg_tpc_info->is_psd_power = is_psd_power;
-+	reg_tpc_info->eirp_power = eirp_power;
-+	reg_tpc_info->power_type_6g =
-+		ath11k_ieee80211_ap_pwr_type_convert(vif->bss_conf.power_type);
-+}
-+
-+static void ath11k_mac_parse_tx_pwr_env(struct ath11k *ar,
-+					struct ieee80211_vif *vif,
-+					struct ieee80211_chanctx_conf *ctx)
-+{
-+	struct ath11k_base *ab = ar->ab;
-+	struct ath11k_vif *arvif = (void *)vif->drv_priv;
-+	struct ieee80211_bss_conf *bss_conf = &vif->bss_conf;
-+	struct ieee80211_tx_pwr_env *single_tpe;
-+	enum wmi_reg_6ghz_client_type client_type;
-+	struct cur_regulatory_info *reg_info;
-+	int i;
-+	u8 pwr_count, pwr_interpret, pwr_category;
-+	u8 psd_index = 0, non_psd_index = 0, local_tpe_count = 0, reg_tpe_count = 0;
-+	bool use_local_tpe, non_psd_set = false, psd_set = false;
-+
-+	reg_info = &ab->reg_info_store[ar->pdev_idx];
-+	client_type = reg_info->client_type;
-+
-+	for (i = 0; i < bss_conf->tx_pwr_env_num; i++) {
-+		single_tpe = &bss_conf->tx_pwr_env[i];
-+		pwr_category = u8_get_bits(single_tpe->tx_power_info,
-+					   IEEE80211_TX_PWR_ENV_INFO_CATEGORY);
-+		pwr_interpret = u8_get_bits(single_tpe->tx_power_info,
-+					    IEEE80211_TX_PWR_ENV_INFO_INTERPRET);
-+
-+		if (pwr_category == client_type) {
-+			if (pwr_interpret == IEEE80211_TPE_LOCAL_EIRP ||
-+			    pwr_interpret == IEEE80211_TPE_LOCAL_EIRP_PSD)
-+				local_tpe_count++;
-+			else if (pwr_interpret == IEEE80211_TPE_REG_CLIENT_EIRP ||
-+				 pwr_interpret == IEEE80211_TPE_REG_CLIENT_EIRP_PSD)
-+				reg_tpe_count++;
-+		}
-+	}
-+
-+	if (!reg_tpe_count && !local_tpe_count) {
-+		ath11k_warn(ab,
-+			    "no transmit power envelope match client power type %d\n",
-+			    client_type);
-+		return;
-+	} else if (!reg_tpe_count) {
-+		use_local_tpe = true;
-+	} else {
-+		use_local_tpe = false;
-+	}
-+
-+	for (i = 0; i < bss_conf->tx_pwr_env_num; i++) {
-+		single_tpe = &bss_conf->tx_pwr_env[i];
-+		pwr_category = u8_get_bits(single_tpe->tx_power_info,
-+					   IEEE80211_TX_PWR_ENV_INFO_CATEGORY);
-+		pwr_interpret = u8_get_bits(single_tpe->tx_power_info,
-+					    IEEE80211_TX_PWR_ENV_INFO_INTERPRET);
-+
-+		if (pwr_category != client_type)
-+			continue;
-+
-+		/* get local transmit power envelope */
-+		if (use_local_tpe) {
-+			if (pwr_interpret == IEEE80211_TPE_LOCAL_EIRP) {
-+				non_psd_index = i;
-+				non_psd_set = true;
-+			} else if (pwr_interpret == IEEE80211_TPE_LOCAL_EIRP_PSD) {
-+				psd_index = i;
-+				psd_set = true;
-+			}
-+		/* get regulatory transmit power envelope */
-+		} else {
-+			if (pwr_interpret == IEEE80211_TPE_REG_CLIENT_EIRP) {
-+				non_psd_index = i;
-+				non_psd_set = true;
-+			} else if (pwr_interpret == IEEE80211_TPE_REG_CLIENT_EIRP_PSD) {
-+				psd_index = i;
-+				psd_set = true;
-+			}
-+		}
-+	}
-+
-+	if (non_psd_set && !psd_set) {
-+		single_tpe = &bss_conf->tx_pwr_env[non_psd_index];
-+		pwr_count = u8_get_bits(single_tpe->tx_power_info,
-+					IEEE80211_TX_PWR_ENV_INFO_COUNT);
-+		pwr_interpret = u8_get_bits(single_tpe->tx_power_info,
-+					    IEEE80211_TX_PWR_ENV_INFO_INTERPRET);
-+		arvif->reg_tpc_info.is_psd_power = false;
-+		arvif->reg_tpc_info.eirp_power = 0;
-+
-+		arvif->reg_tpc_info.num_pwr_levels =
-+			ath11k_mac_get_tpe_count(pwr_interpret, pwr_count);
-+		for (i = 0; i < arvif->reg_tpc_info.num_pwr_levels; i++) {
-+			ath11k_dbg(ab, ATH11K_DBG_MAC,
-+				   "non PSD power[%d] : %d\n",
-+				   i, single_tpe->tx_power[i]);
-+			arvif->reg_tpc_info.tpe[i] = single_tpe->tx_power[i] / 2;
-+		}
-+	}
-+
-+	if (psd_set) {
-+		single_tpe = &bss_conf->tx_pwr_env[psd_index];
-+		pwr_count = u8_get_bits(single_tpe->tx_power_info,
-+					IEEE80211_TX_PWR_ENV_INFO_COUNT);
-+		pwr_interpret = u8_get_bits(single_tpe->tx_power_info,
-+					    IEEE80211_TX_PWR_ENV_INFO_INTERPRET);
-+		arvif->reg_tpc_info.is_psd_power = true;
-+
-+		if (pwr_count == 0) {
-+			ath11k_dbg(ab, ATH11K_DBG_MAC,
-+				   "TPE PSD power : %d\n", single_tpe->tx_power[0]);
-+			arvif->reg_tpc_info.num_pwr_levels =
-+				ath11k_mac_get_num_pwr_levels(&ctx->def);
-+			for (i = 0; i < arvif->reg_tpc_info.num_pwr_levels; i++)
-+				arvif->reg_tpc_info.tpe[i] = single_tpe->tx_power[0] / 2;
-+		} else {
-+			arvif->reg_tpc_info.num_pwr_levels =
-+				ath11k_mac_get_tpe_count(pwr_interpret, pwr_count);
-+			for (i = 0; i < arvif->reg_tpc_info.num_pwr_levels; i++) {
-+				ath11k_dbg(ab, ATH11K_DBG_MAC,
-+					   "TPE PSD power[%d] : %d\n",
-+					   i, single_tpe->tx_power[i]);
-+				arvif->reg_tpc_info.tpe[i] = single_tpe->tx_power[i] / 2;
-+			}
-+		}
-+	}
-+}
-+
- static int
- ath11k_mac_op_assign_vif_chanctx(struct ieee80211_hw *hw,
- 				 struct ieee80211_vif *vif,
-@@ -7599,6 +8123,8 @@ ath11k_mac_op_assign_vif_chanctx(struct ieee80211_hw *hw,
- 	struct ath11k_vif *arvif = ath11k_vif_to_arvif(vif);
- 	int ret;
- 	struct peer_create_params param;
-+	struct cur_regulatory_info *reg_info;
-+	enum ieee80211_ap_reg_power power_type;
-
- 	mutex_lock(&ar->conf_mutex);
-
-@@ -7606,6 +8132,20 @@ ath11k_mac_op_assign_vif_chanctx(struct ieee80211_hw *hw,
- 		   "chanctx assign ptr %p vdev_id %i\n",
- 		   ctx, arvif->vdev_id);
-
-+	if (ath11k_hw_supports_6g_cc_ext(ar) &&
-+	    ctx->def.chan->band == NL80211_BAND_6GHZ &&
-+	    arvif->vdev_type == WMI_VDEV_TYPE_STA) {
-+		reg_info = &ab->reg_info_store[ar->pdev_idx];
-+		power_type = vif->bss_conf.power_type;
-+		ath11k_dbg(ab, ATH11K_DBG_MAC, "mac chanctx power type %d\n",
-+			   power_type);
-+		if (power_type == IEEE80211_REG_UNSET_AP)
-+			power_type = IEEE80211_REG_LPI_AP;
-+		ath11k_reg_handle_chan_list(ab, reg_info, power_type);
-+		arvif->chanctx = *ctx;
-+		ath11k_mac_parse_tx_pwr_env(ar, vif, ctx);
-+	}
-+
- 	/* for QCA6390 bss peer must be created before vdev_start */
- 	if (ab->hw_params.vdev_start_delay &&
- 	    arvif->vdev_type != WMI_VDEV_TYPE_AP &&
-@@ -9276,6 +9816,31 @@ static int ath11k_mac_setup_channels_rates(struct ath11k *ar,
+@@ -8774,6 +8774,31 @@ static int ath11k_mac_setup_channels_rates(struct ath11k *ar,
  	return 0;
  }
 
@@ -1523,7 +274,7 @@ index b328a0599..8a034a971 100644
  static int ath11k_mac_setup_iface_combinations(struct ath11k *ar)
  {
  	struct ath11k_base *ab = ar->ab;
-@@ -9295,28 +9860,43 @@ static int ath11k_mac_setup_iface_combinations(struct ath11k *ar)
+@@ -8793,28 +8818,43 @@ static int ath11k_mac_setup_iface_combinations(struct ath11k *ar)
  		return -ENOMEM;
  	}
 
@@ -1587,15 +338,7 @@ index b328a0599..8a034a971 100644
 
  	ar->hw->wiphy->iface_combinations = combinations;
  	ar->hw->wiphy->n_iface_combinations = 1;
-@@ -9367,6 +9947,7 @@ static const struct wiphy_iftype_ext_capab ath11k_iftypes_ext_capa[] = {
-
- static void __ath11k_mac_unregister(struct ath11k *ar)
- {
-+	cancel_work_sync(&ar->channel_update_work);
- 	cancel_work_sync(&ar->regd_update_work);
-
- 	ieee80211_unregister_hw(ar->hw);
-@@ -9381,6 +9962,8 @@ static void __ath11k_mac_unregister(struct ath11k *ar)
+@@ -8875,6 +8915,8 @@ static void __ath11k_mac_unregister(struct ath11k *ar)
  	kfree(ar->hw->wiphy->iface_combinations[0].limits);
  	kfree(ar->hw->wiphy->iface_combinations);
 
@@ -1604,7 +347,7 @@ index b328a0599..8a034a971 100644
  	SET_IEEE80211_DEV(ar->hw, NULL);
  }
 
-@@ -9423,6 +10006,7 @@ static int __ath11k_mac_register(struct ath11k *ar)
+@@ -8917,6 +8959,7 @@ static int __ath11k_mac_register(struct ath11k *ar)
  	ath11k_pdev_caps_update(ar);
 
  	SET_IEEE80211_PERM_ADDR(ar->hw, ar->mac_addr);
@@ -1612,1607 +355,130 @@ index b328a0599..8a034a971 100644
 
  	SET_IEEE80211_DEV(ar->hw, ab->dev);
 
-@@ -9565,6 +10149,8 @@ static int __ath11k_mac_register(struct ath11k *ar)
- 	ar->hw->wiphy->iftype_ext_capab = ath11k_iftypes_ext_capa;
- 	ar->hw->wiphy->num_iftype_ext_capab =
- 		ARRAY_SIZE(ath11k_iftypes_ext_capa);
-+	ar->hw->wiphy->vendor_commands = ath11k_vendor_cmds;
-+	ar->hw->wiphy->n_vendor_commands = ARRAY_SIZE(ath11k_vendor_cmds);
+--
+GitLab
 
- 	if (ar->supports_6ghz) {
- 		wiphy_ext_feature_set(ar->hw->wiphy,
-@@ -9766,6 +10352,9 @@ int ath11k_mac_allocate(struct ath11k_base *ab)
+From 6591470d389d674f100568393112c169841db26f Mon Sep 17 00:00:00 2001
+From: "neil.shi" <neil.shi@quectel.com>
+Date: Tue, 23 May 2023 17:07:21 +0800
+Subject: [PATCH] wifi: ath11k: [DBS PATCH 6/6]: send coex config to firmware
+ for QCA206X
 
- 		INIT_DELAYED_WORK(&ar->scan.timeout, ath11k_scan_timeout_work);
- 		INIT_WORK(&ar->regd_update_work, ath11k_regd_update_work);
-+		INIT_WORK(&ar->channel_update_work, ath11k_regd_update_chan_list_work);
-+		INIT_LIST_HEAD(&ar->channel_update_queue);
-+		spin_lock_init(&ar->channel_update_lock);
+Signed-off-by: neil.shi <neil.shi@quectel.com>
+---
+ drivers/net/wireless/ath/ath11k/core.c | 27 +++++++++
+ drivers/net/wireless/ath/ath11k/hw.h   |  1 +
+ drivers/net/wireless/ath/ath11k/wmi.c  | 26 +++++++++
+ drivers/net/wireless/ath/ath11k/wmi.h  | 77 ++++++++++++++++++++++++++
+ 4 files changed, 131 insertions(+)
 
- 		INIT_WORK(&ar->wmi_mgmt_tx_work, ath11k_mgmt_over_wmi_tx_work);
- 		skb_queue_head_init(&ar->wmi_mgmt_tx_queue);
-@@ -9836,3 +10425,27 @@ int ath11k_mac_vif_set_keepalive(struct ath11k_vif *arvif,
+diff --git a/drivers/net/wireless/ath/ath11k/core.c b/drivers/net/wireless/ath/ath11k/core.c
+index 96ed5b7cd0048..849c7c12198e0 100644
+--- a/drivers/net/wireless/ath/ath11k/core.c
++++ b/drivers/net/wireless/ath/ath11k/core.c
+@@ -16,6 +16,7 @@
+ #include "debug.h"
+ #include "hif.h"
+ #include "wow.h"
++#include "wmi.h"
 
- 	return 0;
- }
-+
-+static int ath11k_mac_vif_send_coex_config(struct ath11k_vif *arvif,
-+		struct wmi_coex_config_params *param)
-+{
-+	return ath11k_wmi_send_coex_config(arvif->ar, param);
-+}
-+
-+int ath11k_mac_send_coex_config(struct ath11k *ar,
-+		struct wmi_coex_config_params *param)
-+{
-+	struct ath11k_vif *arvif;
-+	int ret;
-+
-+	lockdep_assert_held(&ar->conf_mutex);
-+
-+	list_for_each_entry(arvif, &ar->arvifs, list) {
-+		param->vdev_id = arvif->vdev_id;
-+		ret = ath11k_mac_vif_send_coex_config(arvif, param);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-diff --git a/drivers/net/wireless/ath/ath11k/mac.h b/drivers/net/wireless/ath/ath11k/mac.h
-index 0231783ad..205140e31 100644
---- a/drivers/net/wireless/ath/ath11k/mac.h
-+++ b/drivers/net/wireless/ath/ath11k/mac.h
-@@ -158,7 +158,7 @@ struct ath11k_vif *ath11k_mac_get_vif_up(struct ath11k_base *ab);
-
- struct ath11k *ath11k_mac_get_ar_by_vdev_id(struct ath11k_base *ab, u32 vdev_id);
- struct ath11k *ath11k_mac_get_ar_by_pdev_id(struct ath11k_base *ab, u32 pdev_id);
--
-+enum wmi_vdev_type ath11k_mac_get_ar_vdev_type(struct ath11k *ar);
- void ath11k_mac_drain_tx(struct ath11k *ar);
- void ath11k_mac_peer_cleanup_all(struct ath11k *ar);
- int ath11k_mac_tx_mgmt_pending_free(int buf_id, void *skb, void *ctx);
-@@ -175,4 +175,9 @@ int ath11k_mac_wait_tx_complete(struct ath11k *ar);
- int ath11k_mac_vif_set_keepalive(struct ath11k_vif *arvif,
- 				 enum wmi_sta_keepalive_method method,
- 				 u32 interval);
-+int ath11k_mac_send_coex_config(struct ath11k *ar,
-+				struct wmi_coex_config_params *param);
-+void ath11k_mac_fill_reg_tpc_info(struct ath11k *ar,
-+				  struct ieee80211_vif *vif,
-+				  struct ieee80211_chanctx_conf *ctx);
- #endif
-diff --git a/drivers/net/wireless/ath/ath11k/mhi.c b/drivers/net/wireless/ath/ath11k/mhi.c
-index 3ac689f1d..24578bd5e 100644
---- a/drivers/net/wireless/ath/ath11k/mhi.c
-+++ b/drivers/net/wireless/ath/ath11k/mhi.c
-@@ -414,7 +414,7 @@ int ath11k_mhi_register(struct ath11k_pci *ab_pci)
- 			goto free_controller;
- 	} else {
- 		mhi_ctrl->iova_start = 0;
--		mhi_ctrl->iova_stop = 0xFFFFFFFF;
-+		mhi_ctrl->iova_stop = 0xFFFFFFFFF;
- 	}
-
- 	mhi_ctrl->rddm_size = RDDM_DUMP_SIZE;
-@@ -434,6 +434,7 @@ int ath11k_mhi_register(struct ath11k_pci *ab_pci)
- 	case ATH11K_HW_QCA6390_HW20:
- 	case ATH11K_HW_WCN6855_HW20:
- 	case ATH11K_HW_WCN6855_HW21:
-+	case ATH11K_HW_QCA206X_HW21:
- 		ath11k_mhi_config = &ath11k_mhi_config_qca6390;
- 		break;
- 	default:
-@@ -525,3 +526,18 @@ int ath11k_mhi_resume(struct ath11k_pci *ab_pci)
-
- 	return 0;
- }
-+
-+
-+int ath11k_mhi_force_rddm(struct ath11k_pci *ab_pci)
-+{
-+	struct ath11k_base *ab = ab_pci->ab;
-+	int ret;
-+
-+	ret = mhi_force_rddm_mode(ab_pci->mhi_ctrl);
-+	if (ret) {
-+		ath11k_warn(ab, "failed to resume mhi: %d", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-diff --git a/drivers/net/wireless/ath/ath11k/mhi.h b/drivers/net/wireless/ath/ath11k/mhi.h
-index 8d9f852da..215428b87 100644
---- a/drivers/net/wireless/ath/ath11k/mhi.h
-+++ b/drivers/net/wireless/ath/ath11k/mhi.h
-@@ -25,5 +25,6 @@ void ath11k_mhi_clear_vector(struct ath11k_base *ab);
-
- int ath11k_mhi_suspend(struct ath11k_pci *ar_pci);
- int ath11k_mhi_resume(struct ath11k_pci *ar_pci);
-+int ath11k_mhi_force_rddm(struct ath11k_pci *ab_pci);
-
- #endif
-diff --git a/drivers/net/wireless/ath/ath11k/pci.c b/drivers/net/wireless/ath/ath11k/pci.c
-index 09e65c5e5..59de93c0b 100644
---- a/drivers/net/wireless/ath/ath11k/pci.c
-+++ b/drivers/net/wireless/ath/ath11k/pci.c
-@@ -18,7 +18,7 @@
- #include "qmi.h"
-
- #define ATH11K_PCI_BAR_NUM		0
--#define ATH11K_PCI_DMA_MASK		32
-+#define ATH11K_PCI_DMA_MASK		36
-
- #define TCSR_SOC_HW_VERSION		0x0224
- #define TCSR_SOC_HW_VERSION_MAJOR_MASK	GENMASK(11, 8)
-@@ -28,6 +28,8 @@
- #define QCN9074_DEVICE_ID		0x1104
- #define WCN6855_DEVICE_ID		0x1103
-
-+#define SUB_VERSION	0x1910010
-+
- static const struct pci_device_id ath11k_pci_id_table[] = {
- 	{ PCI_VDEVICE(QCOM, QCA6390_DEVICE_ID) },
- 	{ PCI_VDEVICE(QCOM, WCN6855_DEVICE_ID) },
-@@ -37,6 +39,124 @@ static const struct pci_device_id ath11k_pci_id_table[] = {
-
- MODULE_DEVICE_TABLE(pci, ath11k_pci_id_table);
-
-+static struct cnss_pci_reg register_rddm_fail_debug[] = {
-+	{"PCIE_BHI_VERSION_LOWER", HWIO_PCIE_PCIE_BHI_VERSION_LOWER_ADDR, 0},
-+	{"PCIE_BHI_VERSION_UPPER", HWIO_PCIE_PCIE_BHI_VERSION_UPPER_ADDR, 0},
-+	{"PCIE_BHI_IMGADDR_LOWER", HWIO_PCIE_PCIE_BHI_IMGADDR_LOWER_ADDR, 0},
-+	{"PCIE_BHI_IMGADDR_UPPER", HWIO_PCIE_PCIE_BHI_IMGADDR_UPPER_ADDR, 0},
-+	{"PCIE_BHI_IMGSIZE", HWIO_PCIE_PCIE_BHI_IMGSIZE_ADDR, 0},
-+	{"PCIE_BHI_IMGTXDB", HWIO_PCIE_PCIE_BHI_IMGTXDB_ADDR, 0},
-+	{"PCIE_BHI_INTVEC", HWIO_PCIE_PCIE_BHI_INTVEC_ADDR, 0},
-+	{"PCIE_BHI_EXECENV", HWIO_PCIE_PCIE_BHI_EXECENV_ADDR, 0},
-+	{"PCIE_BHI_STATUS", HWIO_PCIE_PCIE_BHI_STATUS_ADDR, 0},
-+	{"PCIE_BHI_ERRCODE", HWIO_PCIE_PCIE_BHI_ERRCODE_ADDR, 0},
-+	{"PCIE_BHI_ERRDBG1", HWIO_PCIE_PCIE_BHI_ERRDBG1_ADDR, 0},
-+	{"PCIE_BHI_ERRDBG2", HWIO_PCIE_PCIE_BHI_ERRDBG2_ADDR, 0},
-+	{"PCIE_BHI_ERRDBG3", HWIO_PCIE_PCIE_BHI_ERRDBG3_ADDR, 0},
-+	{"PCIE_BHI_SERIALNUM", HWIO_PCIE_PCIE_BHI_SERIALNUM_ADDR, 0},
-+	{"PCIE_BHI_SBLANTIROLLVER", HWIO_PCIE_PCIE_BHI_SBLANTIROLLVER_ADDR, 0},
-+	{"PCIE_BHI_NUMSEG", HWIO_PCIE_PCIE_BHI_NUMSEG_ADDR, 0},
-+	{"PCIE_BHI_MSMHWID_0", HWIO_PCIE_PCIE_BHI_MSMHWID_0_ADDR, 0},
-+	{"PCIE_BHI_MSMHWID_1", HWIO_PCIE_PCIE_BHI_MSMHWID_1_ADDR, 0},
-+	{"PCIE_BHI_MSMHWID_2", HWIO_PCIE_PCIE_BHI_MSMHWID_2_ADDR, 0},
-+	{"PCIE_BHI_MSMHWID_3", HWIO_PCIE_PCIE_BHI_MSMHWID_3_ADDR, 0},
-+	{"PCIE_BHI_MSMHWID_4", HWIO_PCIE_PCIE_BHI_MSMHWID_4_ADDR, 0},
-+	{"PCIE_BHI_MSMHWID_5", HWIO_PCIE_PCIE_BHI_MSMHWID_5_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_0", HWIO_PCIE_PCIE_BHI_OEMPKHASH_0_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_1", HWIO_PCIE_PCIE_BHI_OEMPKHASH_1_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_2", HWIO_PCIE_PCIE_BHI_OEMPKHASH_2_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_3", HWIO_PCIE_PCIE_BHI_OEMPKHASH_3_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_4", HWIO_PCIE_PCIE_BHI_OEMPKHASH_4_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_5", HWIO_PCIE_PCIE_BHI_OEMPKHASH_5_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_6", HWIO_PCIE_PCIE_BHI_OEMPKHASH_6_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_7", HWIO_PCIE_PCIE_BHI_OEMPKHASH_7_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_8", HWIO_PCIE_PCIE_BHI_OEMPKHASH_8_ADDR, 0},
-+	{"PCIE_BHI_OEMPKHASH_9", HWIO_PCIE_PCIE_BHI_OEMPKHASH_9_ADDR, 0},
-+	{"PCIE_BHI_TXVECDB", HWIO_PCIE_PCIE_BHI_TXVECDB_ADDR, 0},
-+	{"PCIE_BHI_TXVECSTATUS", HWIO_PCIE_PCIE_BHI_TXVECSTATUS_ADDR, 0},
-+	{"PCIE_BHI_RXVECDB", HWIO_PCIE_PCIE_BHI_RXVECDB_ADDR, 0},
-+	{"PCIE_BHI_RXVECSTATUS", HWIO_PCIE_PCIE_BHI_RXVECSTATUS_ADDR, 0},
-+	/* After dump this register, recovery will fail for QCA6490 */
-+	//{"PCIE_WLAON_RESET_DBG_SW_ENTRY", WLAON_RESET_DBG_SW_ENTRY, 0},
-+	{NULL},
-+};
-+
-+static struct cnss_pci_reg register_to_dump[] = {
-+	{"QDSS_APB_DEC_CS_QDSSCSR_ETRIRQCTRL", QDSS_APB_DEC_CS_QDSSCSR_ETRIRQCTRL, 0},
-+	{"QDSS_APB_DEC_CS_QDSSCSR_PRESERVEETF", QDSS_APB_DEC_CS_QDSSCSR_PRESERVEETF, 0},
-+	{"QDSS_APB_DEC_CS_QDSSCSR_PRESERVEETR0", QDSS_APB_DEC_CS_QDSSCSR_PRESERVEETR0, 0},
-+	{"QDSS_APB_DEC_CS_QDSSCSR_PRESERVEETR1", QDSS_APB_DEC_CS_QDSSCSR_PRESERVEETR1, 0},
-+	{"Q6SS_PRIVCSR_QDSP6SS_QTMR_V1_CNTP_CTL_0", Q6SS_PRIVCSR_QDSP6SS_QTMR_V1_CNTP_CTL_0, 0},
-+	{"Q6SS_PRIVCSR_QDSP6SS_QTMR_V1_CNTP_CTL_1", Q6SS_PRIVCSR_QDSP6SS_QTMR_V1_CNTP_CTL_1, 0},
-+	{"Q6SS_PRIVCSR_QDSP6SS_QTMR_V1_CNTP_CTL_2", Q6SS_PRIVCSR_QDSP6SS_QTMR_V1_CNTP_CTL_2, 0},
-+	{NULL},
-+};
-+
-+#define LINE_LEN_MAX 80
-+
-+static int ath11k_register_dump(struct ath11k_base *ab,
-+				u8 **buf,
-+				size_t *buf_len,
-+				struct cnss_pci_reg *regs,
-+				size_t num)
-+{
-+	u32 i;
-+	u32 offset = 0;
-+	size_t line_len;
-+	ssize_t len;
-+	char (*line_ptr)[LINE_LEN_MAX];
-+
-+	*buf_len = 0;
-+
-+	line_ptr = (char (*)[LINE_LEN_MAX])vzalloc(num * LINE_LEN_MAX);
-+	if (!line_ptr)
-+		return -ENOMEM;
-+
-+	for (i = 0; regs[i].name; i++) {
-+		regs[i].value = ath11k_pcic_read32(ab, regs[i].offset);
-+		ath11k_info(ab, "%s[0x%x] = 0x%x\n",
-+			    regs[i].name, regs[i].offset, regs[i].value);
-+		len = snprintf(line_ptr[i], LINE_LEN_MAX, "%s[0x%x] = 0x%x\n",
-+			       regs[i].name, regs[i].offset, regs[i].value);
-+		*buf_len += len;
-+	}
-+
-+	ath11k_info(ab, "%s buf len=%lu\n", __func__, *buf_len);
-+	*buf = vzalloc(*buf_len);
-+	if (!*buf)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < num; ++i) {
-+		line_len = strlen(line_ptr[i]);
-+		memcpy(*buf + offset, line_ptr[i], line_len);
-+		offset += line_len;
-+	}
-+
-+	vfree(line_ptr);
-+
-+	return 0;
-+}
-+
-+void ath11k_pci_register_dump(struct ath11k_pci *ab_pci)
-+{
-+	size_t num;
-+	struct register_crash_data *crash_data = &ab_pci->reg_data;
-+
-+	num = sizeof(register_to_dump) / sizeof(struct cnss_pci_reg) - 1;
-+	ath11k_register_dump(ab_pci->ab,
-+			     &crash_data->reg_buf,
-+			     &crash_data->reg_buf_len,
-+			     register_to_dump,
-+			     num);
-+
-+	num = sizeof(register_rddm_fail_debug) / sizeof(struct cnss_pci_reg) - 1;
-+	ath11k_register_dump(ab_pci->ab,
-+			     &crash_data->reg_rddm_buf,
-+			     &crash_data->reg_rddm_buf_len,
-+			     register_rddm_fail_debug,
-+			     num);
-+}
-+
- static int ath11k_pci_bus_wake_up(struct ath11k_base *ab)
- {
- 	struct ath11k_pci *ab_pci = ath11k_pci_priv(ab);
-@@ -108,7 +228,12 @@ static u32 ath11k_pci_window_read32(struct ath11k_base *ab, u32 offset)
- 	struct ath11k_pci *ab_pci = ath11k_pci_priv(ab);
- 	u32 window_start, val;
-
--	window_start = ath11k_pci_get_window_start(ab, offset);
-+	if (ab->hw_params.static_window_map)
-+		window_start = ath11k_pci_get_window_start(ab, offset);
-+	else
-+		window_start = ATH11K_PCI_WINDOW_START;
-+
-+	//window_start = ath11k_pci_get_window_start(ab, offset);
-
- 	if (window_start == ATH11K_PCI_WINDOW_START) {
- 		spin_lock_bh(&ab_pci->window_lock);
-@@ -669,19 +794,21 @@ static int ath11k_pci_start(struct ath11k_base *ab)
- {
- 	struct ath11k_pci *ab_pci = ath11k_pci_priv(ab);
-
--	/* TODO: for now don't restore ASPM in case of single MSI
--	 * vector as MHI register reading in M2 causes system hang.
--	 */
--	if (test_bit(ATH11K_FLAG_MULTI_MSI_VECTORS, &ab->dev_flags))
--		ath11k_pci_aspm_restore(ab_pci);
--	else
--		ath11k_info(ab, "leaving PCI ASPM disabled to avoid MHI M2 problems\n");
-+	ath11k_pci_aspm_restore(ab_pci);
-
- 	ath11k_pcic_start(ab);
-
- 	return 0;
- }
-
-+static int ath11k_pci_force_rddm(struct ath11k_base *ab)
-+{
-+	struct ath11k_pci *ar_pci;
-+
-+	ar_pci = ath11k_pci_priv(ab);
-+	return ath11k_mhi_force_rddm(ar_pci);
-+}
-+
- static const struct ath11k_hif_ops ath11k_pci_hif_ops = {
- 	.start = ath11k_pci_start,
- 	.stop = ath11k_pcic_stop,
-@@ -700,6 +827,7 @@ static const struct ath11k_hif_ops ath11k_pci_hif_ops = {
- 	.ce_irq_enable = ath11k_pci_hif_ce_irq_enable,
- 	.ce_irq_disable = ath11k_pci_hif_ce_irq_disable,
- 	.get_ce_msi_idx = ath11k_pcic_get_ce_msi_idx,
-+	.target_crash = ath11k_pci_force_rddm,
- };
-
- static void ath11k_pci_read_hw_version(struct ath11k_base *ab, u32 *major, u32 *minor)
-@@ -733,6 +861,8 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
- 	u32 soc_hw_version_major, soc_hw_version_minor, addr;
- 	const struct ath11k_pci_ops *pci_ops;
- 	int ret;
-+	u32 sub_version;
-+	int ops_init = 0;
-
- 	ab = ath11k_core_alloc(&pdev->dev, sizeof(*ab_pci), ATH11K_BUS_PCI);
-
-@@ -800,6 +930,13 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
- 		ab->id.bdf_search = ATH11K_BDF_SEARCH_BUS_AND_BOARD;
- 		ath11k_pci_read_hw_version(ab, &soc_hw_version_major,
- 					   &soc_hw_version_minor);
-+		pci_ops = &ath11k_pci_ops_qca6390;
-+		ret = ath11k_pcic_register_pci_ops(ab, pci_ops);
-+		if (ret) {
-+			ath11k_err(ab, "failed to register PCI ops: %d\n", ret);
-+			goto err_pci_free_region;
-+		}
-+		ops_init = 1;
- 		switch (soc_hw_version_major) {
- 		case 2:
- 			switch (soc_hw_version_minor) {
-@@ -809,7 +946,19 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
- 				break;
- 			case 0x10:
- 			case 0x11:
--				ab->hw_rev = ATH11K_HW_WCN6855_HW21;
-+				//ab->hw_rev = ATH11K_HW_WCN6855_HW21;
-+				sub_version = ath11k_pcic_read32(ab, SUB_VERSION);
-+				ath11k_dbg(ab, ATH11K_DBG_PCI, "sub_version 0x%x\n", sub_version);
-+				switch (sub_version) {
-+				case 0x1019A0E1:
-+				case 0x1019B0E1:
-+				case 0x1019C0E1:
-+				case 0x1019D0E1:
-+					ab->hw_rev = ATH11K_HW_QCA206X_HW21;
-+					break;
-+				default:
-+					ab->hw_rev = ATH11K_HW_WCN6855_HW21;
-+				}
- 				break;
- 			default:
- 				goto unsupported_wcn6855_soc;
-@@ -823,7 +972,6 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
- 			goto err_pci_free_region;
- 		}
-
--		pci_ops = &ath11k_pci_ops_qca6390;
- 		break;
- 	default:
- 		dev_err(&pdev->dev, "Unknown PCI device found: 0x%x\n",
-@@ -832,10 +980,12 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
- 		goto err_pci_free_region;
- 	}
-
--	ret = ath11k_pcic_register_pci_ops(ab, pci_ops);
--	if (ret) {
--		ath11k_err(ab, "failed to register PCI ops: %d\n", ret);
--		goto err_pci_free_region;
-+	if(ops_init == 1){
-+		ret = ath11k_pcic_register_pci_ops(ab, pci_ops);
-+		if (ret) {
-+			ath11k_err(ab, "failed to register PCI ops: %d\n", ret);
-+			goto err_pci_free_region;
-+		}
- 	}
-
- 	ret = ath11k_pcic_init_msi_config(ab);
-@@ -1021,6 +1171,7 @@ static struct pci_driver ath11k_pci_driver = {
- static int ath11k_pci_init(void)
- {
- 	int ret;
-+	u32 sub_version;
-
- 	ret = pci_register_driver(&ath11k_pci_driver);
- 	if (ret)
-diff --git a/drivers/net/wireless/ath/ath11k/pci.h b/drivers/net/wireless/ath/ath11k/pci.h
-index e9a01f344..2b13b2900 100644
---- a/drivers/net/wireless/ath/ath11k/pci.h
-+++ b/drivers/net/wireless/ath/ath11k/pci.h
-@@ -14,6 +14,7 @@
- #define PCIE_SOC_GLOBAL_RESET_V			1
-
- #define WLAON_WARM_SW_ENTRY			0x1f80504
-+#define WLAON_RESET_DBG_SW_ENTRY		0x01F80508
- #define WLAON_SOC_RESET_CAUSE_REG		0x01f8060c
-
- #define PCIE_Q6_COOKIE_ADDR			0x01f80500
-@@ -53,6 +54,65 @@
- #define WLAON_QFPROM_PWR_CTRL_REG		0x01f8031c
- #define QFPROM_PWR_CTRL_VDD4BLOW_MASK		0x4
-
-+#define HWIO_PCIE_PCIE_BHI_VERSION_LOWER_ADDR           (0x1e0e200)
-+#define HWIO_PCIE_PCIE_BHI_VERSION_UPPER_ADDR           (0x1e0e204)
-+#define HWIO_PCIE_PCIE_BHI_IMGADDR_LOWER_ADDR           (0x1e0e208)
-+#define HWIO_PCIE_PCIE_BHI_IMGADDR_UPPER_ADDR           (0x1e0e20c)
-+#define HWIO_PCIE_PCIE_BHI_IMGSIZE_ADDR                 (0x1e0e210)
-+#define HWIO_PCIE_PCIE_BHI_IMGTXDB_ADDR                 (0x1e0e218)
-+#define HWIO_PCIE_PCIE_BHI_INTVEC_ADDR                  (0x1e0e220)
-+#define HWIO_PCIE_PCIE_BHI_EXECENV_ADDR                 (0x1e0e228)
-+#define HWIO_PCIE_PCIE_BHI_STATUS_ADDR                  (0x1e0e22c)
-+#define HWIO_PCIE_PCIE_BHI_ERRCODE_ADDR                 (0x1e0e230)
-+#define HWIO_PCIE_PCIE_BHI_ERRDBG1_ADDR                 (0x1e0e234)
-+#define HWIO_PCIE_PCIE_BHI_ERRDBG2_ADDR                 (0x1e0e238)
-+#define HWIO_PCIE_PCIE_BHI_ERRDBG3_ADDR                 (0x1e0e23c)
-+#define HWIO_PCIE_PCIE_BHI_SERIALNUM_ADDR               (0x1e0e240)
-+#define HWIO_PCIE_PCIE_BHI_SBLANTIROLLVER_ADDR          (0x1e0e244)
-+#define HWIO_PCIE_PCIE_BHI_NUMSEG_ADDR                  (0x1e0e248)
-+#define HWIO_PCIE_PCIE_BHI_MSMHWID_0_ADDR               (0x1e0e24c)
-+#define HWIO_PCIE_PCIE_BHI_MSMHWID_1_ADDR               (0x1e0e250)
-+#define HWIO_PCIE_PCIE_BHI_MSMHWID_2_ADDR               (0x1e0e254)
-+#define HWIO_PCIE_PCIE_BHI_MSMHWID_3_ADDR               (0x1e0e258)
-+#define HWIO_PCIE_PCIE_BHI_MSMHWID_4_ADDR               (0x1e0e25c)
-+#define HWIO_PCIE_PCIE_BHI_MSMHWID_5_ADDR               (0x1e0e260)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_0_ADDR             (0x1e0e264)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_1_ADDR             (0x1e0e268)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_2_ADDR             (0x1e0e26c)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_3_ADDR             (0x1e0e270)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_4_ADDR             (0x1e0e274)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_5_ADDR             (0x1e0e278)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_6_ADDR             (0x1e0e27c)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_7_ADDR             (0x1e0e280)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_8_ADDR             (0x1e0e284)
-+#define HWIO_PCIE_PCIE_BHI_OEMPKHASH_9_ADDR             (0x1e0e288)
-+#define HWIO_PCIE_PCIE_BHI_TXVECDB_ADDR                 (0x1e0e360)
-+#define HWIO_PCIE_PCIE_BHI_TXVECSTATUS_ADDR             (0x1e0e368)
-+#define HWIO_PCIE_PCIE_BHI_RXVECDB_ADDR                 (0x1e0e394)
-+#define HWIO_PCIE_PCIE_BHI_RXVECSTATUS_ADDR             (0x1e0e39c)
-+
-+#define QDSS_APB_DEC_CS_QDSSCSR_ETRIRQCTRL  (0x1C0106C)
-+#define QDSS_APB_DEC_CS_QDSSCSR_PRESERVEETF  (0x1C01070)
-+#define QDSS_APB_DEC_CS_QDSSCSR_PRESERVEETR0  (0x1C01074)
-+#define QDSS_APB_DEC_CS_QDSSCSR_PRESERVEETR1  (0x1C01078)
-+#define Q6SS_PRIVCSR_QDSP6SS_QTMR_V1_CNTP_CTL_0 (0x00DA102C)
-+#define Q6SS_PRIVCSR_QDSP6SS_QTMR_V1_CNTP_CTL_1 (0x00DA202C)
-+#define Q6SS_PRIVCSR_QDSP6SS_QTMR_V1_CNTP_CTL_2 (0x00DA302C)
-+
-+struct cnss_pci_reg {
-+	char *name;
-+	u32 offset;
-+	u32 value;
-+};
-+
-+struct register_crash_data {
-+	u8 *reg_buf;
-+	size_t reg_buf_len;
-+	u8 *reg_rddm_buf;
-+	size_t reg_rddm_buf_len;
-+};
-+
-+
- enum ath11k_pci_flags {
- 	ATH11K_PCI_ASPM_RESTORE,
- };
-@@ -72,6 +132,8 @@ struct ath11k_pci {
- 	/* enum ath11k_pci_flags */
- 	unsigned long flags;
- 	u16 link_ctl;
-+	struct register_crash_data reg_data;
-+
- };
-
- static inline struct ath11k_pci *ath11k_pci_priv(struct ath11k_base *ab)
-@@ -80,4 +142,5 @@ static inline struct ath11k_pci *ath11k_pci_priv(struct ath11k_base *ab)
- }
-
- int ath11k_pci_get_msi_irq(struct ath11k_base *ab, unsigned int vector);
-+void ath11k_pci_register_dump(struct ath11k_pci *ab_pci);
- #endif
-diff --git a/drivers/net/wireless/ath/ath11k/pcic.c b/drivers/net/wireless/ath/ath11k/pcic.c
-index c63083633..2f95d5b68 100644
---- a/drivers/net/wireless/ath/ath11k/pcic.c
-+++ b/drivers/net/wireless/ath/ath11k/pcic.c
-@@ -115,6 +115,17 @@ static const struct ath11k_msi_config ath11k_msi_config[] = {
- 		},
- 		.hw_rev = ATH11K_HW_WCN6750_HW10,
+ unsigned int ath11k_debug_mask;
+ EXPORT_SYMBOL(ath11k_debug_mask);
+@@ -115,6 +116,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
+ 		.tcl_ring_retry = true,
+ 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
+ 		.smp2p_wow_exit = false,
++		.coex_isolation = false,
  	},
-+	{
-+		.total_vectors = 32,
-+		.total_users = 4,
-+		.users = (struct ath11k_msi_user[]) {
-+			{ .name = "MHI", .num_vectors = 3, .base_vector = 0 },
-+			{ .name = "CE", .num_vectors = 10, .base_vector = 3 },
-+			{ .name = "WAKE", .num_vectors = 1, .base_vector = 13 },
-+			{ .name = "DP", .num_vectors = 18, .base_vector = 14 },
-+		},
-+		.hw_rev = ATH11K_HW_QCA206X_HW21,
-+	},
- };
-
- int ath11k_pcic_init_msi_config(struct ath11k_base *ab)
-@@ -460,8 +471,6 @@ void ath11k_pcic_ext_irq_enable(struct ath11k_base *ab)
- {
- 	int i;
-
--	set_bit(ATH11K_FLAG_EXT_IRQ_ENABLED, &ab->dev_flags);
--
- 	for (i = 0; i < ATH11K_EXT_IRQ_GRP_NUM_MAX; i++) {
- 		struct ath11k_ext_irq_grp *irq_grp = &ab->ext_irq_grp[i];
-
-@@ -471,6 +480,8 @@ void ath11k_pcic_ext_irq_enable(struct ath11k_base *ab)
- 		}
- 		ath11k_pcic_ext_grp_enable(irq_grp);
- 	}
-+
-+	set_bit(ATH11K_FLAG_EXT_IRQ_ENABLED, &ab->dev_flags);
- }
- EXPORT_SYMBOL(ath11k_pcic_ext_irq_enable);
-
-@@ -598,7 +609,10 @@ static int ath11k_pcic_ext_irq_config(struct ath11k_base *ab)
- 			ath11k_dbg(ab, ATH11K_DBG_PCI,
- 				   "irq %d group %d\n", irq, i);
-
--			irq_set_status_flags(irq, IRQ_DISABLE_UNLAZY);
-+			if (!test_bit(ATH11K_FLAG_MULTI_MSI_VECTORS, &ab->dev_flags))
-+				irq_set_status_flags(irq, IRQ_DISABLE_UNLAZY | IRQ_MOVE_PCNTXT);
-+			else
-+				irq_set_status_flags(irq, IRQ_DISABLE_UNLAZY);
- 			ret = request_irq(irq, ath11k_pcic_ext_interrupt_handler,
- 					  irq_flags, "DP_EXT_IRQ", irq_grp);
- 			if (ret) {
-@@ -648,6 +662,8 @@ int ath11k_pcic_config_irq(struct ath11k_base *ab)
-
- 		tasklet_setup(&ce_pipe->intr_tq, ath11k_pcic_ce_tasklet);
-
-+		if (!test_bit(ATH11K_FLAG_MULTI_MSI_VECTORS, &ab->dev_flags))
-+			irq_set_status_flags(irq, IRQ_MOVE_PCNTXT);
- 		ret = request_irq(irq, ath11k_pcic_ce_interrupt_handler,
- 				  irq_flags, irq_name[irq_idx], ce_pipe);
- 		if (ret) {
-diff --git a/drivers/net/wireless/ath/ath11k/qmi.c b/drivers/net/wireless/ath/ath11k/qmi.c
-index 41fad03a3..a5f582638 100644
---- a/drivers/net/wireless/ath/ath11k/qmi.c
-+++ b/drivers/net/wireless/ath/ath11k/qmi.c
-@@ -1971,6 +1971,51 @@ static void ath11k_qmi_free_target_mem_chunk(struct ath11k_base *ab)
- 	}
+ 	{
+ 		.hw_rev = ATH11K_HW_IPQ6018_HW10,
+@@ -204,6 +206,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
+ 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
+ 		.smp2p_wow_exit = false,
+ 		.support_fw_mac_sequence = false,
++		.coex_isolation = false,
+ 	},
+ 	{
+ 		.name = "qca6390 hw2.0",
+@@ -371,6 +374,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
+ 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
+ 		.smp2p_wow_exit = false,
+ 		.support_fw_mac_sequence = false,
++		.coex_isolation = false,
+ 	},
+ 	{
+ 		.name = "wcn6855 hw2.0",
+@@ -418,6 +422,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
+ 		.fw_wmi_diag_event = true,
+ 		.current_cc_support = true,
+ 		.dbr_debug_support = false,
++		.coex_isolation = false,
+ 	},
+ 	{
+ 		.name = "qca206x hw2.1",
+@@ -456,6 +525,7 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
+ 		.tx_ring_size = DP_TCL_DATA_RING_SIZE,
+ 		.smp2p_wow_exit = false,
+ 		.support_fw_mac_sequence = true,
++		.coex_isolation = false,
+ 	},
+ 	{
+ 		.name = "wcn6855 hw2.1",
+@@ -1448,6 +1454,18 @@ static void ath11k_core_pdev_destroy(struct ath11k_base *ab)
+ 	ath11k_debugfs_pdev_destroy(ab);
  }
 
-+static size_t ath11k_qmi_get_remote_buf_len(struct fw_remote_mem *fw_mem)
++static int ath11k_core_config_coex_isolation(struct ath11k_base *ab)
 +{
-+	unsigned int i;
-+	size_t len = 0;
++       struct ath11k *ar = ath11k_ab_to_ar(ab, 0);
++       struct wmi_coex_config_params param;
 +
-+	for (i = 0; i < ATH11K_QMI_WLANFW_MAX_NUM_MEM_SEG_V01; i++) {
-+		if (fw_mem[i].vaddr && fw_mem[i].size)
-+			len += fw_mem[i].size;
-+	}
-+	return len;
++       memset(&param, 0, sizeof(struct wmi_coex_config_params));
++       param.config_type = WMI_COEX_CONFIG_ANTENNA_ISOLATION;
++       param.config_arg1 = WMI_COEX_ISOLATION_ARG1_DEFAUT;
++
++       return ath11k_wmi_send_coex_config(ar, &param);
 +}
 +
-+int ath11k_qmi_remote_dump(struct ath11k_base *ab)
-+{
-+	struct fw_remote_crash_data *crash_data = &ab->remote_crash_data;
-+	struct fw_remote_mem *fw_mem = ab->remote_mem;
-+	u8 i;
-+	u32 offset = 0;
-+
-+	crash_data->remote_buf_len = ath11k_qmi_get_remote_buf_len(fw_mem);
-+	ath11k_info(ab, "%s remote buffer len=%lu\n", __func__, crash_data->remote_buf_len);
-+	crash_data->remote_buf = vzalloc(crash_data->remote_buf_len);
-+	if (!crash_data->remote_buf)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < ATH11K_QMI_WLANFW_MAX_NUM_MEM_SEG_V01; i++) {
-+		if (fw_mem[i].vaddr && fw_mem[i].size) {
-+			ath11k_info(ab, "remote mem: 0x%p, size: 0x%lx\n", fw_mem[i].vaddr,
-+				    fw_mem[i].size);
-+			memcpy(crash_data->remote_buf + offset, fw_mem[i].vaddr, fw_mem[i].size);
-+			offset += fw_mem[i].size;
+ static int ath11k_core_start(struct ath11k_base *ab)
+ {
+ 	int ret;
+@@ -1545,6 +1563,15 @@ static int ath11k_core_start(struct ath11k_base *ab)
+ 		goto err_reo_cleanup;
+ 	}
+
++	if (ab->hw_params.coex_isolation) {
++		ret = ath11k_core_config_coex_isolation(ab);
++		if (ret) {
++			ath11k_err(ab, "failed to set coex isolation: %d\n",
++					ret);
++			goto err_reo_cleanup;
 +		}
 +	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(ath11k_qmi_remote_dump);
 +
-+static void ath11k_qmi_set_remote_mem(struct fw_remote_mem *fw_mem,
-+				      void *vaddr, size_t size,
-+				      uint32_t segnum)
-+{
-+	fw_mem[segnum].vaddr = vaddr;
-+	fw_mem[segnum].size = size;
-+}
-+
- static int ath11k_qmi_alloc_target_mem_chunk(struct ath11k_base *ab)
- {
- 	int i;
-@@ -1995,10 +2040,10 @@ static int ath11k_qmi_alloc_target_mem_chunk(struct ath11k_base *ab)
- 			chunk->vaddr = NULL;
- 		}
-
--		chunk->vaddr = dma_alloc_coherent(ab->dev,
-+		chunk->vaddr = ath11k_core_dma_alloc_coherent(ab->dev,
- 						  chunk->size,
- 						  &chunk->paddr,
--						  GFP_KERNEL | __GFP_NOWARN);
-+						  GFP_KERNEL | __GFP_NOWARN | GFP_DMA32);
- 		if (!chunk->vaddr) {
- 			if (ab->qmi.mem_seg_count <= ATH11K_QMI_FW_MEM_REQ_SEGMENT_CNT) {
- 				ath11k_dbg(ab, ATH11K_DBG_QMI,
-@@ -2015,6 +2060,15 @@ static int ath11k_qmi_alloc_target_mem_chunk(struct ath11k_base *ab)
- 				   chunk->type);
- 			return -EINVAL;
- 		}
-+
-+		if (chunk->type == QMI_WLANFW_MEM_TYPE_DDR_V01) {
-+			ath11k_qmi_set_remote_mem(ab->remote_mem,
-+						  chunk->vaddr,
-+						  chunk->size,
-+						  i);
-+			ath11k_info(ab, "vaddr=0x%p size=0x%x\n", chunk->vaddr, chunk->size);
-+		}
-+
- 		chunk->prev_type = chunk->type;
- 		chunk->prev_size = chunk->size;
- 	}
-@@ -2518,9 +2572,9 @@ static int ath11k_qmi_m3_load(struct ath11k_base *ab)
- 	if (m3_mem->vaddr || m3_mem->size)
- 		goto skip_m3_alloc;
-
--	m3_mem->vaddr = dma_alloc_coherent(ab->dev,
-+	m3_mem->vaddr = ath11k_core_dma_alloc_coherent(ab->dev,
- 					   fw->size, &m3_mem->paddr,
--					   GFP_KERNEL);
-+					   GFP_KERNEL  | GFP_DMA32);
- 	if (!m3_mem->vaddr) {
- 		ath11k_err(ab, "failed to allocate memory for M3 with size %zu\n",
- 			   fw->size);
-@@ -3306,6 +3360,9 @@ int ath11k_qmi_init_service(struct ath11k_base *ab)
- 	spin_lock_init(&ab->qmi.event_lock);
- 	INIT_WORK(&ab->qmi.event_work, ath11k_qmi_driver_event_work);
-
-+	memset(ab->remote_mem, 0,
-+	       sizeof(struct fw_remote_mem) * ATH11K_QMI_WLANFW_MAX_NUM_MEM_SEG_V01);
-+
- 	ret = qmi_add_lookup(&ab->qmi.handle, ATH11K_QMI_WLFW_SERVICE_ID_V01,
- 			     ATH11K_QMI_WLFW_SERVICE_VERS_V01,
- 			     ab->qmi.service_ins_id);
-diff --git a/drivers/net/wireless/ath/ath11k/qmi.h b/drivers/net/wireless/ath/ath11k/qmi.h
-index d477e2be8..a5c8887b7 100644
---- a/drivers/net/wireless/ath/ath11k/qmi.h
-+++ b/drivers/net/wireless/ath/ath11k/qmi.h
-@@ -518,5 +518,6 @@ void ath11k_qmi_deinit_service(struct ath11k_base *ab);
- int ath11k_qmi_init_service(struct ath11k_base *ab);
- void ath11k_qmi_free_resource(struct ath11k_base *ab);
- int ath11k_qmi_fwreset_from_cold_boot(struct ath11k_base *ab);
-+int ath11k_qmi_remote_dump(struct ath11k_base *ab);
-
- #endif
-diff --git a/drivers/net/wireless/ath/ath11k/reg.c b/drivers/net/wireless/ath/ath11k/reg.c
-index 7f9fb968d..9f28c82c2 100644
---- a/drivers/net/wireless/ath/ath11k/reg.c
-+++ b/drivers/net/wireless/ath/ath11k/reg.c
-@@ -55,6 +55,17 @@ ath11k_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request)
- 	ath11k_dbg(ar->ab, ATH11K_DBG_REG,
- 		   "Regulatory Notification received for %s\n", wiphy_name(wiphy));
-
-+	if ((request->initiator == NL80211_REGDOM_SET_BY_DRIVER) &&
-+	    (ar->state == ATH11K_STATE_ON)) {
-+		ath11k_dbg(ar->ab, ATH11K_DBG_REG,
-+			   "dynamically updated by driver\n");
-+		ret = ath11k_reg_update_chan_list(ar, true);
-+		if (ret)
-+			ath11k_warn(ar->ab, "failed to update channel list: %d\n", ret);
-+
-+		return;
-+	}
-+
- 	/* Currently supporting only General User Hints. Cell base user
- 	 * hints to be handled later.
- 	 * Hints from other sources like Core, Beacons are not expected for
-@@ -112,32 +123,7 @@ int ath11k_reg_update_chan_list(struct ath11k *ar, bool wait)
- 	struct channel_param *ch;
- 	enum nl80211_band band;
- 	int num_channels = 0;
--	int i, ret, left;
--
--	if (wait && ar->state_11d != ATH11K_11D_IDLE) {
--		left = wait_for_completion_timeout(&ar->completed_11d_scan,
--						   ATH11K_SCAN_TIMEOUT_HZ);
--		if (!left) {
--			ath11k_dbg(ar->ab, ATH11K_DBG_REG,
--				   "failed to receive 11d scan complete: timed out\n");
--			ar->state_11d = ATH11K_11D_IDLE;
--		}
--		ath11k_dbg(ar->ab, ATH11K_DBG_REG,
--			   "11d scan wait left time %d\n", left);
--	}
--
--	if (wait &&
--	    (ar->scan.state == ATH11K_SCAN_STARTING ||
--	    ar->scan.state == ATH11K_SCAN_RUNNING)) {
--		left = wait_for_completion_timeout(&ar->scan.completed,
--						   ATH11K_SCAN_TIMEOUT_HZ);
--		if (!left)
--			ath11k_dbg(ar->ab, ATH11K_DBG_REG,
--				   "failed to receive hw scan complete: timed out\n");
--
--		ath11k_dbg(ar->ab, ATH11K_DBG_REG,
--			   "hw scan wait left time %d\n", left);
--	}
-+	int i, ret = 0;
-
- 	if (ar->state == ATH11K_STATE_RESTARTING)
- 		return 0;
-@@ -219,8 +205,15 @@ int ath11k_reg_update_chan_list(struct ath11k *ar, bool wait)
- 		}
- 	}
-
--	ret = ath11k_wmi_send_scan_chan_list_cmd(ar, params);
--	kfree(params);
-+	if (wait) {
-+		spin_lock_bh(&ar->channel_update_lock);
-+		list_add_tail(&params->list, &ar->channel_update_queue);
-+		spin_unlock_bh(&ar->channel_update_lock);
-+		queue_work(ar->ab->workqueue, &ar->channel_update_work);
-+	} else {
-+		ret = ath11k_wmi_send_scan_chan_list_cmd(ar, params);
-+		kfree(params);
-+	}
-
- 	return ret;
- }
-@@ -294,12 +287,6 @@ int ath11k_regd_update(struct ath11k *ar)
- 	if (ret)
- 		goto err;
-
--	if (ar->state == ATH11K_STATE_ON) {
--		ret = ath11k_reg_update_chan_list(ar, true);
--		if (ret)
--			goto err;
--	}
--
  	return 0;
- err:
- 	ath11k_warn(ab, "failed to perform regd update : %d\n", ret);
-@@ -413,6 +400,10 @@ static void ath11k_reg_intersect_rules(struct ieee80211_reg_rule *rule1,
 
- 	/* Use the flags of both the rules */
- 	new_rule->flags = rule1->flags | rule2->flags;
-+	if ((rule1->flags & NL80211_RRF_PSD) && (rule2->flags & NL80211_RRF_PSD))
-+		new_rule->psd = min_t(s8, rule1->psd, rule2->psd);
-+	else
-+		new_rule->flags &= ~NL80211_RRF_PSD;
-
- 	/* To be safe, lts use the max cac timeout of both rules */
- 	new_rule->dfs_cac_ms = max_t(u32, rule1->dfs_cac_ms,
-@@ -516,13 +507,14 @@ ath11k_reg_adjust_bw(u16 start_freq, u16 end_freq, u16 max_bw)
- static void
- ath11k_reg_update_rule(struct ieee80211_reg_rule *reg_rule, u32 start_freq,
- 		       u32 end_freq, u32 bw, u32 ant_gain, u32 reg_pwr,
--		       u32 reg_flags)
-+		       s8 psd, u32 reg_flags)
- {
- 	reg_rule->freq_range.start_freq_khz = MHZ_TO_KHZ(start_freq);
- 	reg_rule->freq_range.end_freq_khz = MHZ_TO_KHZ(end_freq);
- 	reg_rule->freq_range.max_bandwidth_khz = MHZ_TO_KHZ(bw);
- 	reg_rule->power_rule.max_antenna_gain = DBI_TO_MBI(ant_gain);
- 	reg_rule->power_rule.max_eirp = DBM_TO_MBM(reg_pwr);
-+	reg_rule->psd = psd;
- 	reg_rule->flags = reg_flags;
- }
-
-@@ -552,7 +544,7 @@ ath11k_reg_update_weather_radar_band(struct ath11k_base *ab,
- 				       reg_rule->start_freq,
- 				       ETSI_WEATHER_RADAR_BAND_LOW, bw,
- 				       reg_rule->ant_gain, reg_rule->reg_power,
--				       flags);
-+				       reg_rule->psd_eirp, flags);
-
- 		ath11k_dbg(ab, ATH11K_DBG_REG,
- 			   "\t%d. (%d - %d @ %d) (%d, %d) (%d ms) (FLAGS %d)\n",
-@@ -573,7 +565,7 @@ ath11k_reg_update_weather_radar_band(struct ath11k_base *ab,
-
- 		ath11k_reg_update_rule(regd->reg_rules + i, start_freq,
- 				       end_freq, bw, reg_rule->ant_gain,
--				       reg_rule->reg_power, flags);
-+				       reg_rule->reg_power, reg_rule->psd_eirp, flags);
-
- 		regd->reg_rules[i].dfs_cac_ms = ETSI_WEATHER_RADAR_BAND_CAC_TIMEOUT;
-
-@@ -594,7 +586,7 @@ ath11k_reg_update_weather_radar_band(struct ath11k_base *ab,
- 				       ETSI_WEATHER_RADAR_BAND_HIGH,
- 				       reg_rule->end_freq, bw,
- 				       reg_rule->ant_gain, reg_rule->reg_power,
--				       flags);
-+				       reg_rule->psd_eirp, flags);
-
- 		ath11k_dbg(ab, ATH11K_DBG_REG,
- 			   "\t%d. (%d - %d @ %d) (%d, %d) (%d ms) (FLAGS %d)\n",
-@@ -607,25 +599,64 @@ ath11k_reg_update_weather_radar_band(struct ath11k_base *ab,
- 	*rule_idx = i;
- }
-
-+enum wmi_reg_6ghz_ap_type
-+ath11k_ieee80211_ap_pwr_type_convert(enum ieee80211_ap_reg_power power_type)
-+{
-+	switch (power_type) {
-+	case IEEE80211_REG_LPI_AP:
-+		return WMI_REG_INDOOR_AP;
-+	case IEEE80211_REG_SP_AP:
-+		return WMI_REG_STANDARD_POWER_AP;
-+	case IEEE80211_REG_VLP_AP:
-+		return WMI_REG_VERY_LOW_POWER_AP;
-+	default:
-+		return WMI_REG_MAX_AP_TYPE;
-+	}
-+}
-+
- struct ieee80211_regdomain *
- ath11k_reg_build_regd(struct ath11k_base *ab,
--		      struct cur_regulatory_info *reg_info, bool intersect)
-+		      struct cur_regulatory_info *reg_info, bool intersect,
-+		      enum wmi_vdev_type vdev_type,
-+		      enum ieee80211_ap_reg_power power_type)
- {
- 	struct ieee80211_regdomain *tmp_regd, *default_regd, *new_regd = NULL;
--	struct cur_reg_rule *reg_rule;
-+	struct cur_reg_rule *reg_rule, *reg_rule_6ghz;
- 	u8 i = 0, j = 0, k = 0;
- 	u8 num_rules;
- 	u16 max_bw;
--	u32 flags;
-+	u32 flags, reg_6ghz_number, max_bw_6ghz;
- 	char alpha2[3];
-
- 	num_rules = reg_info->num_5ghz_reg_rules + reg_info->num_2ghz_reg_rules;
-
--	/* FIXME: Currently taking reg rules for 6 GHz only from Indoor AP mode list.
--	 * This can be updated after complete 6 GHz regulatory support is added.
--	 */
--	if (reg_info->is_ext_reg_event)
--		num_rules += reg_info->num_6ghz_rules_ap[WMI_REG_INDOOR_AP];
-+	if (reg_info->is_ext_reg_event) {
-+		if (vdev_type == WMI_VDEV_TYPE_STA) {
-+			enum wmi_reg_6ghz_ap_type ap_type;
-+
-+			ap_type = ath11k_ieee80211_ap_pwr_type_convert(power_type);
-+
-+			if (ap_type == WMI_REG_MAX_AP_TYPE)
-+				ap_type = WMI_REG_INDOOR_AP;
-+			reg_6ghz_number = reg_info->num_6ghz_rules_client
-+					[ap_type][WMI_REG_DEFAULT_CLIENT];
-+			if (reg_6ghz_number == 0) {
-+				ap_type = WMI_REG_INDOOR_AP;
-+				reg_6ghz_number = reg_info->num_6ghz_rules_client
-+						[ap_type][WMI_REG_DEFAULT_CLIENT];
-+			}
-+			reg_rule_6ghz = reg_info->reg_rules_6ghz_client_ptr
-+					[ap_type][WMI_REG_DEFAULT_CLIENT];
-+			max_bw_6ghz = reg_info->max_bw_6ghz_client
-+					[ap_type][WMI_REG_DEFAULT_CLIENT];
-+		} else {
-+			reg_6ghz_number = reg_info->num_6ghz_rules_ap[WMI_REG_INDOOR_AP];
-+			reg_rule_6ghz =
-+				reg_info->reg_rules_6ghz_ap_ptr[WMI_REG_INDOOR_AP];
-+			max_bw_6ghz = reg_info->max_bw_6ghz_ap[WMI_REG_INDOOR_AP];
-+		}
-+		num_rules += reg_6ghz_number;
-+	}
-
- 	if (!num_rules)
- 		goto ret;
-@@ -672,14 +703,13 @@ ath11k_reg_build_regd(struct ath11k_base *ab,
- 			 * per other BW rule flags we pass from here
- 			 */
- 			flags = NL80211_RRF_AUTO_BW;
--		} else if (reg_info->is_ext_reg_event &&
--			   reg_info->num_6ghz_rules_ap[WMI_REG_INDOOR_AP] &&
--			   (k < reg_info->num_6ghz_rules_ap[WMI_REG_INDOOR_AP])) {
--			reg_rule = reg_info->reg_rules_6ghz_ap_ptr[WMI_REG_INDOOR_AP] +
--				   k++;
--			max_bw = min_t(u16, reg_rule->max_bw,
--				       reg_info->max_bw_6ghz_ap[WMI_REG_INDOOR_AP]);
-+		} else if (reg_info->is_ext_reg_event && reg_6ghz_number &&
-+			   (k < reg_6ghz_number)) {
-+			reg_rule = reg_rule_6ghz + k++;
-+			max_bw = min_t(u16, reg_rule->max_bw, max_bw_6ghz);
- 			flags = NL80211_RRF_AUTO_BW;
-+			if (reg_rule->psd_flag)
-+				flags |= NL80211_RRF_PSD;
- 		} else {
- 			break;
- 		}
-@@ -690,7 +720,7 @@ ath11k_reg_build_regd(struct ath11k_base *ab,
- 				       reg_rule->start_freq,
- 				       reg_rule->end_freq, max_bw,
- 				       reg_rule->ant_gain, reg_rule->reg_power,
--				       flags);
-+				       reg_rule->psd_eirp, flags);
-
- 		/* Update dfs cac timeout if the dfs domain is ETSI and the
- 		 * new rule covers weather radar band.
-@@ -746,6 +776,50 @@ ath11k_reg_build_regd(struct ath11k_base *ab,
- 	return new_regd;
- }
-
-+void ath11k_regd_update_chan_list_work(struct work_struct *work)
-+{
-+	struct ath11k *ar = container_of(work, struct ath11k,
-+					 channel_update_work);
-+	struct scan_chan_list_params *params, *tmp;
-+	int left;
-+
-+	spin_lock_bh(&ar->channel_update_lock);
-+
-+	list_for_each_entry_safe(params, tmp, &ar->channel_update_queue, list) {
-+		list_del(&params->list);
-+		spin_unlock_bh(&ar->channel_update_lock);
-+
-+		if (ar->state_11d != ATH11K_11D_IDLE) {
-+			left = wait_for_completion_timeout(&ar->completed_11d_scan,
-+							   ATH11K_SCAN_TIMEOUT_HZ);
-+			if (!left) {
-+				ath11k_dbg(ar->ab, ATH11K_DBG_REG,
-+					   "failed to receive 11d scan complete: timed out\n");
-+				ar->state_11d = ATH11K_11D_IDLE;
-+			}
-+			ath11k_dbg(ar->ab, ATH11K_DBG_REG,
-+				   "reg 11d scan wait left time %d\n", left);
-+		}
-+
-+		if ((ar->scan.state == ATH11K_SCAN_STARTING ||
-+		     ar->scan.state == ATH11K_SCAN_RUNNING)) {
-+			left = wait_for_completion_timeout(&ar->scan.completed,
-+							   ATH11K_SCAN_TIMEOUT_HZ);
-+			if (!left)
-+				ath11k_dbg(ar->ab, ATH11K_DBG_REG,
-+					   "failed to receive hw scan complete: timed out\n");
-+
-+			ath11k_dbg(ar->ab, ATH11K_DBG_REG,
-+				   "reg hw scan wait left time %d\n", left);
-+		}
-+
-+		ath11k_wmi_send_scan_chan_list_cmd(ar, params);
-+		kfree(params);
-+		spin_lock_bh(&ar->channel_update_lock);
-+	}
-+	spin_unlock_bh(&ar->channel_update_lock);
-+}
-+
- void ath11k_regd_update_work(struct work_struct *work)
- {
- 	struct ath11k *ar = container_of(work, struct ath11k,
-@@ -766,6 +840,7 @@ void ath11k_regd_update_work(struct work_struct *work)
- void ath11k_reg_init(struct ath11k *ar)
- {
- 	ar->hw->wiphy->regulatory_flags = REGULATORY_WIPHY_SELF_MANAGED;
-+	ar->hw->wiphy->flags |= WIPHY_FLAG_NOTIFY_REGDOM_BY_DRIVER;
- 	ar->hw->wiphy->reg_notifier = ath11k_reg_notifier;
- }
-
-@@ -773,6 +848,12 @@ void ath11k_reg_free(struct ath11k_base *ab)
- {
- 	int i;
-
-+	for (i = 0; i < ab->num_radios; i++)
-+		ath11k_reg_reset_info(&ab->reg_info_store[i]);
-+
-+	kfree(ab->reg_info_store);
-+	ab->reg_info_store = NULL;
-+
- 	for (i = 0; i < ab->hw_params.max_radios; i++) {
- 		kfree(ab->default_regd[i]);
- 		kfree(ab->new_regd[i]);
-diff --git a/drivers/net/wireless/ath/ath11k/reg.h b/drivers/net/wireless/ath/ath11k/reg.h
-index 2f284f263..fef5927c6 100644
---- a/drivers/net/wireless/ath/ath11k/reg.h
-+++ b/drivers/net/wireless/ath/ath11k/reg.h
-@@ -28,9 +28,14 @@ enum ath11k_dfs_region {
- void ath11k_reg_init(struct ath11k *ar);
- void ath11k_reg_free(struct ath11k_base *ab);
- void ath11k_regd_update_work(struct work_struct *work);
-+void ath11k_regd_update_chan_list_work(struct work_struct *work);
- struct ieee80211_regdomain *
- ath11k_reg_build_regd(struct ath11k_base *ab,
--		      struct cur_regulatory_info *reg_info, bool intersect);
-+		      struct cur_regulatory_info *reg_info, bool intersect,
-+		      enum wmi_vdev_type vdev_type,
-+		      enum ieee80211_ap_reg_power power_type);
-+enum wmi_reg_6ghz_ap_type
-+ath11k_ieee80211_ap_pwr_type_convert(enum ieee80211_ap_reg_power power_type);
- int ath11k_regd_update(struct ath11k *ar);
- int ath11k_reg_update_chan_list(struct ath11k *ar, bool wait);
- #endif
-diff --git a/drivers/net/wireless/ath/ath11k/testmode.h b/drivers/net/wireless/ath/ath11k/testmode.h
-index 2f62f2c44..a944086cf 100644
---- a/drivers/net/wireless/ath/ath11k/testmode.h
-+++ b/drivers/net/wireless/ath/ath11k/testmode.h
-@@ -8,17 +8,29 @@
-
- #ifdef CONFIG_NL80211_TESTMODE
-
--void ath11k_tm_wmi_event(struct ath11k_base *ab, u32 cmd_id, struct sk_buff *skb);
-+void ath11k_tm_wmi_event_unsegmented(struct ath11k_base *ab, u32 cmd_id,
-+				     struct sk_buff *skb);
-+int ath11k_tm_process_event(struct ath11k_base *ab, u32 cmd_id,
-+			    const struct wmi_ftm_event_msg *ftm_msg,
-+			    u16 length);
- int ath11k_tm_cmd(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
- 		  void *data, int len);
-
- #else
-
--static inline void ath11k_tm_wmi_event(struct ath11k_base *ab, u32 cmd_id,
--				       struct sk_buff *skb)
-+static inline void ath11k_tm_wmi_event_unsegmented(struct ath11k_base *ab,
-+						   u32 cmd_id,
-+						   struct sk_buff *skb)
- {
- }
-
-+static inline int ath11k_tm_process_event(struct ath11k_base *ab, u32 cmd_id,
-+					  const struct wmi_ftm_event_msg *msg,
-+					  u16 length)
-+{
-+	return 0;
-+}
-+
- static inline int ath11k_tm_cmd(struct ieee80211_hw *hw,
- 				struct ieee80211_vif *vif,
- 				void *data, int len)
-diff --git a/drivers/net/wireless/ath/ath11k/unitest.c b/drivers/net/wireless/ath/ath11k/unitest.c
-new file mode 100644
-index 000000000..541925af0
---- /dev/null
-+++ b/drivers/net/wireless/ath/ath11k/unitest.c
-@@ -0,0 +1,96 @@
-+// SPDX-License-Identifier: BSD-3-Clause-Clear
-+/**
-+ * Copyright (c) 2020 The Linux Foundation. All rights reserved.
-+ */
-+
-+#include <net/netlink.h>
-+#include "debug.h"
-+#include "unitest.h"
-+
-+const struct nla_policy ath11k_unitest_policy[UNITEST_MAX + 1] = {
-+	[UNITEST_MODULE_ID] = {.type = NLA_U32},
-+	[UNITEST_ARGS_NUM] = {.type = NLA_U32},
-+	[UNITEST_ARGS] = {.type = NLA_BINARY,
-+		.len = MAX_UNITEST_MEMORY_LEN},
-+};
-+
-+/**
-+ * ath11k_unit_test() - send unit test command
-+ * @wiphy:    wiphy structure pointer
-+ * @wdev:     Wireless device structure pointer
-+ * @data:     Pointer to the data received
-+ * @data_len: Length of @data
-+ *
-+ * Return: 0 on success; errno on failure
-+ */
-+
-+int ath11k_unit_test(struct wiphy *wiphy, struct wireless_dev *wdev,
-+		     const void *data, int data_len)
-+{
-+	struct ieee80211_hw *hw = wiphy_to_ieee80211_hw(wiphy);
-+	struct ath11k *ar = hw->priv;
-+	struct ath11k_base *ab = ar->ab;
-+	struct nlattr *tb[UNITEST_MAX + 1];
-+	int status = 0;
-+	u32 module_id, num_args, temp_num_args, len;
-+	bool sta_found = false;
-+	struct ath11k_vif *arvif;
-+	struct unit_test_cmd utest_cmd = {0};
-+
-+	list_for_each_entry(arvif, &ar->arvifs, list) {
-+		if (arvif->vdev_type != WMI_VDEV_TYPE_STA ||
-+		    arvif->vdev_subtype != WMI_VDEV_SUBTYPE_NONE)
-+			continue;
-+		sta_found = true;
-+		break;
-+	}
-+	if (!sta_found) {
-+		ath11k_warn(ar->ab, "no sta found.");
-+		return -EINVAL;
-+	}
-+
-+	utest_cmd.vdev_id = arvif->vdev_id;
-+
-+	if (nla_parse(tb, UNITEST_MAX, data, data_len, ath11k_unitest_policy, NULL)) {
-+		ath11k_warn(ab, "Invalid ATTR");
-+		return -EINVAL;
-+	}
-+
-+	if (!tb[UNITEST_MODULE_ID]) {
-+		ath11k_warn(ab, "attr unitest module id failed");
-+		return -EINVAL;
-+	}
-+	module_id = nla_get_u32(tb[UNITEST_MODULE_ID]);
-+	utest_cmd.module_id = module_id;
-+
-+	if (!tb[UNITEST_ARGS_NUM]) {
-+		ath11k_warn(ab, "attr unitest args num failed");
-+		return -EINVAL;
-+	}
-+	num_args = nla_get_u32(tb[UNITEST_ARGS_NUM]);
-+	utest_cmd.num_args = num_args;
-+	if (num_args > UNIT_TEST_MAX_NUM_ARGS) {
-+		ath11k_warn(ab, "num args exceed");
-+		return -EINVAL;
-+	}
-+
-+	if (!tb[UNITEST_ARGS]) {
-+		ath11k_warn(ab, "attr unitest args failed");
-+		return -EINVAL;
-+	}
-+	len = nla_len(tb[UNITEST_ARGS]);
-+	temp_num_args = len / sizeof(u32);
-+	if (num_args != temp_num_args) {
-+		ath11k_warn(ab, "num args mismatch");
-+		return -EINVAL;
-+	}
-+	nla_memcpy(utest_cmd.args, tb[UNITEST_ARGS], len);
-+
-+	status = ath11k_wmi_set_unit_test(ar, &utest_cmd);
-+	if (status) {
-+		ath11k_warn(ab, "Unable to post unit test message (status-%d)", status);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-diff --git a/drivers/net/wireless/ath/ath11k/unitest.h b/drivers/net/wireless/ath/ath11k/unitest.h
-new file mode 100644
-index 000000000..9fee1cd68
---- /dev/null
-+++ b/drivers/net/wireless/ath/ath11k/unitest.h
-@@ -0,0 +1,44 @@
-+/* SPDX-License-Identifier: BSD-3-Clause-Clear */
-+/**
-+ * Copyright (c) 2020  The Linux Foundation. All rights reserved.
-+ */
-+
-+#ifndef _UNIT_TEST_H_
-+#define _UNIT_TEST_H_
-+
-+#define VENDOR_ID	0x001374
-+#define QCA_NL80211_VENDOR_UNITEST_SUBCMD	84
-+#define MAX_UNITEST_MEMORY_LEN	128
-+
-+enum qca_wlan_vendor_attr_unit_test {
-+	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_INVALID = 0,
-+	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_MODULE_ID,
-+	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_ARGS_NUM,
-+	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_ARGS,
-+	/* keep last */
-+	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_AFTER_LAST,
-+	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_MAX =
-+		QCA_WLAN_VENDOR_ATTR_UNIT_TEST_AFTER_LAST - 1,
-+};
-+
-+#define UNITEST_INVALID	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_INVALID
-+#define UNITEST_MODULE_ID	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_MODULE_ID
-+#define UNITEST_ARGS	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_ARGS
-+#define UNITEST_ARGS_NUM	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_ARGS_NUM
-+#define UNITEST_MAX	QCA_WLAN_VENDOR_ATTR_UNIT_TEST_MAX
-+
-+#define ath11k_unit_test_command \
-+{\
-+	.info.vendor_id = VENDOR_ID,\
-+	.info.subcmd = QCA_NL80211_VENDOR_UNITEST_SUBCMD,\
-+	.flags = WIPHY_VENDOR_CMD_NEED_WDEV |\
-+		WIPHY_VENDOR_CMD_NEED_NETDEV |\
-+		WIPHY_VENDOR_CMD_NEED_RUNNING,\
-+	.doit = ath11k_unit_test,\
-+	.policy = VENDOR_CMD_RAW_DATA,\
-+	.maxattr = QCA_WLAN_VENDOR_ATTR_UNIT_TEST_MAX,\
-+}
-+
-+int ath11k_unit_test(struct wiphy *wiphy, struct wireless_dev *wdev,
-+		     const void *data, int data_len);
-+#endif
+ err_reo_cleanup:
+diff --git a/drivers/net/wireless/ath/ath11k/hw.h b/drivers/net/wireless/ath/ath11k/hw.h
+index 8a3f24862edc4..4da64301d2974 100644
+--- a/drivers/net/wireless/ath/ath11k/hw.h
++++ b/drivers/net/wireless/ath/ath11k/hw.h
+@@ -200,6 +200,7 @@ struct ath11k_hw_params {
+ 	bool fw_wmi_diag_event;
+ 	bool current_cc_support;
+ 	bool dbr_debug_support;
++	bool coex_isolation;
+ 	bool global_reset;
+ 	const struct cfg80211_sar_capa *bios_sar_capa;
+ 	bool m3_fw_support;
 diff --git a/drivers/net/wireless/ath/ath11k/wmi.c b/drivers/net/wireless/ath/ath11k/wmi.c
-index 1c07f55c2..04e9fdd69 100644
+index 9037919a3ae90..5050c0dfe2508 100644
 --- a/drivers/net/wireless/ath/ath11k/wmi.c
 +++ b/drivers/net/wireless/ath/ath11k/wmi.c
-@@ -2379,6 +2379,69 @@ int ath11k_wmi_send_scan_start_cmd(struct ath11k *ar,
+@@ -8880,6 +8880,32 @@
  	return ret;
  }
-
-+int ath11k_wmi_send_vdev_set_tpc_power(struct ath11k *ar,
-+				       u32 vdev_id,
-+				       struct ath11k_reg_tpc_power_info *param)
-+{
-+	struct ath11k_pdev_wmi *wmi = ar->wmi;
-+	struct wmi_vdev_set_tpc_power_cmd *cmd;
-+	struct wmi_vdev_ch_power_info *ch;
-+	struct sk_buff *skb;
-+	struct wmi_tlv *tlv;
-+	u8 *ptr;
-+	int i, ret, len;
-+
-+	len = sizeof(*cmd) + TLV_HDR_SIZE;
-+	len += (sizeof(struct wmi_vdev_ch_power_info) * param->num_pwr_levels);
-+
-+	skb = ath11k_wmi_alloc_skb(wmi->wmi_ab, len);
-+	if (!skb)
-+		return -ENOMEM;
-+
-+	ptr = skb->data;
-+
-+	cmd = (struct wmi_vdev_set_tpc_power_cmd *)ptr;
-+	cmd->tlv_header = FIELD_PREP(WMI_TLV_TAG, WMI_TAG_VDEV_SET_TPC_POWER_CMD) |
-+			  FIELD_PREP(WMI_TLV_LEN, sizeof(*cmd) - TLV_HDR_SIZE);
-+	cmd->vdev_id = vdev_id;
-+	cmd->psd_power = param->is_psd_power;
-+	cmd->eirp_power = param->eirp_power;
-+	cmd->power_type_6ghz = param->power_type_6g;
-+	ath11k_dbg(ar->ab, ATH11K_DBG_WMI,
-+		   "wmi tpc vdev_id %d is_psd_power %d eirp_power %d power_type_6g %d\n",
-+		   vdev_id, param->is_psd_power, param->eirp_power, param->power_type_6g);
-+
-+	ptr += sizeof(*cmd);
-+	tlv = (struct wmi_tlv *)ptr;
-+	tlv->header = FIELD_PREP(WMI_TLV_TAG, WMI_TAG_ARRAY_STRUCT) |
-+		      FIELD_PREP(WMI_TLV_LEN, param->num_pwr_levels * sizeof(*ch));
-+
-+	ptr += TLV_HDR_SIZE;
-+	ch = (struct wmi_vdev_ch_power_info *)ptr;
-+
-+	for (i = 0; i < param->num_pwr_levels; i++, ch++) {
-+		ch->tlv_header = FIELD_PREP(WMI_TLV_TAG,
-+					    WMI_TAG_VDEV_CH_POWER_INFO) |
-+				FIELD_PREP(WMI_TLV_LEN,
-+					   sizeof(*ch) - TLV_HDR_SIZE);
-+
-+		ch->chan_cfreq = param->chan_power_info[i].chan_cfreq;
-+		ch->tx_power = param->chan_power_info[i].tx_power;
-+
-+		ath11k_dbg(ar->ab, ATH11K_DBG_WMI,
-+			   "wmi tpc chan_cfreq %d tx_power %d\n",
-+			   ch->chan_cfreq, ch->tx_power);
-+	}
-+
-+	ret = ath11k_wmi_cmd_send(wmi, skb,
-+				  WMI_VDEV_SET_TPC_POWER_CMDID);
-+	if (ret) {
-+		ath11k_warn(ar->ab, "failed to send WMI_VDEV_SET_TPC_POWER_CMDID\n");
-+		dev_kfree_skb(skb);
-+	}
-+	return ret;
-+}
-+
- int ath11k_wmi_send_scan_stop_cmd(struct ath11k *ar,
- 				  struct scan_cancel_param *param)
- {
-@@ -4069,6 +4132,7 @@ ath11k_wmi_copy_resource_config(struct wmi_resource_config *wmi_cfg,
- 	wmi_cfg->sched_params = tg_cfg->sched_params;
- 	wmi_cfg->twt_ap_pdev_count = tg_cfg->twt_ap_pdev_count;
- 	wmi_cfg->twt_ap_sta_count = tg_cfg->twt_ap_sta_count;
-+	wmi_cfg->host_service_flags = tg_cfg->host_service_flags;
- 	wmi_cfg->host_service_flags &=
- 		~(1 << WMI_CFG_HOST_SERVICE_FLAG_REG_CC_EXT);
- 	wmi_cfg->host_service_flags |= (tg_cfg->is_reg_cc_ext_event_supported <<
-@@ -4749,6 +4813,11 @@ static int ath11k_wmi_tlv_ext_soc_hal_reg_caps_parse(struct ath11k_base *soc,
- 		soc->pdevs[0].pdev_id = 0;
- 	}
-
-+	if (!soc->reg_info_store)
-+		soc->reg_info_store = kcalloc(soc->num_radios,
-+					      sizeof(*soc->reg_info_store),
-+					      GFP_ATOMIC);
-+
- 	return 0;
- }
-
-@@ -5028,6 +5097,7 @@ static int ath11k_pull_vdev_start_resp_tlv(struct ath11k_base *ab, struct sk_buf
- 	vdev_rsp->mac_id = ev->mac_id;
- 	vdev_rsp->cfgd_tx_streams = ev->cfgd_tx_streams;
- 	vdev_rsp->cfgd_rx_streams = ev->cfgd_rx_streams;
-+	vdev_rsp->max_allowed_tx_power = ev->max_allowed_tx_power;
-
- 	kfree(tb);
- 	return 0;
-@@ -7070,33 +7140,34 @@ static bool ath11k_reg_is_world_alpha(char *alpha)
- 	return false;
- }
-
--static int ath11k_reg_chan_list_event(struct ath11k_base *ab,
--				      struct sk_buff *skb,
--				      enum wmi_reg_chan_list_cmd_type id)
-+void ath11k_reg_reset_info(struct cur_regulatory_info *reg_info)
- {
--	struct cur_regulatory_info *reg_info = NULL;
--	struct ieee80211_regdomain *regd = NULL;
--	bool intersect = false;
--	int ret = 0, pdev_idx, i, j;
--	struct ath11k *ar;
-+	int i, j;
-
--	reg_info = kzalloc(sizeof(*reg_info), GFP_ATOMIC);
--	if (!reg_info) {
--		ret = -ENOMEM;
--		goto fallback;
--	}
-+	if (reg_info) {
-+		kfree(reg_info->reg_rules_2ghz_ptr);
-
--	if (id == WMI_REG_CHAN_LIST_CC_ID)
--		ret = ath11k_pull_reg_chan_list_update_ev(ab, skb, reg_info);
--	else
--		ret = ath11k_pull_reg_chan_list_ext_update_ev(ab, skb, reg_info);
-+		kfree(reg_info->reg_rules_5ghz_ptr);
-
--	if (ret) {
--		ath11k_warn(ab, "failed to extract regulatory info from received event\n");
--		goto fallback;
-+		for (i = 0; i < WMI_REG_CURRENT_MAX_AP_TYPE; i++) {
-+			kfree(reg_info->reg_rules_6ghz_ap_ptr[i]);
-+			for (j = 0; j < WMI_REG_MAX_CLIENT_TYPE; j++)
-+				kfree(reg_info->reg_rules_6ghz_client_ptr[i][j]);
-+		}
-+
-+		memset(reg_info, 0, sizeof(*reg_info));
- 	}
-+}
-
--	ath11k_dbg(ab, ATH11K_DBG_WMI, "event reg chan list id %d", id);
-+int ath11k_reg_handle_chan_list(struct ath11k_base *ab,
-+				struct cur_regulatory_info *reg_info,
-+				enum ieee80211_ap_reg_power power_type)
-+{
-+	struct ieee80211_regdomain *regd;
-+	bool intersect = false;
-+	int pdev_idx;
-+	struct ath11k *ar;
-+	enum wmi_vdev_type vdev_type;
-
- 	if (reg_info->status_code != REG_SET_CC_STATUS_PASS) {
- 		/* In case of failure to set the requested ctry,
-@@ -7104,7 +7175,7 @@ static int ath11k_reg_chan_list_event(struct ath11k_base *ab,
- 		 * and return from here.
- 		 */
- 		ath11k_warn(ab, "Failed to set the requested Country regulatory setting\n");
--		goto mem_free;
-+		return -EINVAL;
- 	}
-
- 	pdev_idx = reg_info->phy_id;
-@@ -7112,13 +7183,13 @@ static int ath11k_reg_chan_list_event(struct ath11k_base *ab,
- 	/* Avoid default reg rule updates sent during FW recovery if
- 	 * it is already available
- 	 */
--	spin_lock(&ab->base_lock);
-+	spin_lock_bh(&ab->base_lock);
- 	if (test_bit(ATH11K_FLAG_RECOVERY, &ab->dev_flags) &&
- 	    ab->default_regd[pdev_idx]) {
--		spin_unlock(&ab->base_lock);
--		goto mem_free;
-+		spin_unlock_bh(&ab->base_lock);
-+		goto retfail;
- 	}
--	spin_unlock(&ab->base_lock);
-+	spin_unlock_bh(&ab->base_lock);
-
- 	if (pdev_idx >= ab->num_radios) {
- 		/* Process the event for phy0 only if single_pdev_only
-@@ -7127,7 +7198,7 @@ static int ath11k_reg_chan_list_event(struct ath11k_base *ab,
- 		 */
- 		if (ab->hw_params.single_pdev_only &&
- 		    pdev_idx < ab->hw_params.num_rxmda_per_pdev)
--			goto mem_free;
-+			goto retfail;
- 		else
- 			goto fallback;
- 	}
-@@ -7138,7 +7209,7 @@ static int ath11k_reg_chan_list_event(struct ath11k_base *ab,
- 	if (ab->default_regd[pdev_idx] && !ab->new_regd[pdev_idx] &&
- 	    !memcmp((char *)ab->default_regd[pdev_idx]->alpha2,
- 		    (char *)reg_info->alpha2, 2))
--		goto mem_free;
-+		goto retfail;
-
- 	/* Intersect new rules with default regd if a new country setting was
- 	 * requested, i.e a default regd was already set during initialization
-@@ -7150,13 +7221,25 @@ static int ath11k_reg_chan_list_event(struct ath11k_base *ab,
- 	    !ath11k_reg_is_world_alpha((char *)reg_info->alpha2))
- 		intersect = true;
-
--	regd = ath11k_reg_build_regd(ab, reg_info, intersect);
-+	ar = ab->pdevs[pdev_idx].ar;
-+	vdev_type = ath11k_mac_get_ar_vdev_type(ar);
-+
-+	ath11k_dbg(ab, ATH11K_DBG_WMI,
-+		   "wmi handle chan list power type %d vdev type %d intersect %d\n",
-+		   power_type, vdev_type, intersect);
-+
-+	regd = ath11k_reg_build_regd(ab, reg_info, intersect, vdev_type, power_type);
- 	if (!regd) {
- 		ath11k_warn(ab, "failed to build regd from reg_info\n");
- 		goto fallback;
- 	}
-
--	spin_lock(&ab->base_lock);
-+	if (power_type == IEEE80211_REG_UNSET_AP) {
-+		ath11k_reg_reset_info(&ab->reg_info_store[pdev_idx]);
-+		ab->reg_info_store[pdev_idx] = *reg_info;
-+	}
-+
-+	spin_lock_bh(&ab->base_lock);
- 	if (ab->default_regd[pdev_idx]) {
- 		/* The initial rules from FW after WMI Init is to build
- 		 * the default regd. From then on, any rules updated for
-@@ -7176,9 +7259,9 @@ static int ath11k_reg_chan_list_event(struct ath11k_base *ab,
- 		ab->default_regd[pdev_idx] = regd;
- 	}
- 	ab->dfs_region = reg_info->dfs_region;
--	spin_unlock(&ab->base_lock);
-+	spin_unlock_bh(&ab->base_lock);
-
--	goto mem_free;
-+	return 0;
-
- fallback:
- 	/* Fallback to older reg (by sending previous country setting
-@@ -7190,20 +7273,45 @@ static int ath11k_reg_chan_list_event(struct ath11k_base *ab,
- 	 */
- 	/* TODO: This is rare, but still should also be handled */
- 	WARN_ON(1);
--mem_free:
--	if (reg_info) {
--		kfree(reg_info->reg_rules_2ghz_ptr);
--		kfree(reg_info->reg_rules_5ghz_ptr);
--		if (reg_info->is_ext_reg_event) {
--			for (i = 0; i < WMI_REG_CURRENT_MAX_AP_TYPE; i++)
--				kfree(reg_info->reg_rules_6ghz_ap_ptr[i]);
-
--			for (j = 0; j < WMI_REG_CURRENT_MAX_AP_TYPE; j++)
--				for (i = 0; i < WMI_REG_MAX_CLIENT_TYPE; i++)
--					kfree(reg_info->reg_rules_6ghz_client_ptr[j][i]);
--		}
--		kfree(reg_info);
-+retfail:
-+
-+	return -EINVAL;
-+}
-+
-+static int ath11k_reg_chan_list_event(struct ath11k_base *ab, struct sk_buff *skb,
-+				      enum wmi_reg_chan_list_cmd_type id)
-+{
-+	struct cur_regulatory_info *reg_info;
-+	int ret;
-+
-+	reg_info = kzalloc(sizeof(*reg_info), GFP_ATOMIC);
-+	if (!reg_info)
-+		return -ENOMEM;
-+
-+	if (id == WMI_REG_CHAN_LIST_CC_ID)
-+		ret = ath11k_pull_reg_chan_list_update_ev(ab, skb, reg_info);
-+	else
-+		ret = ath11k_pull_reg_chan_list_ext_update_ev(ab, skb, reg_info);
-+
-+	if (ret) {
-+		ath11k_warn(ab, "failed to extract regulatory info from received event\n");
-+		goto mem_free;
-+	}
-+
-+	ret = ath11k_reg_handle_chan_list(ab, reg_info, IEEE80211_REG_UNSET_AP);
-+	if (ret) {
-+		ath11k_dbg(ab, ATH11K_DBG_WMI,
-+			   "failed to process regulatory info from received event\n");
-+		goto mem_free;
- 	}
-+
-+	kfree(reg_info);
-+	return 0;
-+
-+mem_free:
-+	ath11k_reg_reset_info(reg_info);
-+	kfree(reg_info);
- 	return ret;
- }
-
-@@ -7363,7 +7471,7 @@ static void ath11k_vdev_start_resp_event(struct ath11k_base *ab, struct sk_buff
- 	}
-
- 	ar->last_wmi_vdev_start_status = 0;
--
-+	ar->max_allowed_tx_power = vdev_start_resp.max_allowed_tx_power;
- 	status = vdev_start_resp.status;
-
- 	if (WARN_ON_ONCE(status)) {
-@@ -8308,6 +8416,37 @@ ath11k_wmi_pdev_csa_switch_count_status_event(struct ath11k_base *ab,
- 	kfree(tb);
- }
-
-+static void
-+ath11k_wmi_tm_event_segmented(struct ath11k_base *ab, u32 cmd_id,
-+			      struct sk_buff *skb)
-+{
-+	const void **tb;
-+	const struct wmi_ftm_event_msg *ev;
-+	u16 length;
-+	int ret;
-+
-+	tb = ath11k_wmi_tlv_parse_alloc(ab, skb->data, skb->len, GFP_ATOMIC);
-+	if (IS_ERR(tb)) {
-+		ret = PTR_ERR(tb);
-+		ath11k_warn(ab, "failed to parse ftm event tlv: %d\n", ret);
-+		return;
-+	}
-+
-+	ev = tb[WMI_TAG_ARRAY_BYTE];
-+	if (!ev) {
-+		ath11k_warn(ab, "failed to fetch ftm msg\n");
-+		kfree(tb);
-+		return;
-+	}
-+
-+	length = skb->len - TLV_HDR_SIZE;
-+	ret = ath11k_tm_process_event(ab, cmd_id, ev, length);
-+	if (ret)
-+		ath11k_warn(ab, "Failed to process ftm event\n");
-+
-+	kfree(tb);
-+}
-+
- static void
- ath11k_wmi_pdev_dfs_radar_detected_event(struct ath11k_base *ab, struct sk_buff *skb)
- {
-@@ -8734,7 +8873,10 @@ static void ath11k_wmi_tlv_op_rx(struct ath11k_base *ab, struct sk_buff *skb)
- 		ath11k_wmi_pdev_csa_switch_count_status_event(ab, skb);
- 		break;
- 	case WMI_PDEV_UTF_EVENTID:
--		ath11k_tm_wmi_event(ab, id, skb);
-+		if (test_bit(ATH11K_FLAG_FTM_SEGMENTED, &ab->dev_flags))
-+			ath11k_wmi_tm_event_segmented(ab, id, skb);
-+		else
-+			ath11k_tm_wmi_event_unsegmented(ab, id, skb);
- 		break;
- 	case WMI_PDEV_TEMPERATURE_EVENTID:
- 		ath11k_wmi_pdev_temperature_event(ab, skb);
-@@ -9794,3 +9936,76 @@ int ath11k_wmi_sta_keepalive(struct ath11k *ar,
-
- 	return ath11k_wmi_cmd_send(wmi, skb, WMI_STA_KEEPALIVE_CMDID);
- }
-+
-+int ath11k_wmi_set_unit_test(struct ath11k *ar, struct unit_test_cmd *unit_test)
-+{
-+	struct ath11k_pdev_wmi *wmi = ar->wmi;
-+	struct sk_buff *skb;
-+	struct wmi_unit_test_cmd_fixed_param *cmd;
-+	u32 len, args_tlv_len;
-+	u8 *buf_ptr;
-+	u32 *args;
-+	struct wmi_tlv *tlv;
-+	u32 i;
-+
-+	args_tlv_len = TLV_HDR_SIZE + unit_test->num_args * sizeof(u32);
-+
-+	len = sizeof(struct wmi_unit_test_cmd_fixed_param) + args_tlv_len;
-+	skb = ath11k_wmi_alloc_skb(wmi->wmi_ab, len);
-+	if (!skb)
-+		return -ENOMEM;
-+
-+	cmd = (struct wmi_unit_test_cmd_fixed_param *)skb->data;
-+	buf_ptr = (u8 *)cmd;
-+	cmd->tlv_header = FIELD_PREP(WMI_TLV_TAG,
-+				     WMI_TAG_UNIT_TEST_CMD) |
-+				     FIELD_PREP(WMI_TLV_LEN, sizeof(*cmd) - TLV_HDR_SIZE);
-+	cmd->vdev_id = unit_test->vdev_id;
-+	cmd->module_id = unit_test->module_id;
-+	cmd->num_args = unit_test->num_args;
-+
-+	buf_ptr += sizeof(*cmd);
-+
-+	tlv  = (struct wmi_tlv *)buf_ptr;
-+	tlv->header = FIELD_PREP(WMI_TLV_TAG, WMI_TAG_ARRAY_UINT32) |
-+				 FIELD_PREP(WMI_TLV_LEN, unit_test->num_args * sizeof(u32));
-+	args = (u32 *)(buf_ptr + TLV_HDR_SIZE);
-+	ath11k_info(ar->ab, "module id = 0x%x, num args = %u",
-+		    unit_test->module_id, unit_test->num_args);
-+	for (i = 0; (i < unit_test->num_args && i < UNIT_TEST_MAX_NUM_ARGS); i++) {
-+		args[i] = unit_test->args[i];
-+		ath11k_info(ar->ab, "0x%x,", unit_test->args[i]);
-+	}
-+
-+	return ath11k_wmi_cmd_send(wmi, skb, WMI_UNIT_TEST_CMDID);
-+}
-+
+ 
 +int ath11k_wmi_send_coex_config(struct ath11k *ar,
 +				struct wmi_coex_config_params *param)
 +{
@@ -3235,194 +501,21 @@ index 1c07f55c2..04e9fdd69 100644
 +	cmd->config_arg4 = param->config_arg4;
 +	cmd->config_arg5 = param->config_arg5;
 +	cmd->config_arg6 = param->config_arg6;
-+	ath11k_warn(ar->ab, "wmi send coex cfg vdev %d type %u args %u %u %u %u %u %u\n",
-+			cmd->vdev_id, cmd->config_type, cmd->config_arg1,
-+			cmd->config_arg2, cmd->config_arg3, cmd->config_arg4,
-+			cmd->config_arg5, cmd->config_arg6);
 +
 +	return ath11k_wmi_cmd_send(wmi, skb, WMI_COEX_CONFIG_CMDID);
 +}
++
+ int ath11k_wmi_simulate_radar(struct ath11k *ar)
+ {
+ 	struct ath11k_vif *arvif;
 diff --git a/drivers/net/wireless/ath/ath11k/wmi.h b/drivers/net/wireless/ath/ath11k/wmi.h
-index 100bb816b..9b0fb96aa 100644
+index 373d38538db0c..d63073eaaec3d 100644
 --- a/drivers/net/wireless/ath/ath11k/wmi.h
 +++ b/drivers/net/wireless/ath/ath11k/wmi.h
-@@ -15,6 +15,8 @@ struct ath11k;
- struct ath11k_fw_stats;
- struct ath11k_fw_dbglog;
- struct ath11k_vif;
-+struct ath11k_base;
-+struct ath11k_reg_tpc_power_info;
+@@ -6322,6 +6323,82 @@ enum wmi_sta_keepalive_method {
 
- #define PSOC_HOST_MAX_NUM_SS (8)
-
-@@ -327,6 +329,36 @@ enum wmi_tlv_cmd_id {
- 	WMI_VDEV_SET_CUSTOM_AGGR_SIZE_CMDID,
- 	WMI_VDEV_ENCRYPT_DECRYPT_DATA_REQ_CMDID,
- 	WMI_VDEV_ADD_MAC_ADDR_TO_RX_FILTER_CMDID,
-+	/** WMI commands related to dbg arp stats */
-+	WMI_VDEV_SET_ARP_STAT_CMDID,
-+	WMI_VDEV_GET_ARP_STAT_CMDID,
-+	/** get tx power for the current vdev */
-+	WMI_VDEV_GET_TX_POWER_CMDID,
-+	/* limit STA offchannel activity */
-+	WMI_VDEV_LIMIT_OFFCHAN_CMDID,
-+	/** To set custom software retries per-AC for vdev */
-+	WMI_VDEV_SET_CUSTOM_SW_RETRY_TH_CMDID,
-+	/** To set chainmask configuration for vdev */
-+	WMI_VDEV_CHAINMASK_CONFIG_CMDID,
-+	WMI_VDEV_GET_BCN_RECEPTION_STATS_CMDID,
-+	/* request LTE-Coex info */
-+	WMI_VDEV_GET_MWS_COEX_INFO_CMDID,
-+	/** delete all peer (excluding bss peer) */
-+	WMI_VDEV_DELETE_ALL_PEER_CMDID,
-+	/* To set bss max idle time related parameters */
-+	WMI_VDEV_BSS_MAX_IDLE_TIME_CMDID,
-+	/** Indicates firmware to trigger Audio sync */
-+	WMI_VDEV_AUDIO_SYNC_TRIGGER_CMDID,
-+	/** Gives Qtimer value to firmware */
-+	WMI_VDEV_AUDIO_SYNC_QTIMER_CMDID,
-+	/** Preferred channel list for each vdev */
-+	WMI_VDEV_SET_PCL_CMDID,
-+	/** VDEV_GET_BIG_DATA_CMD IS DEPRECATED - DO NOT USE */
-+	WMI_VDEV_GET_BIG_DATA_CMDID,
-+	/** Get per vdev BIG DATA stats phase 2 */
-+	WMI_VDEV_GET_BIG_DATA_P2_CMDID,
-+	/** set TPC PSD/non-PSD power */
-+	WMI_VDEV_SET_TPC_POWER_CMDID,
- 	WMI_PEER_CREATE_CMDID = WMI_TLV_CMD(WMI_GRP_PEER),
- 	WMI_PEER_DELETE_CMDID,
- 	WMI_PEER_FLUSH_TIDS_CMDID,
-@@ -1878,6 +1910,8 @@ enum wmi_tlv_tag {
- 	WMI_TAG_PDEV_NON_SRG_OBSS_BSSID_ENABLE_BITMAP_CMD,
- 	WMI_TAG_REGULATORY_RULE_EXT_STRUCT = 0x3A9,
- 	WMI_TAG_REG_CHAN_LIST_CC_EXT_EVENT,
-+	WMI_TAG_VDEV_SET_TPC_POWER_CMD = 0x3B5,
-+	WMI_TAG_VDEV_CH_POWER_INFO,
- 	WMI_TAG_PDEV_SET_BIOS_SAR_TABLE_CMD = 0x3D8,
- 	WMI_TAG_PDEV_SET_BIOS_GEO_TABLE_CMD,
- 	WMI_TAG_MAX
-@@ -2112,6 +2146,7 @@ enum wmi_tlv_service {
- 	/* The second 128 bits */
- 	WMI_MAX_EXT_SERVICE = 256,
- 	WMI_TLV_SERVICE_SCAN_CONFIG_PER_CHANNEL = 265,
-+	WMI_TLV_SERVICE_EXT_TPC_REG_SUPPORT = 280,
- 	WMI_TLV_SERVICE_REG_CC_EXT_EVENT_SUPPORT = 281,
- 	WMI_TLV_SERVICE_BIOS_SAR_SUPPORT = 326,
- 	WMI_TLV_SERVICE_SUPPORT_11D_FOR_HOST_SCAN = 357,
-@@ -2330,6 +2365,7 @@ struct wmi_init_cmd {
- #define WMI_RSRC_CFG_FLAG1_BSS_CHANNEL_INFO_64 BIT(5)
- #define WMI_RSRC_CFG_FLAG2_CALC_NEXT_DTIM_COUNT_SET BIT(9)
- #define WMI_RSRC_CFG_FLAG1_ACK_RSSI BIT(18)
-+#define WMI_RSRC_CFG_HOST_SERVICE_FLAG_NAN_IFACE_SUPPORT BIT(0)
-
- #define WMI_CFG_HOST_SERVICE_FLAG_REG_CC_EXT 4
-
-@@ -2393,6 +2429,7 @@ struct wmi_resource_config {
- 	u32 twt_ap_pdev_count;
- 	u32 twt_ap_sta_count;
- 	u32 max_nlo_ssids;
-+	u32 num_packet_filters;
- 	u32 num_pkt_filters;
- 	u32 num_max_sta_vdevs;
- 	u32 max_bssid_indicator;
-@@ -3167,6 +3204,31 @@ struct wlan_ssid {
- 	u8 ssid[WLAN_SSID_MAX_LEN];
- };
-
-+struct wmi_vdev_ch_power_info {
-+	u32 tlv_header;
-+	u32 chan_cfreq; /* Channel center frequency (MHz) */
-+	/* Unit: dBm, either PSD/EIRP power for this frequency or
-+	 * incremental for non-PSD BW
-+	 */
-+	u32 tx_power;
-+} __packed;
-+
-+struct wmi_vdev_set_tpc_power_cmd {
-+	u32 tlv_header;
-+	u32 vdev_id;
-+	u32 psd_power; /* Value: 0 or 1, is PSD power or not */
-+	u32 eirp_power; /* Maximum EIRP power (dBm units), valid only if power is PSD */
-+	u32 power_type_6ghz; /* Type: WMI_6GHZ_REG_TYPE, used for halphy CTL lookup */
-+	/* This fixed_param TLV is followed by the below TLVs:
-+	 * num_pwr_levels of wmi_vdev_ch_power_info
-+	 * For PSD power, it is the PSD/EIRP power of the frequency (20 MHz chunks).
-+	 * For non-PSD power, the power values are for 20, 40, and till
-+	 * BSS BW power levels.
-+	 * The num_pwr_levels will be checked by sw how many elements present
-+	 * in the variable-length array.
-+	 */
-+} __packed;
-+
- #define WMI_IE_BITMAP_SIZE             8
-
- /* prefix used by scan requestor ids on the host */
-@@ -3765,6 +3827,7 @@ struct wmi_stop_scan_cmd {
- };
-
- struct scan_chan_list_params {
-+	struct list_head list;
- 	u32 pdev_id;
- 	u16 nallchans;
- 	struct channel_param ch_param[];
-@@ -4143,6 +4206,7 @@ struct wmi_vdev_start_resp_event {
- 	};
- 	u32 cfgd_tx_streams;
- 	u32 cfgd_rx_streams;
-+	s32 max_allowed_tx_power;
- } __packed;
-
- /* VDEV start response status codes */
-@@ -4975,6 +5039,7 @@ struct ath11k_targ_cap {
- };
-
- enum wmi_vdev_type {
-+	WMI_VDEV_TYPE_UNSPEC =  0,
- 	WMI_VDEV_TYPE_AP      = 1,
- 	WMI_VDEV_TYPE_STA     = 2,
- 	WMI_VDEV_TYPE_IBSS    = 3,
-@@ -5695,6 +5760,15 @@ struct target_resource_config {
- 	u32 use_pdev_id;
- 	u32 peer_map_unmap_v2_support;
- 	u32 sched_params;
-+	u32 max_nlo_ssids;
-+	u32 num_packet_filters;
-+	u32 num_max_sta_vdevs;
-+	u32 max_bssid_indicator;
-+	u32 ul_resp_config;
-+	u32 msdu_flow_override_config0;
-+	u32 msdu_flow_override_config1;
-+	u32 flags2;
-+	u32 host_service_flags;
- 	u32 twt_ap_pdev_count;
- 	u32 twt_ap_sta_count;
- 	u8 is_reg_cc_ext_event_supported;
-@@ -6320,6 +6394,105 @@ enum wmi_sta_keepalive_method {
- #define WMI_STA_KEEPALIVE_INTERVAL_DEFAULT	30
- #define WMI_STA_KEEPALIVE_INTERVAL_DISABLE	0
-
-+#define UNIT_TEST_MAX_NUM_ARGS    8
-+
-+struct unit_test_cmd {
-+	u32 vdev_id;
-+	u32 module_id;
-+	u32 num_args;
-+	u32 args[UNIT_TEST_MAX_NUM_ARGS];
-+};
-+
-+struct wmi_unit_test_cmd_fixed_param {
-+	u32 tlv_header;
-+	u32 vdev_id;
-+	u32 module_id;
-+	u32 num_args;
-+	u32 diag_token;
-+	/**
-+	 * TLV (tag length value) parameters follow the wmi_unit_test_cmd_fixed_param
-+	 * structure. The TLV's are:
-+	 *     u32 args[];
-+	 */
-+} __packed;
-+
+ const void **ath11k_wmi_tlv_parse_alloc(struct ath11k_base *ab, const void *ptr,
+ 					size_t len, gfp_t gfp);
 +enum wmi_coex_config_type {
 +    WMI_COEX_CONFIG_PAGE_P2P_TDM        =  1,
 +    WMI_COEX_CONFIG_PAGE_STA_TDM        =  2,
@@ -3498,256 +591,189 @@ index 100bb816b..9b0fb96aa 100644
 +} __packed;
 +
 +#define WMI_COEX_ISOLATION_ARG1_DEFAUT     30
-+#define WMI_COEX_BTC_MODE_ARG1_DEFAULT	1
 +
- const void **ath11k_wmi_tlv_parse_alloc(struct ath11k_base *ab, const void *ptr,
- 					size_t len, gfp_t gfp);
  int ath11k_wmi_cmd_send(struct ath11k_pdev_wmi *wmi, struct sk_buff *skb,
-@@ -6483,6 +6656,8 @@ int ath11k_wmi_scan_prob_req_oui(struct ath11k *ar,
+ 			u32 cmd_id);
+ struct sk_buff *ath11k_wmi_alloc_skb(struct ath11k_wmi_base *wmi_sc, u32 len);
+@@ -6171,6 +6247,7 @@ int ath11k_wmi_scan_prob_req_oui(struct ath11k *ar,
  				 const u8 mac_addr[ETH_ALEN]);
  int ath11k_wmi_fw_dbglog_cfg(struct ath11k *ar, u32 *module_id_bitmap,
  			     struct ath11k_fw_dbglog *dbglog);
-+int ath11k_wmi_set_unit_test(struct ath11k *ar, struct unit_test_cmd *unit_test);
 +int ath11k_wmi_send_coex_config(struct ath11k *ar, struct wmi_coex_config_params *param);
  int ath11k_wmi_wow_config_pno(struct ath11k *ar, u32 vdev_id,
  			      struct wmi_pno_scan_req  *pno_scan);
  int ath11k_wmi_wow_del_pattern(struct ath11k *ar, u32 vdev_id, u32 pattern_id);
-@@ -6505,4 +6680,11 @@ int ath11k_wmi_pdev_set_bios_geo_table_param(struct ath11k *ar);
- int ath11k_wmi_sta_keepalive(struct ath11k *ar,
- 			     const struct wmi_sta_keepalive_arg *arg);
-
-+void ath11k_reg_reset_info(struct cur_regulatory_info *reg_info);
-+int ath11k_reg_handle_chan_list(struct ath11k_base *ab,
-+				struct cur_regulatory_info *reg_info,
-+				enum ieee80211_ap_reg_power power_type);
-+int ath11k_wmi_send_vdev_set_tpc_power(struct ath11k *ar,
-+				       u32 vdev_id,
-+				       struct ath11k_reg_tpc_power_info *param);
- #endif
-diff --git a/include/net/cfg80211.h b/include/net/cfg80211.h
-index 153a8c3e7..a8ef1aead 100644
---- a/include/net/cfg80211.h
-+++ b/include/net/cfg80211.h
-@@ -115,6 +115,8 @@ struct wiphy;
-  *	This may be due to the driver or due to regulatory bandwidth
-  *	restrictions.
-  * @IEEE80211_CHAN_NO_EHT: EHT operation is not permitted on this channel.
-+ * @IEEE80211_CHAN_PSD: power spectral density (in dBm)
-+ *	on this channel
-  */
- enum ieee80211_channel_flags {
- 	IEEE80211_CHAN_DISABLED		= 1<<0,
-@@ -138,6 +140,7 @@ enum ieee80211_channel_flags {
- 	IEEE80211_CHAN_16MHZ		= 1<<18,
- 	IEEE80211_CHAN_NO_320MHZ	= 1<<19,
- 	IEEE80211_CHAN_NO_EHT		= 1<<20,
-+	IEEE80211_CHAN_PSD              = 1<<21,
- };
-
- #define IEEE80211_CHAN_NO_HT40 \
-@@ -171,6 +174,7 @@ enum ieee80211_channel_flags {
-  *	on this channel.
-  * @dfs_state_entered: timestamp (jiffies) when the dfs state was entered.
-  * @dfs_cac_ms: DFS CAC time in milliseconds, this is valid for DFS channels.
-+ * @psd: power spectral density (in dBm)
-  */
- struct ieee80211_channel {
- 	enum nl80211_band band;
-@@ -187,6 +191,7 @@ struct ieee80211_channel {
- 	enum nl80211_dfs_state dfs_state;
- 	unsigned long dfs_state_entered;
- 	unsigned int dfs_cac_ms;
-+	s8 psd;
- };
-
- /**
-diff --git a/include/net/regulatory.h b/include/net/regulatory.h
-index b2cb4a9eb..ebf9e028d 100644
---- a/include/net/regulatory.h
-+++ b/include/net/regulatory.h
-@@ -213,6 +213,7 @@ struct ieee80211_reg_rule {
- 	u32 flags;
- 	u32 dfs_cac_ms;
- 	bool has_wmm;
-+	s8 psd;
- };
-
- struct ieee80211_regdomain {
-diff --git a/include/uapi/linux/nl80211.h b/include/uapi/linux/nl80211.h
-index 88eb85c63..d9e5a4276 100644
---- a/include/uapi/linux/nl80211.h
-+++ b/include/uapi/linux/nl80211.h
-@@ -4213,6 +4213,8 @@ enum nl80211_wmm_rule {
-  *	as the primary or any of the secondary channels isn't possible
-  * @NL80211_FREQUENCY_ATTR_NO_EHT: EHT operation is not allowed on this channel
-  *	in current regulatory domain.
-+ * @NL80211_FREQUENCY_ATTR_PSD: power spectral density (in dBm)
-+ *	is allowed on this channel in current regulatory domain.
-  * @NL80211_FREQUENCY_ATTR_MAX: highest frequency attribute number
-  *	currently defined
-  * @__NL80211_FREQUENCY_ATTR_AFTER_LAST: internal use
-@@ -4251,6 +4253,7 @@ enum nl80211_frequency_attr {
- 	NL80211_FREQUENCY_ATTR_16MHZ,
- 	NL80211_FREQUENCY_ATTR_NO_320MHZ,
- 	NL80211_FREQUENCY_ATTR_NO_EHT,
-+	NL80211_FREQUENCY_ATTR_PSD,
-
- 	/* keep last */
- 	__NL80211_FREQUENCY_ATTR_AFTER_LAST,
-@@ -4351,6 +4354,8 @@ enum nl80211_reg_type {
-  * 	a given frequency range. The value is in mBm (100 * dBm).
-  * @NL80211_ATTR_DFS_CAC_TIME: DFS CAC time in milliseconds.
-  *	If not present or 0 default CAC time will be used.
-+ * @NL80211_ATTR_POWER_RULE_PSD: power spectral density (in dBm).
-+ *	This could be negative.
-  * @NL80211_REG_RULE_ATTR_MAX: highest regulatory rule attribute number
-  *	currently defined
-  * @__NL80211_REG_RULE_ATTR_AFTER_LAST: internal use
-@@ -4368,6 +4373,8 @@ enum nl80211_reg_rule_attr {
-
- 	NL80211_ATTR_DFS_CAC_TIME,
-
-+	NL80211_ATTR_POWER_RULE_PSD,
-+
- 	/* keep last */
- 	__NL80211_REG_RULE_ATTR_AFTER_LAST,
- 	NL80211_REG_RULE_ATTR_MAX = __NL80211_REG_RULE_ATTR_AFTER_LAST - 1
-@@ -4450,6 +4457,7 @@ enum nl80211_sched_scan_match_attr {
-  * @NL80211_RRF_NO_160MHZ: 160MHz operation not allowed
-  * @NL80211_RRF_NO_HE: HE operation not allowed
-  * @NL80211_RRF_NO_320MHZ: 320MHz operation not allowed
-+ * @NL80211_RRF_PSD: channels has power spectral density value
-  * @NL80211_RRF_NO_EHT: EHT operation not allowed
-  */
- enum nl80211_reg_rule_flags {
-@@ -4470,7 +4478,8 @@ enum nl80211_reg_rule_flags {
- 	NL80211_RRF_NO_160MHZ		= 1<<16,
- 	NL80211_RRF_NO_HE		= 1<<17,
- 	NL80211_RRF_NO_320MHZ		= 1<<18,
--	NL80211_RRF_NO_EHT		= 1<<19,
-+	NL80211_RRF_PSD			= 1<<19,
-+	NL80211_RRF_NO_EHT		= 1<<20,
- };
-
- #define NL80211_RRF_PASSIVE_SCAN	NL80211_RRF_NO_IR
-diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-index 9596ae1aa..26065fe35 100644
---- a/kernel/dma/direct.c
-+++ b/kernel/dma/direct.c
-@@ -317,6 +317,7 @@ void *dma_direct_alloc(struct device *dev, size_t size,
- 	__dma_direct_free_pages(dev, page, size);
- 	return NULL;
- }
-+EXPORT_SYMBOL(dma_direct_alloc);
-
- void dma_direct_free(struct device *dev, size_t size,
- 		void *cpu_addr, dma_addr_t dma_addr, unsigned long attrs)
-diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
-index 931a03f45..5f64d3716 100644
---- a/net/wireless/nl80211.c
-+++ b/net/wireless/nl80211.c
-@@ -1115,6 +1115,10 @@ static int nl80211_msg_put_channel(struct sk_buff *msg, struct wiphy *wiphy,
- 	if (nla_put_u32(msg, NL80211_FREQUENCY_ATTR_OFFSET, chan->freq_offset))
- 		goto nla_put_failure;
-
-+	if ((chan->flags & IEEE80211_CHAN_PSD) &&
-+	    nla_put_s8(msg, NL80211_FREQUENCY_ATTR_PSD, chan->psd))
-+		goto nla_put_failure;
-+
- 	if ((chan->flags & IEEE80211_CHAN_DISABLED) &&
- 	    nla_put_flag(msg, NL80211_FREQUENCY_ATTR_DISABLED))
- 		goto nla_put_failure;
-@@ -8578,6 +8582,11 @@ static int nl80211_put_regdom(const struct ieee80211_regdomain *regdom,
- 				reg_rule->dfs_cac_ms))
- 			goto nla_put_failure;
-
-+		if ((reg_rule->flags & NL80211_RRF_PSD) &&
-+		    nla_put_s8(msg, NL80211_ATTR_POWER_RULE_PSD,
-+			       reg_rule->psd))
-+			goto nla_put_failure;
-+
- 		nla_nest_end(msg, nl_reg_rule);
- 	}
-
-@@ -8751,6 +8760,7 @@ static const struct nla_policy reg_rule_policy[NL80211_REG_RULE_ATTR_MAX + 1] =
- 	[NL80211_ATTR_POWER_RULE_MAX_ANT_GAIN]	= { .type = NLA_U32 },
- 	[NL80211_ATTR_POWER_RULE_MAX_EIRP]	= { .type = NLA_U32 },
- 	[NL80211_ATTR_DFS_CAC_TIME]		= { .type = NLA_U32 },
-+	[NL80211_ATTR_POWER_RULE_PSD]		= { .type = NLA_S8 },
- };
-
- static int parse_reg_rule(struct nlattr *tb[],
-@@ -8772,6 +8782,14 @@ static int parse_reg_rule(struct nlattr *tb[],
-
- 	reg_rule->flags = nla_get_u32(tb[NL80211_ATTR_REG_RULE_FLAGS]);
-
-+	if (reg_rule->flags & NL80211_RRF_PSD) {
-+		if (!tb[NL80211_ATTR_POWER_RULE_PSD])
-+			return -EINVAL;
-+
-+		reg_rule->psd =
-+			nla_get_s8(tb[NL80211_ATTR_POWER_RULE_PSD]);
-+	}
-+
- 	freq_range->start_freq_khz =
- 		nla_get_u32(tb[NL80211_ATTR_FREQ_RANGE_START]);
- 	freq_range->end_freq_khz =
-diff --git a/net/wireless/reg.c b/net/wireless/reg.c
-index 0317cf9da..e60861610 100644
---- a/net/wireless/reg.c
-+++ b/net/wireless/reg.c
-@@ -1589,6 +1589,8 @@ static u32 map_regdom_flags(u32 rd_flags)
- 		channel_flags |= IEEE80211_CHAN_NO_320MHZ;
- 	if (rd_flags & NL80211_RRF_NO_EHT)
- 		channel_flags |= IEEE80211_CHAN_NO_EHT;
-+	if (rd_flags & NL80211_RRF_PSD)
-+		channel_flags |= IEEE80211_CHAN_PSD;
- 	return channel_flags;
- }
-
-@@ -1795,6 +1797,9 @@ static void handle_channel_single_rule(struct wiphy *wiphy,
- 				chan->dfs_cac_ms = reg_rule->dfs_cac_ms;
- 		}
-
-+		if (chan->flags & IEEE80211_CHAN_PSD)
-+			chan->psd = reg_rule->psd;
-+
- 		return;
- 	}
-
-@@ -1815,6 +1820,9 @@ static void handle_channel_single_rule(struct wiphy *wiphy,
- 			chan->dfs_cac_ms = IEEE80211_DFS_MIN_CAC_TIME_MS;
- 	}
-
-+	if (chan->flags & IEEE80211_CHAN_PSD)
-+		chan->psd = reg_rule->psd;
-+
- 	if (chan->orig_mpwr) {
- 		/*
- 		 * Devices that use REGULATORY_COUNTRY_IE_FOLLOW_POWER
-@@ -1884,6 +1892,12 @@ static void handle_channel_adjacent_rules(struct wiphy *wiphy,
- 							 rrule2->dfs_cac_ms);
- 		}
-
-+		if ((rrule1->flags & NL80211_RRF_PSD) &&
-+		    (rrule2->flags & NL80211_RRF_PSD))
-+			chan->psd = min_t(s8, rrule1->psd, rrule2->psd);
-+		else
-+			chan->flags &= ~NL80211_RRF_PSD;
-+
- 		return;
- 	}
-
-@@ -2577,6 +2591,9 @@ static void handle_channel_custom(struct wiphy *wiphy,
- 			chan->dfs_cac_ms = IEEE80211_DFS_MIN_CAC_TIME_MS;
- 	}
-
-+	if (chan->flags & IEEE80211_CHAN_PSD)
-+		chan->psd = reg_rule->psd;
-+
- 	chan->max_power = chan->max_reg_power;
- }
-
 --
+GitLab
+
+
+From 0f02da05404b27449b01cc3b3a992dcb6f795287 Mon Sep 17 00:00:00 2001
+From: "neil.shi" <neil.shi@quectel.com>
+Date: Tue, 23 May 2023 17:41:00 +0800
+Subject: [PATCH] wifi: ath11k: merge all patches to 6.1.11, fix exceptions and
+ compilation errors
+
+Signed-off-by: neil.shi <neil.shi@quectel.com>
+---
+ drivers/net/wireless/ath/ath11k/debugfs.c |  1 +
+ drivers/net/wireless/ath/ath11k/hw.h      |  6 ++++
+ drivers/net/wireless/ath/ath11k/pci.c     | 35 ++++++++++++++++-------
+ drivers/net/wireless/ath/ath11k/pcic.c    | 11 +++++++
+ 4 files changed, 43 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/net/wireless/ath/ath11k/pci.c b/drivers/net/wireless/ath/ath11k/pci.c
+index 61c8840a0559..798c1010b215 100644
+--- a/drivers/net/wireless/ath/ath11k/pci.c
++++ b/drivers/net/wireless/ath/ath11k/pci.c
+@@ -228,7 +228,12 @@ static u32 ath11k_pci_window_read32(struct ath11k_base *ab, u32 offset)
+ 	struct ath11k_pci *ab_pci = ath11k_pci_priv(ab);
+ 	u32 window_start, val;
+
+-	window_start = ath11k_pci_get_window_start(ab, offset);
++	if (ab->hw_params.static_window_map)
++        	window_start = ath11k_pci_get_window_start(ab, offset);
++      	else
++        	window_start = ATH11K_PCI_WINDOW_START;
++
++	//window_start = ath11k_pci_get_window_start(ab, offset);
+
+ 	if (window_start == ATH11K_PCI_WINDOW_START) {
+ 		spin_lock_bh(&ab_pci->window_lock);
+@@ -852,6 +857,8 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
+ 	u32 soc_hw_version_major, soc_hw_version_minor, addr;
+ 	const struct ath11k_pci_ops *pci_ops;
+ 	int ret;
++	u32 sub_version;
++	int ops_init = 0;
+
+ 	ab = ath11k_core_alloc(&pdev->dev, sizeof(*ab_pci), ATH11K_BUS_PCI);
+
+@@ -899,8 +906,8 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
+ 	case QCA6390_DEVICE_ID:
+ 		ath11k_pci_read_hw_version(ab, &soc_hw_version_major,
+ 					   &soc_hw_version_minor);
+-		switch (soc_hw_version_major) {
+-		case 2:
++ 		switch (soc_hw_version_major) {
++ 		case 2:
+ 			ab->hw_rev = ATH11K_HW_QCA6390_HW20;
+ 			break;
+ 		default:
+@@ -920,6 +927,13 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
+ 		ab->id.bdf_search = ATH11K_BDF_SEARCH_BUS_AND_BOARD;
+ 		ath11k_pci_read_hw_version(ab, &soc_hw_version_major,
+ 					   &soc_hw_version_minor);
++		pci_ops = &ath11k_pci_ops_qca6390;
++		ret = ath11k_pcic_register_pci_ops(ab, pci_ops);
++		if (ret) {
++			ath11k_err(ab, "failed to register PCI ops: %d\n", ret);
++			goto err_pci_free_region;
++		}
++		ops_init = 1;
+ 		switch (soc_hw_version_major) {
+ 		case 2:
+ 			switch (soc_hw_version_minor) {
+@@ -930,7 +944,7 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
+ 			case 0x10:
+ 			case 0x11:
+ 				//ab->hw_rev = ATH11K_HW_WCN6855_HW21;
+-				sub_version = ath11k_pci_read32(ab, SUB_VERSION);
++				sub_version = ath11k_pcic_read32(ab, SUB_VERSION);
+ 				ath11k_dbg(ab, ATH11K_DBG_PCI, "sub_version 0x%x\n", sub_version);
+ 				switch (sub_version) {
+ 				case 0x1019A0E1:
+@@ -955,7 +969,6 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
+ 			goto err_pci_free_region;
+ 		}
+
+-		pci_ops = &ath11k_pci_ops_qca6390;
+ 		break;
+ 	default:
+ 		dev_err(&pdev->dev, "Unknown PCI device found: 0x%x\n",
+@@ -964,11 +977,13 @@ static int ath11k_pci_probe(struct pci_dev *pdev,
+ 		goto err_pci_free_region;
+ 	}
+
+-	ret = ath11k_pcic_register_pci_ops(ab, pci_ops);
+-	if (ret) {
+-		ath11k_err(ab, "failed to register PCI ops: %d\n", ret);
+-		goto err_pci_free_region;
+-	}
++	if(ops_init == 1){
++		ret = ath11k_pcic_register_pci_ops(ab, pci_ops);
++		if (ret) {
++			ath11k_err(ab, "failed to register PCI ops: %d\n", ret);
++			goto err_pci_free_region;
++		}
++ 	}
+
+ 	ret = ath11k_pcic_init_msi_config(ab);
+ 	if (ret) {
+diff --git a/drivers/net/wireless/ath/ath11k/pcic.c b/drivers/net/wireless/ath/ath11k/pcic.c
+index 063e97815455..82233e30c835 100644
+--- a/drivers/net/wireless/ath/ath11k/pcic.c
++++ b/drivers/net/wireless/ath/ath11k/pcic.c
+@@ -115,6 +115,17 @@ static const struct ath11k_msi_config ath11k_msi_config[] = {
+ 		},
+ 		.hw_rev = ATH11K_HW_WCN6750_HW10,
+ 	},
++	{
++		.total_vectors = 32,
++		.total_users = 4,
++		.users = (struct ath11k_msi_user[]) {
++			{ .name = "MHI", .num_vectors = 3, .base_vector = 0 },
++			{ .name = "CE", .num_vectors = 10, .base_vector = 3 },
++			{ .name = "WAKE", .num_vectors = 1, .base_vector = 13 },
++			{ .name = "DP", .num_vectors = 18, .base_vector = 14 },
++		},
++		.hw_rev = ATH11K_HW_QCA206X_HW21,
++	},
+ };
+
+ int ath11k_pcic_init_msi_config(struct ath11k_base *ab)
+--
+GitLab
+From d4d6f1583876b3702603939ac41b98498cf6dd10 Mon Sep 17 00:00:00 2001
+From: Thomas Crider <gloriouseggroll@gmail.com>
+Date: Thu, 7 Dec 2023 17:22:18 -0500
+Subject: [PATCH] wifi-fixup
+
+---
+ drivers/net/wireless/ath/ath11k/core.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/net/wireless/ath/ath11k/core.c b/drivers/net/wireless/ath/ath11k/core.c
+index 77daa0882..765b91e8d 100644
+--- a/drivers/net/wireless/ath/ath11k/core.c
++++ b/drivers/net/wireless/ath/ath11k/core.c
+@@ -420,7 +420,8 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
+ 		.supports_shadow_regs = true,
+ 		.idle_ps = true,
+ 		.supports_sta_ps = true,
+-		.cold_boot_calib = false,
++		.coldboot_cal_mm = false,
++		.coldboot_cal_ftm = false,
+ 		.fw_mem_mode = 0,
+ 		.num_vdevs = 16 + 1,
+ 		.num_peers = 512,
+@@ -433,7 +434,6 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
+ 		.hal_params = &ath11k_hw_hal_params_qca6390,
+ 		.supports_dynamic_smps_6ghz = false,
+ 		.alloc_cacheable_memory = false,
+-		.wakeup_mhi = true,
+ 		.supports_rssi_stats = true,
+ 		.fw_wmi_diag_event = true,
+ 		.current_cc_support = true,
+@@ -461,9 +461,6 @@ static const struct ath11k_hw_params ath11k_hw_params[] = {
+ 		.target_ce_count = 9,
+ 		.svc_to_ce_map = ath11k_target_service_to_ce_map_wlan_qca6390,
+ 		.svc_to_ce_map_len = 14,
+-		.rfkill_pin = 0,
+-		.rfkill_cfg = 0,
+-		.rfkill_on_level = 0,
+ 		.single_pdev_only = true,
+ 		.rxdma1_enable = false,
+ 		.num_rxmda_per_pdev = 2,
+-- 
 2.43.0
 

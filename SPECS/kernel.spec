@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.6.4
-%define specversion 6.6.4
+%define specrpmversion 6.6.5
+%define specversion 6.6.5
 %define patchversion 6.6
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.6.4
+%define tarfile_release 6.6.5
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.6.4
+%define kabiversion 6.6.5
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -996,19 +996,19 @@ Patch308: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 Patch309: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
 # ROG Ally
 Patch315: rog-ally-audio-fix.patch
-Patch316: 0001-hid-asus-nero-patches-rogue.patch
+Patch316: hid-asus-reset-the-backlight-brightness-level-on-resume.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
 Patch318: v10-0001-HID-asus-fix-more-n-key-report-descriptors-if-n-.patch
 Patch319: v10-0002-HID-asus-make-asus_kbd_init-generic-remove-rog_n.patch
 Patch320: v10-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
 Patch321: v10-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
-Patch322: 0001-add-acpi_call.patch
 Patch323: rog-ally-bmc150.patch
-Patch324: uinput.patch
-Patch325: v2-0001-platform-x86-asus-wmi-disable-USB0-hub-on-ROG-All.patch
+Patch325: platform-x86-asus-wmi-disable-USB0-hub-on-ROG-Ally-before-suspend.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
-Patch407: 0001-amd-hdr.patch
+Patch326: 0001-amd-hdr.patch
+Patch327: 0001-add-acpi_call.patch
+Patch328: uinput.patch
 
 # steamdeck oled patches
 Patch310: steamdeck-oled-wifi.patch
@@ -1803,19 +1803,19 @@ ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.pat
 ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
 # ROG Ally
 ApplyOptionalPatch rog-ally-audio-fix.patch
-ApplyOptionalPatch 0001-hid-asus-nero-patches-rogue.patch
+ApplyOptionalPatch hid-asus-reset-the-backlight-brightness-level-on-resume.patch
 ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
 ApplyOptionalPatch v10-0001-HID-asus-fix-more-n-key-report-descriptors-if-n-.patch
 ApplyOptionalPatch v10-0002-HID-asus-make-asus_kbd_init-generic-remove-rog_n.patch
 ApplyOptionalPatch v10-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
-#ApplyOptionalPatch v10-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
-ApplyOptionalPatch 0001-add-acpi_call.patch
+ApplyOptionalPatch v10-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 ApplyOptionalPatch rog-ally-bmc150.patch
-ApplyOptionalPatch uinput.patch
-ApplyOptionalPatch v2-0001-platform-x86-asus-wmi-disable-USB0-hub-on-ROG-All.patch
+ApplyOptionalPatch platform-x86-asus-wmi-disable-USB0-hub-on-ROG-Ally-before-suspend.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
 ApplyOptionalPatch 0001-amd-hdr.patch
+ApplyOptionalPatch 0001-add-acpi_call.patch
+ApplyOptionalPatch uinput.patch
 
 # steamdeck oled patches
 ApplyOptionalPatch steamdeck-oled-wifi.patch
@@ -1825,15 +1825,16 @@ ApplyOptionalPatch steamdeck-oled-hw-quirks.patch
 
 # temporary patches
 ApplyOptionalPatch 0001-Remove-REBAR-size-quirk-for-Sapphire-RX-5600-XT-Puls.patch
+#  mediatek fixups
 ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
 ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
-# Fixes the steam deck not coming back from hibernation
+#  Fixes the steam deck not coming back from hibernation
 ApplyOptionalPatch 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
-# Allows corectl to work out of the box
+#  enable full amd power control by default
 ApplyOptionalPatch 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
-# steam deck: https://gitlab.com/evlaV/linux-integration/-/commit/d6935e6d62b35ec14d2187c2cfdc19934d66db6d
+#  steam deck: https://gitlab.com/evlaV/linux-integration/-/commit/d6935e6d62b35ec14d2187c2cfdc19934d66db6d
 ApplyOptionalPatch 0001-NOT-FOR-UPSTREAM-PM-suspend-Disable-s2idle-on-Steam-.patch
-# amdgpu bug fix: https://gitlab.freedesktop.org/drm/amd/-/issues/2733
+#  amdgpu bug fix: https://gitlab.freedesktop.org/drm/amd/-/issues/2733
 ApplyOptionalPatch amdgpu-bug-fix.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
@@ -3831,8 +3832,12 @@ fi\
 #
 #
 %changelog
-* Wed Dec 06 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.4-201.fsync
-- kernel-fsync v6.6.4
+* Sat Dec 09 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.5-201.fsync
+- kernel-fsync v6.6.5
+
+* Fri Dec 08 2023 Augusto Caringi <acaringi@redhat.com> [6.6.5-0]
+- Add io_uring CVE for 6.6.5 (Justin M. Forbes)
+- Linux v6.6.5
 
 * Sun Dec 03 2023 Justin M. Forbes <jforbes@fedoraproject.org> [6.6.4-0]
 - redhat: Fix macro for kernel-uki-virt flavor (Neal Gompa)

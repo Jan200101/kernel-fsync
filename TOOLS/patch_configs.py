@@ -27,6 +27,9 @@ GENERIC_PATCHES = [
     ["VIDEO_DW9719", None, MODULE],
     ["IPC_CLASSES", None, ENABLE],
     ["LEDS_TPS68470", None, MODULE],
+
+    # Steam Deck HDR Color management
+    ["DRM_AMD_COLOR_STEAMDECK", None, UNSET],
 ]
 
 ARCH_PATCHES = {
@@ -83,6 +86,10 @@ ARCH_PATCHES = {
         ["USB_DUMMY_HCD", None, UNSET],
         ["USB_CONFIGFS", None, UNSET],
         ["PHY_SAMSUNG_USB2", None, UNSET],
+
+        # Steam Deck HDR Color management
+        ["DRM_AMD_COLOR_STEAMDECK", None, ENABLE],
+
         # Deck Sound stuff?
         ["SND_SOC_AMD_ACP_COMMON", None, MODULE],
         ["SND_SPI", None, ENABLE],

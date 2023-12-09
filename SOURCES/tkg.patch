@@ -20,9 +20,9 @@ index 361ea7ab30ea..0c5cf69b241a 100644
 -int sysctl_vfs_cache_pressure __read_mostly = 100;
 +int sysctl_vfs_cache_pressure __read_mostly = 50;
  EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
- 
+
  __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
--- 
+--
 2.28.0
 
 
@@ -31,7 +31,7 @@ index f788cd61df21..2bfbb4213707 100644
 --- a/kernel/sched/rt.c
 +++ b/kernel/sched/rt.c
 @@ -20,9 +20,9 @@
- 
+
  /*
   * part of the period that we allow rt tasks to run in us.
 - * default: 0.95s
@@ -39,10 +39,10 @@ index f788cd61df21..2bfbb4213707 100644
   */
 -int sysctl_sched_rt_runtime = 950000;
 +int sysctl_sched_rt_runtime = 980000;
- 
+
  #ifdef CONFIG_SYSCTL
  static int sysctl_sched_rr_timeslice = (MSEC_PER_SEC * RR_TIMESLICE) / HZ;
--- 
+--
 2.28.0
 
 
@@ -60,9 +60,9 @@ index 3ae8678e1145..da708eed0f1e 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -92,6 +92,38 @@ config THREAD_INFO_IN_TASK
- 
+
  menu "General setup"
- 
+
 +config ZENIFY
 +	bool "A selection of patches from Zen/Liquorix kernel and additional tweaks for a better gaming experience"
 +	default y
@@ -98,7 +98,7 @@ index 3ae8678e1145..da708eed0f1e 100644
  config BROKEN
  	bool
 
--- 
+--
 2.28.0
 
 
@@ -123,13 +123,13 @@ index e64e59b536d3..bfb55ef7ebbe 100644
 @@ -691,6 +691,9 @@ choice
  	config DEFAULT_VEGAS
  		bool "Vegas" if TCP_CONG_VEGAS=y
- 
+
 +	config DEFAULT_YEAH
 +		bool "YeAH" if TCP_CONG_YEAH=y
 +
  	config DEFAULT_VENO
  		bool "Veno" if TCP_CONG_VENO=y
- 
+
 @@ -724,6 +727,7 @@ config DEFAULT_TCP_CONG
  	default "htcp" if DEFAULT_HTCP
  	default "hybla" if DEFAULT_HYBLA
@@ -138,7 +138,7 @@ index e64e59b536d3..bfb55ef7ebbe 100644
  	default "westwood" if DEFAULT_WESTWOOD
  	default "veno" if DEFAULT_VENO
  	default "reno" if DEFAULT_RENO
--- 
+--
 2.28.0
 
 
@@ -187,8 +187,8 @@ index 74300e337c3c..9277f22c10a7 100644
 +#endif
  	(1<<TRANSPARENT_HUGEPAGE_DEFRAG_KHUGEPAGED_FLAG)|
  	(1<<TRANSPARENT_HUGEPAGE_USE_ZERO_PAGE_FLAG);
- 
--- 
+
+--
 2.28.0
 
 
@@ -209,7 +209,7 @@ index 84badf00647e..6a922bca9f39 100644
 @@ -471,6 +471,9 @@ choice
  	config DEFAULT_SFQ
  		bool "Stochastic Fair Queue" if NET_SCH_SFQ
- 
+
 +	config DEFAULT_CAKE
 +		bool "Common Applications Kept Enhanced" if NET_SCH_CAKE
 +
@@ -223,8 +223,8 @@ index 84badf00647e..6a922bca9f39 100644
 +	default "cake" if DEFAULT_CAKE
  	default "pfifo_fast"
  endif
- 
--- 
+
+--
 2.28.0
 
 
@@ -253,10 +253,10 @@ index bc05c3588aa3..b0cefe94920d 100644
 -#define MAPCOUNT_ELF_CORE_MARGIN	(5)
 -#define DEFAULT_MAX_MAP_COUNT	(USHRT_MAX - MAPCOUNT_ELF_CORE_MARGIN)
 +#define DEFAULT_MAX_MAP_COUNT	(262144)
- 
+
  extern int sysctl_max_map_count;
- 
--- 
+
+--
 2.28.0
 
 
@@ -281,10 +281,10 @@ index b0cefe94920d..890165099b07 100644
   */
 -#define DEFAULT_MAX_MAP_COUNT	(262144)
 +#define DEFAULT_MAX_MAP_COUNT	(16777216)
- 
+
  extern int sysctl_max_map_count;
- 
--- 
+
+--
 2.28.0
 
 
@@ -304,7 +304,7 @@ index 4eab3d70e880..79669aa39d79 100644
 +++ b/block/elevator.c
 @@ -561,8 +561,8 @@
  }
- 
+
  /*
 - * For single queue devices, default to using mq-deadline. If we have multiple
 - * queues or mq-deadline is not available, default to "none".
@@ -316,13 +316,13 @@ index 4eab3d70e880..79669aa39d79 100644
 @@ -573,7 +573,7 @@
  	    !blk_mq_is_shared_tags(q->tag_set->flags))
  		return NULL;
- 
+
 -	return elevator_find_get(q, "mq-deadline");
 +	return elevator_find_get(q, "bfq");
  }
- 
+
  /*
--- 
+--
 2.28.0
 
 From 3c229f434aca65c4ca61772bc03c3e0370817b92 Mon Sep 17 00:00:00 2001
@@ -343,13 +343,13 @@ index cf2468da68e9..007dea784451 100644
 @@ -851,7 +851,7 @@
  		._index = i,						\
  	}
- 
+
 -#define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
 +#define VM_READAHEAD_PAGES	(SZ_2M / PAGE_SIZE)
- 
+
  void page_cache_ra_unbounded(struct readahead_control *,
  		unsigned long nr_to_read, unsigned long lookahead_count);
--- 
+--
 2.28.0
 
 
@@ -405,13 +405,13 @@ index 36a469150ff9..aee891c9b78a 100644
 @@ -3510,6 +3510,8 @@
  	if (!strcmp(str, "no_hwp"))
  		no_hwp = 1;
- 
+
 +	if (!strcmp(str, "enable"))
 +		no_load = 0;
  	if (!strcmp(str, "force"))
  		force_load = 1;
  	if (!strcmp(str, "hwp_only"))
--- 
+--
 2.28.0
 
 From 379cbab18b5c75c622b93e2c5abdfac141fe9654 Mon Sep 17 00:00:00 2001
@@ -555,7 +555,7 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/include/linux/pageblock-flags.h b/include/linux/pageblock-flags.h
-index 5f1ae07d724b88..97cda629c9e909 100644
+index e83c4c095..21b8dfa5d 100644
 --- a/include/linux/pageblock-flags.h
 +++ b/include/linux/pageblock-flags.h
 @@ -48,7 +48,7 @@ extern unsigned int pageblock_order;

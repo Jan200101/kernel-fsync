@@ -16,7 +16,7 @@ index 81edf66dbea8..5021d03089ff 100644
 @@ -582,13 +582,8 @@ module_param_named(timeout_period, amdgpu_watchdog_timer.period, uint, 0644);
   */
  #ifdef CONFIG_DRM_AMDGPU_SI
- 
+
 -#if IS_ENABLED(CONFIG_DRM_RADEON) || IS_ENABLED(CONFIG_DRM_RADEON_MODULE)
 -int amdgpu_si_support = 0;
 -MODULE_PARM_DESC(si_support, "SI support (1 = enabled, 0 = disabled (default))");
@@ -24,13 +24,13 @@ index 81edf66dbea8..5021d03089ff 100644
  int amdgpu_si_support = 1;
  MODULE_PARM_DESC(si_support, "SI support (1 = enabled (default), 0 = disabled)");
 -#endif
- 
+
  module_param_named(si_support, amdgpu_si_support, int, 0444);
  #endif
 @@ -601,13 +596,8 @@ module_param_named(si_support, amdgpu_si_support, int, 0444);
   */
  #ifdef CONFIG_DRM_AMDGPU_CIK
- 
+
 -#if IS_ENABLED(CONFIG_DRM_RADEON) || IS_ENABLED(CONFIG_DRM_RADEON_MODULE)
 -int amdgpu_cik_support = 0;
 -MODULE_PARM_DESC(cik_support, "CIK support (1 = enabled, 0 = disabled (default))");
@@ -38,7 +38,7 @@ index 81edf66dbea8..5021d03089ff 100644
  int amdgpu_cik_support = 1;
  MODULE_PARM_DESC(cik_support, "CIK support (1 = enabled (default), 0 = disabled)");
 -#endif
- 
+
  module_param_named(cik_support, amdgpu_cik_support, int, 0444);
  #endif
 diff --git a/drivers/gpu/drm/radeon/radeon_drv.c b/drivers/gpu/drm/radeon/radeon_drv.c
@@ -48,7 +48,7 @@ index 7bf08164140e..865f186f48c4 100644
 @@ -239,12 +239,22 @@ module_param_named(uvd, radeon_uvd, int, 0444);
  MODULE_PARM_DESC(vce, "vce enable/disable vce support (1 = enable, 0 = disable)");
  module_param_named(vce, radeon_vce, int, 0444);
- 
+
 +#ifdef CONFIG_DRM_AMDGPU_SI
 +int radeon_si_support = 0;
 +MODULE_PARM_DESC(si_support, "SI support (1 = enabled, 0 = disabled (default))");
@@ -57,7 +57,7 @@ index 7bf08164140e..865f186f48c4 100644
  MODULE_PARM_DESC(si_support, "SI support (1 = enabled (default), 0 = disabled)");
 +#endif
  module_param_named(si_support, radeon_si_support, int, 0444);
- 
+
 +#ifdef CONFIG_DRM_AMDGPU_CIK
 +int radeon_cik_support = 0;
 +MODULE_PARM_DESC(cik_support, "CIK support (1 = enabled, 0 = disabled (default))");
@@ -66,5 +66,5 @@ index 7bf08164140e..865f186f48c4 100644
  MODULE_PARM_DESC(cik_support, "CIK support (1 = enabled (default), 0 = disabled)");
 +#endif
  module_param_named(cik_support, radeon_cik_support, int, 0444);
- 
+
  static struct pci_device_id pciidlist[] = {
