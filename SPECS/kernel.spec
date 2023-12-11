@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.6.5
 
@@ -3832,6 +3832,9 @@ fi\
 #
 #
 %changelog
+* Mon Dec 11 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.5-202.fsync
+- steam deck oled patch update
+
 * Sat Dec 09 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.5-201.fsync
 - kernel-fsync v6.6.5
 
