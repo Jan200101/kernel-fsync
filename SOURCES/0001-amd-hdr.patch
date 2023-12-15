@@ -2137,7 +2137,7 @@ diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_color.c b/drivers/g
 index 86a2d449cf07..99bdf9758323 100644
 --- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_color.c
 +++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_color.c
-@@ -191,6 +191,9 @@
+@@ -104,6 +104,9 @@ amdgpu_dm_create_color_properties(struct amdgpu_device *adev)
  {
  	struct drm_property *prop;
  
@@ -2147,6 +2147,6 @@ index 86a2d449cf07..99bdf9758323 100644
  	prop = drm_property_create(adev_to_drm(adev),
  				   DRM_MODE_PROP_BLOB,
  				   "VALVE1_PLANE_DEGAMMA_LUT", 0);
-
 -- 
 2.43.0
+

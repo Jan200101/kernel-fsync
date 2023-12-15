@@ -320,8 +320,8 @@ index f54178d6f780..0b13be703856 100644
  fail_rfkill:
  	asus_wmi_led_exit(asus);
  fail_leds:
-@@ -4480,6 +4612,7 @@ static int asus_wmi_remove(struct platform_device *device)
- 	asus = platform_get_drvdata(device);
+@@ -4481,6 +4481,7 @@
+ 		i8042_remove_filter(asus->driver->quirks->i8042_filter);
  	wmi_remove_notify_handler(asus->driver->event_guid);
  	asus_wmi_backlight_exit(asus);
 +	asus_screenpad_exit(asus);

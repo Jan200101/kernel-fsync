@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.6.6
-%define specversion 6.6.6
+%define specrpmversion 6.6.7
+%define specversion 6.6.7
 %define patchversion 6.6
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.6.6
+%define tarfile_release 6.6.7
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.6.6
+%define kabiversion 6.6.7
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -3832,8 +3832,13 @@ fi\
 #
 #
 %changelog
-* Fri Dec 15 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.6-201.fsync
-- kernel-fsync v6.6.6
+* Fri Dec 15 2023 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.7-201.fsync
+- kernel-fsync v6.6.7
+
+* Wed Dec 13 2023 Augusto Caringi <acaringi@redhat.com> [6.6.7-0]
+- Add rhbz#2253632 rhbz#2253633 to BugsFixed (Justin M. Forbes)
+- Turn on DRM_ACCEL drivers for Fedora (Justin M. Forbes)
+- Linux v6.6.7
 
 * Mon Dec 11 2023 Augusto Caringi <acaringi@redhat.com> [6.6.6-0]
 - redhat/configs: Enable UCLAMP_TASK for PipeWire and WirePlumber (Neal Gompa)
