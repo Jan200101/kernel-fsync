@@ -71,34 +71,6 @@ index e8b2fc4002a52..3c69d860e1c9d 100644
 -- 
 GitLab
 
-From a32cc4f110bcd8d4595ff0812a72a521e99006ac Mon Sep 17 00:00:00 2001
-From: Keith Mikoleit <keithm@valvesoftware.com>
-Date: Fri, 22 Sep 2023 17:30:44 -0700
-Subject: [PATCH] drm/amd/display: change default edp brightness check to min 1
- nit
-
----
- .../amd/display/dc/link/protocols/link_edp_panel_control.c    | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c b/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c
-index 2039a345f23a1..e4626f2072f0f 100644
---- a/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c
-+++ b/drivers/gpu/drm/amd/display/dc/link/protocols/link_edp_panel_control.c
-@@ -280,8 +280,8 @@
- 	if (link && link->dpcd_sink_ext_caps.bits.oled == 1) {
- 		if (!read_default_bl_aux(link, &default_backlight))
- 			default_backlight = 150000;
--		// if > 5000, it might be wrong readback
--		if (default_backlight > 5000000)
-+		// if < 1 nits or > 5000, it might be wrong readback
-+		if (default_backlight < 1000 || default_backlight > 5000000)
- 			default_backlight = 150000;
- 
- 		return edp_set_backlight_level_nits(link, true,
---
-GitLab
-
 From b59fed802470f07fafe72f6a2bdda2163da5ba33 Mon Sep 17 00:00:00 2001
 From: Swapnil Patel <Swapnil.Patel@amd.com>
 Date: Tue, 26 Sep 2023 16:24:25 -0400
