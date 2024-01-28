@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.6.12
-%define specversion 6.6.12
+%define specrpmversion 6.6.13
+%define specversion 6.6.13
 %define patchversion 6.6
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.6.12
+%define tarfile_release 6.6.13
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.6.12
+%define kabiversion 6.6.13
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -985,10 +985,15 @@ Patch202: fsync.patch
 Patch203: OpenRGB.patch
 Patch206: amdgpu-si-cik-default.patch
 Patch208: winesync.patch
+Patch209: tkg-BBRv2.patch
+Patch210: tkg-bcachefs.patch
+Patch211: tkg-misc-additions.patch
+Patch212: tkg-unprivileged-CLONE_NEWUSER.patch
 
 # device specific patches
 Patch300: linux-surface.patch
 Patch301: steam-deck.patch
+Patch329: steam-deck-valve15.patch
 Patch302: asus-linux.patch
 Patch303: lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
@@ -1022,10 +1027,6 @@ Patch408: 0001-acpi-proc-idle-skip-dummy-wait.patch
 Patch411: 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
 # Allows corectl to work out of the box
 Patch412: 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
-# steam deck: https://gitlab.com/evlaV/linux-integration/-/commit/d6935e6d62b35ec14d2187c2cfdc19934d66db6d
-Patch415: 0001-NOT-FOR-UPSTREAM-PM-suspend-Disable-s2idle-on-Steam-.patch
-# amdgpu bug fix: https://gitlab.freedesktop.org/drm/amd/-/issues/2733
-Patch416: amdgpu-bug-fix.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -1790,10 +1791,15 @@ ApplyOptionalPatch fsync.patch
 ApplyOptionalPatch OpenRGB.patch
 ApplyOptionalPatch amdgpu-si-cik-default.patch
 ApplyOptionalPatch winesync.patch
+ApplyOptionalPatch tkg-BBRv2.patch
+ApplyOptionalPatch tkg-bcachefs.patch
+ApplyOptionalPatch tkg-misc-additions.patch
+ApplyOptionalPatch tkg-unprivileged-CLONE_NEWUSER.patch
 
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
 ApplyOptionalPatch steam-deck.patch
+ApplyOptionalPatch steam-deck-valve15.patch
 ApplyOptionalPatch asus-linux.patch
 ApplyOptionalPatch lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
@@ -1828,10 +1834,6 @@ ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
 ApplyOptionalPatch 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
 #  enable full amd power control by default
 ApplyOptionalPatch 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
-#  steam deck: https://gitlab.com/evlaV/linux-integration/-/commit/d6935e6d62b35ec14d2187c2cfdc19934d66db6d
-ApplyOptionalPatch 0001-NOT-FOR-UPSTREAM-PM-suspend-Disable-s2idle-on-Steam-.patch
-#  amdgpu bug fix: https://gitlab.freedesktop.org/drm/amd/-/issues/2733
-ApplyOptionalPatch amdgpu-bug-fix.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -3828,8 +3830,11 @@ fi\
 #
 #
 %changelog
-* Sun Jan 21 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.12-201.fsync
-- kernel-fsync v6.6.12
+* Sun Jan 28 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.13-201.fsync
+- kernel-fsync v6.6.13
+
+* Sat Jan 20 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.6.13-0]
+- Linux v6.6.13
 
 * Mon Jan 15 2024 Augusto Caringi <acaringi@redhat.com> [6.6.12-0]
 - Add CVE Fixes to BugsFixed for 6.6.12 (Justin M. Forbes)

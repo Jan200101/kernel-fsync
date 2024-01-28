@@ -8074,7 +8074,7 @@ index 51ec9e7e784f0..40554890d7211 100644
  
  	if (drv && drv->shutdown)
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index ae95d0950..7a6d76c41 100644
+index e3e915329510f..666ff1e9b6d7b 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
 @@ -6212,6 +6212,42 @@ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_XILINX, 0x5020, of_pci_make_dev_node);

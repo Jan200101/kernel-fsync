@@ -1,21 +1,22 @@
-diff --git a/sound/pci/hda/cd35l41_hda_property.c b/sound/pci/hda/cs35l41_hda_property.c
-index 6b704fd..d63617f 100644
+diff --git a/sound/pci/hda/cs35l41_hda_property.c b/sound/pci/hda/cs35l41_hda_property.c
+index 2b8f8fd52..f4933be4c 100644
 --- a/sound/pci/hda/cs35l41_hda_property.c
 +++ b/sound/pci/hda/cs35l41_hda_property.c
-@@ -7,7 +7,9 @@
+@@ -6,8 +6,10 @@
+ //
  // Author: Stefan Binding <sbinding@opensource.cirrus.com>
- 
- #include <linux/acpi.h>
+
 +#include <linux/dmi.h>
+ #include <linux/acpi.h>
  #include <linux/gpio/consumer.h>
 +#include <linux/kernel.h>
  #include <linux/string.h>
  #include "cs35l41_hda_property.h"
  #include <linux/spi/spi.h>
-@@ -117,6 +119,40 @@ static int asus_rog_2023_no_acpi(struct cs35l41_hda *cs35l41, struct device *phy
+@@ -335,6 +337,40 @@ static int lenovo_legion_no_acpi(struct cs35l41_hda *cs35l41, struct device *phy
  	return 0;
  }
- 
+
 +static int asus_rog_2023_ally_fix(struct cs35l41_hda *cs35l41, struct device *physdev, int id,
 +				const char *hid)
 +{
@@ -53,12 +54,12 @@ index 6b704fd..d63617f 100644
  struct cs35l41_prop_model {
  	const char *hid;
  	const char *ssid;
-@@ -359,7 +359,7 @@
+@@ -360,7 +360,7 @@
  	{ "CSC3551", "10431663", generic_dsd_config },
  	{ "CSC3551", "104316D3", generic_dsd_config },
  	{ "CSC3551", "104316F3", generic_dsd_config },
 -	{ "CSC3551", "104317F3", generic_dsd_config },
 +	{ "CSC3551", "104317F3", asus_rog_2023_ally_fix },
+ 	{ "CSC3551", "10431B93", generic_dsd_config },
  	{ "CSC3551", "10431863", generic_dsd_config },
  	{ "CSC3551", "104318D3", generic_dsd_config },
- 	{ "CSC3551", "10431C9F", generic_dsd_config },

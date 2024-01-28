@@ -20,9 +20,9 @@ index 361ea7ab30ea..0c5cf69b241a 100644
 -int sysctl_vfs_cache_pressure __read_mostly = 100;
 +int sysctl_vfs_cache_pressure __read_mostly = 50;
  EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
-
+ 
  __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
---
+-- 
 2.28.0
 
 
@@ -30,19 +30,69 @@ diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
 index f788cd61df21..2bfbb4213707 100644
 --- a/kernel/sched/rt.c
 +++ b/kernel/sched/rt.c
-@@ -20,9 +20,9 @@
-
- /*
+@@ -22,7 +22,7 @@
   * part of the period that we allow rt tasks to run in us.
-- * default: 0.95s
-+ * XanMod default: 0.98s
+  * default: 0.95s
   */
 -int sysctl_sched_rt_runtime = 950000;
 +int sysctl_sched_rt_runtime = 980000;
-
+ 
  #ifdef CONFIG_SYSCTL
  static int sysctl_sched_rr_timeslice = (MSEC_PER_SEC * RR_TIMESLICE) / HZ;
---
+-- 
+2.28.0
+
+
+From acc49f33a10f61dc66c423888cbb883ba46710e4 Mon Sep 17 00:00:00 2001
+From: Alexandre Frade <admfrade@gmail.com>
+Date: Mon, 29 Jan 2018 17:41:29 +0000
+Subject: [PATCH 04/17] scripts: disable the localversion "+" tag of a git repo
+
+Signed-off-by: Alexandre Frade <admfrade@gmail.com>
+---
+ scripts/setlocalversion | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+index 20f2efd57b11..0552d8b9f582 100755
+--- a/scripts/setlocalversion
++++ b/scripts/setlocalversion
+@@ -54,7 +54,7 @@ scm_version()
+ 		# If only the short version is requested, don't bother
+ 		# running further git commands
+ 		if $short; then
+-			echo "+"
++			#echo "+"
+ 			return
+ 		fi
+ 		# If we are past the tagged commit, we pretty print it.
+-- 
+2.28.0
+
+
+From 360c6833e07cc9fdef5746f6bc45bdbc7212288d Mon Sep 17 00:00:00 2001
+From: "Jan Alexander Steffens (heftig)" <jan.steffens@gmail.com>
+Date: Fri, 26 Oct 2018 11:22:33 +0100
+Subject: [PATCH 06/17] infiniband: Fix __read_overflow2 error with -O3
+ inlining
+
+---
+ drivers/infiniband/core/addr.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/infiniband/core/addr.c b/drivers/infiniband/core/addr.c
+index 3a98439bba83..6efc4f907f58 100644
+--- a/drivers/infiniband/core/addr.c
++++ b/drivers/infiniband/core/addr.c
+@@ -820,6 +820,7 @@ int rdma_addr_find_l2_eth_by_grh(const union ib_gid *sgid,
+ 	union {
+ 		struct sockaddr_in  _sockaddr_in;
+ 		struct sockaddr_in6 _sockaddr_in6;
++		struct sockaddr_ib  _sockaddr_ib;
+ 	} sgid_addr, dgid_addr;
+ 	int ret;
+ 
+-- 
 2.28.0
 
 
@@ -53,16 +103,16 @@ Subject: [PATCH 07/17] Add Zenify option
 
 ---
  init/Kconfig           | 32 ++++++++++++++++++++++++++++++++
- 3 files changed, 65 insertions(+)
+ 1 file changed, 32 insertions(+)
 
 diff --git a/init/Kconfig b/init/Kconfig
 index 3ae8678e1145..da708eed0f1e 100644
 --- a/init/Kconfig
 +++ b/init/Kconfig
 @@ -92,6 +92,38 @@ config THREAD_INFO_IN_TASK
-
+ 
  menu "General setup"
-
+ 
 +config ZENIFY
 +	bool "A selection of patches from Zen/Liquorix kernel and additional tweaks for a better gaming experience"
 +	default y
@@ -97,8 +147,8 @@ index 3ae8678e1145..da708eed0f1e 100644
 +
  config BROKEN
  	bool
-
---
+ 
+-- 
 2.28.0
 
 
@@ -123,13 +173,13 @@ index e64e59b536d3..bfb55ef7ebbe 100644
 @@ -691,6 +691,9 @@ choice
  	config DEFAULT_VEGAS
  		bool "Vegas" if TCP_CONG_VEGAS=y
-
+ 
 +	config DEFAULT_YEAH
 +		bool "YeAH" if TCP_CONG_YEAH=y
 +
  	config DEFAULT_VENO
  		bool "Veno" if TCP_CONG_VENO=y
-
+ 
 @@ -724,6 +727,7 @@ config DEFAULT_TCP_CONG
  	default "htcp" if DEFAULT_HTCP
  	default "hybla" if DEFAULT_HYBLA
@@ -138,7 +188,7 @@ index e64e59b536d3..bfb55ef7ebbe 100644
  	default "westwood" if DEFAULT_WESTWOOD
  	default "veno" if DEFAULT_VENO
  	default "reno" if DEFAULT_RENO
---
+-- 
 2.28.0
 
 
@@ -187,8 +237,8 @@ index 74300e337c3c..9277f22c10a7 100644
 +#endif
  	(1<<TRANSPARENT_HUGEPAGE_DEFRAG_KHUGEPAGED_FLAG)|
  	(1<<TRANSPARENT_HUGEPAGE_USE_ZERO_PAGE_FLAG);
-
---
+ 
+-- 
 2.28.0
 
 
@@ -209,22 +259,22 @@ index 84badf00647e..6a922bca9f39 100644
 @@ -471,6 +471,9 @@ choice
  	config DEFAULT_SFQ
  		bool "Stochastic Fair Queue" if NET_SCH_SFQ
-
+ 
 +	config DEFAULT_CAKE
 +		bool "Common Applications Kept Enhanced" if NET_SCH_CAKE
 +
  	config DEFAULT_PFIFO_FAST
  		bool "Priority FIFO Fast"
  endchoice
-@@ -488,6 +488,7 @@
+@@ -453,6 +453,7 @@
  	default "fq_codel" if DEFAULT_FQ_CODEL
  	default "fq_pie" if DEFAULT_FQ_PIE
  	default "sfq" if DEFAULT_SFQ
 +	default "cake" if DEFAULT_CAKE
  	default "pfifo_fast"
  endif
-
---
+ 
+-- 
 2.28.0
 
 
@@ -253,10 +303,10 @@ index bc05c3588aa3..b0cefe94920d 100644
 -#define MAPCOUNT_ELF_CORE_MARGIN	(5)
 -#define DEFAULT_MAX_MAP_COUNT	(USHRT_MAX - MAPCOUNT_ELF_CORE_MARGIN)
 +#define DEFAULT_MAX_MAP_COUNT	(262144)
-
+ 
  extern int sysctl_max_map_count;
-
---
+ 
+-- 
 2.28.0
 
 
@@ -281,12 +331,11 @@ index b0cefe94920d..890165099b07 100644
   */
 -#define DEFAULT_MAX_MAP_COUNT	(262144)
 +#define DEFAULT_MAX_MAP_COUNT	(16777216)
-
+ 
  extern int sysctl_max_map_count;
-
---
+ 
+-- 
 2.28.0
-
 
 From 977812938da7c7226415778c340832141d9278b7 Mon Sep 17 00:00:00 2001
 From: Alexandre Frade <admfrade@gmail.com>
@@ -302,9 +351,9 @@ diff --git a/block/elevator.c b/block/elevator.c
 index 4eab3d70e880..79669aa39d79 100644
 --- a/block/elevator.c
 +++ b/block/elevator.c
-@@ -561,8 +561,8 @@
+@@ -623,19 +623,19 @@ static inline bool elv_support_iosched(struct request_queue *q)
  }
-
+ 
  /*
 - * For single queue devices, default to using mq-deadline. If we have multiple
 - * queues or mq-deadline is not available, default to "none".
@@ -313,16 +362,19 @@ index 4eab3d70e880..79669aa39d79 100644
   */
  static struct elevator_type *elevator_get_default(struct request_queue *q)
  {
-@@ -573,7 +573,7 @@
- 	    !blk_mq_is_shared_tags(q->tag_set->flags))
+ 	if (q->tag_set && q->tag_set->flags & BLK_MQ_F_NO_SCHED_BY_DEFAULT)
  		return NULL;
 
+ 	if (q->nr_hw_queues != 1 &&
+ 	    !blk_mq_is_shared_tags(q->tag_set->flags))
+ 		return NULL;
+ 
 -	return elevator_find_get(q, "mq-deadline");
 +	return elevator_find_get(q, "bfq");
  }
-
+ 
  /*
---
+-- 
 2.28.0
 
 From 3c229f434aca65c4ca61772bc03c3e0370817b92 Mon Sep 17 00:00:00 2001
@@ -340,16 +392,16 @@ diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
 index cf2468da68e9..007dea784451 100644
 --- a/include/linux/pagemap.h
 +++ b/include/linux/pagemap.h
-@@ -851,7 +851,7 @@
+@@ -1181,7 +1181,7 @@
  		._index = i,						\
  	}
-
+ 
 -#define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
 +#define VM_READAHEAD_PAGES	(SZ_2M / PAGE_SIZE)
-
+ 
  void page_cache_ra_unbounded(struct readahead_control *,
  		unsigned long nr_to_read, unsigned long lookahead_count);
---
+-- 
 2.28.0
 
 
@@ -397,21 +449,20 @@ index fb95fad81c79..3e92fee81e33 100644
                          active
                            Use intel_pstate driver to bypass the scaling
                            governors layer of cpufreq and provides it own
-
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
 index 36a469150ff9..aee891c9b78a 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -3510,6 +3510,8 @@
+@@ -3533,6 +3533,8 @@
  	if (!strcmp(str, "no_hwp"))
  		no_hwp = 1;
-
+ 
 +	if (!strcmp(str, "enable"))
 +		no_load = 0;
  	if (!strcmp(str, "force"))
  		force_load = 1;
  	if (!strcmp(str, "hwp_only"))
---
+-- 
 2.28.0
 
 From 379cbab18b5c75c622b93e2c5abdfac141fe9654 Mon Sep 17 00:00:00 2001
@@ -555,7 +606,7 @@ Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/include/linux/pageblock-flags.h b/include/linux/pageblock-flags.h
-index e83c4c095..21b8dfa5d 100644
+index 5f1ae07d724b88..97cda629c9e909 100644
 --- a/include/linux/pageblock-flags.h
 +++ b/include/linux/pageblock-flags.h
 @@ -48,7 +48,7 @@ extern unsigned int pageblock_order;
@@ -567,3 +618,137 @@ index e83c4c095..21b8dfa5d 100644
 
  #endif /* CONFIG_HUGETLB_PAGE */
 
+
+From f22bc56be85e69c71c8e36041193856bb8b01525 Mon Sep 17 00:00:00 2001
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Wed, 20 Oct 2021 20:50:32 -0700
+Subject: [PATCH] ZEN: mm: Don't hog the CPU and zone lock in rmqueue_bulk()
+
+There is noticeable scheduling latency and heavy zone lock contention
+stemming from rmqueue_bulk's single hold of the zone lock while doing
+its work, as seen with the preemptoff tracer. There's no actual need for
+rmqueue_bulk() to hold the zone lock the entire time; it only does so
+for supposed efficiency. As such, we can relax the zone lock and even
+reschedule when IRQs are enabled in order to keep the scheduling delays
+and zone lock contention at bay. Forward progress is still guaranteed,
+as the zone lock can only be relaxed after page removal.
+
+With this change, rmqueue_bulk() no longer appears as a serious offender
+in the preemptoff tracer, and system latency is noticeably improved.
+
+Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+---
+ mm/page_alloc.c | 23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index a0b0397e29ee4c..87a983a356530c 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2152,16 +2152,17 @@
+ }
+ 
+ /*
+- * Obtain a specified number of elements from the buddy allocator, all under
+- * a single hold of the lock, for efficiency.  Add them to the supplied list.
+- * Returns the number of new pages which were placed at *list.
++ * Obtain a specified number of elements from the buddy allocator, and relax the
++ * zone lock when needed. Add them to the supplied list. Returns the number of
++ * new pages which were placed at *list.
+  */
+ static int rmqueue_bulk(struct zone *zone, unsigned int order,
+ 			unsigned long count, struct list_head *list,
+ 			int migratetype, unsigned int alloc_flags)
+ {
+ 	unsigned long flags;
+-	int i;
++	const bool can_resched = !preempt_count() && !irqs_disabled();
++	int i, last_mod = 0;
+ 
+ 	spin_lock_irqsave(&zone->lock, flags);
+ 	for (i = 0; i < count; ++i) {
+@@ -2170,6 +2171,18 @@
+ 		if (unlikely(page == NULL))
+ 			break;
+ 
++		/* Reschedule and ease the contention on the lock if needed */
++		if (i + 1 < count && ((can_resched && need_resched()) ||
++				      spin_needbreak(&zone->lock))) {
++			__mod_zone_page_state(zone, NR_FREE_PAGES,
++					      -((i + 1 - last_mod) << order));
++			last_mod = i + 1;
++			spin_unlock_irqrestore(&zone->lock, flags);
++			if (can_resched)
++				cond_resched();
++			spin_lock_irqsave(&zone->lock, flags);
++		}
++
+ 		/*
+ 		 * Split buddy pages returned by expand() are received here in
+ 		 * physical page order. The page is added to the tail of
+@@ -2186,7 +2199,7 @@
+ 					      -(1 << order));
+ 	}
+ 
+-	__mod_zone_page_state(zone, NR_FREE_PAGES, -(i << order));
++	__mod_zone_page_state(zone, NR_FREE_PAGES, -((i - last_mod) << order));
+ 	spin_unlock_irqrestore(&zone->lock, flags);
+ 
+ 	return i;
+ 
+From 6329525a0fa10cd13f39b76948b1296150f75c95 Mon Sep 17 00:00:00 2001
+From: Alexandre Frade <kernel@xanmod.org>
+Date: Mon, 29 Aug 2022 16:47:26 +0000
+Subject: [PATCH 14/16] XANMOD: Makefile: Disable GCC vectorization on trees
+
+Signed-off-by: Alexandre Frade <kernel@xanmod.org>
+---
+ Makefile | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 3f6628780eb2..35a5ae1ede42 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1069,6 +1069,9 @@ endif
+ # perform bounds checking.
+ KBUILD_CFLAGS += $(call cc-option, -fstrict-flex-arrays=3)
+
++# disable GCC vectorization on trees
++KBUILD_CFLAGS	+= $(call cc-option, -fno-tree-vectorize)
++
+ # disable invalid "can't wrap" optimizations for signed / pointers
+ KBUILD_CFLAGS	+= -fno-strict-overflow
+
+--
+2.39.1
+
+From f997578464b2c4c63e7bd1afbfef56212ee44f2d Mon Sep 17 00:00:00 2001
+From: Etienne JUVIGNY <ti3nou@gmail.com>
+Date: Mon, 6 Mar 2023 13:54:09 +0100
+Subject: Don't add -dirty versioning on unclean trees
+
+
+diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+index ca5795e16..ad0d94477 100755
+--- a/scripts/setlocalversion
++++ b/scripts/setlocalversion
+@@ -85,12 +85,12 @@ scm_version()
+ 	# git-diff-index does not refresh the index, so it may give misleading
+ 	# results.
+ 	# See git-update-index(1), git-diff-index(1), and git-status(1).
+-	if {
+-		git --no-optional-locks status -uno --porcelain 2>/dev/null ||
+-		git diff-index --name-only HEAD
+-	} | read dummy; then
+-		printf '%s' -dirty
+-	fi
++	#if {
++	#	git --no-optional-locks status -uno --porcelain 2>/dev/null ||
++	#	git diff-index --name-only HEAD
++	#} | read dummy; then
++	#	printf '%s' -dirty
++	#fi
+ }
+
+ collect_files()

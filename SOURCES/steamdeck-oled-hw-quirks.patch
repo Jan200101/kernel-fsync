@@ -128,7 +128,7 @@ index b8633df418d43..77a1bedaee98c 100644
 @@ -416,8 +416,6 @@
  	struct drm_property *regamma_tf_property;
  };
-
+ 
 -#define AMDGPU_MAX_BL_LEVEL 0xFF
 -
  struct amdgpu_backlight_privdata {

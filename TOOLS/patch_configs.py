@@ -18,6 +18,19 @@ GENERIC_PATCHES = [
     ["FB_VESA", UNSET, ENABLE],
     ["ACPI_EC_DEBUGFS", UNSET, MODULE],
     ["WINESYNC", None, ENABLE],
+    ["USER_NS_UNPRIVILEGED", None, ENABLE],
+    ["TCP_CONG_BBR2", None, MODULE],
+    # bcachefs
+    ["BCACHEFS_FS", None, MODULE],
+    ["BCACHEFS_QUOTA", None, ENABLE],
+    ["BCACHEFS_POSIX_ACL", None, ENABLE],
+    ["BCACHEFS_DEBUG_TRANSACTIONS", None, UNSET],
+    ["BCACHEFS_DEBUG", None, UNSET],
+    ["BCACHEFS_TESTS", None, UNSET],
+    ["BCACHEFS_LOCK_TIME_STATS", None, UNSET],
+    ["BCACHEFS_NO_LATENCY_ACCT", None, UNSET],
+    ["MEAN_AND_VARIANCE_UNIT_TEST", None, UNSET],
+    ["DEBUG_CLOSURES", None, UNSET],
 
     # device specific config
     # Microsoft Surface
@@ -37,6 +50,10 @@ ARCH_PATCHES = {
         # Lenovo Legion
         ["LEGION_LAPTOP", None, MODULE],
         ["ACPI_CALL", None, MODULE],
+
+        # Aly & Legion Go Gyro
+        ["IIO_SYSFS_TRIGGER", None, MODULE],
+        ["IIO_HRTIMER_TRIGGER", None, MODULE],
 
         # Steam Deck
         ["MFD_STEAMDECK", None, MODULE],
