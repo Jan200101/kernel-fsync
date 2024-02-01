@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 6
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.6.14
 
@@ -1799,7 +1799,7 @@ ApplyOptionalPatch tkg-unprivileged-CLONE_NEWUSER.patch
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
 ApplyOptionalPatch steam-deck.patch
-ApplyOptionalPatch steam-deck-valve15.patch
+#ApplyOptionalPatch steam-deck-valve15.patch
 ApplyOptionalPatch asus-linux.patch
 ApplyOptionalPatch lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
@@ -3830,6 +3830,9 @@ fi\
 #
 #
 %changelog
+* Thu Feb 01 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.14-202.fsync.1
+- disable valve15 patch: introduced amdgpu regressions
+
 * Mon Jan 29 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.6.14-201.fsync
 - kernel-fsync v6.6.14
 
