@@ -20,17 +20,6 @@ GENERIC_PATCHES = [
     ["WINESYNC", None, ENABLE],
     ["USER_NS_UNPRIVILEGED", None, ENABLE],
     ["TCP_CONG_BBR2", None, MODULE],
-    # bcachefs
-    ["BCACHEFS_FS", None, MODULE],
-    ["BCACHEFS_QUOTA", None, ENABLE],
-    ["BCACHEFS_POSIX_ACL", None, ENABLE],
-    ["BCACHEFS_DEBUG_TRANSACTIONS", None, UNSET],
-    ["BCACHEFS_DEBUG", None, UNSET],
-    ["BCACHEFS_TESTS", None, UNSET],
-    ["BCACHEFS_LOCK_TIME_STATS", None, UNSET],
-    ["BCACHEFS_NO_LATENCY_ACCT", None, UNSET],
-    ["MEAN_AND_VARIANCE_UNIT_TEST", None, UNSET],
-    ["DEBUG_CLOSURES", None, UNSET],
 
     # device specific config
     # Microsoft Surface
@@ -40,9 +29,22 @@ GENERIC_PATCHES = [
     ["VIDEO_DW9719", None, MODULE],
     ["IPC_CLASSES", None, ENABLE],
     ["LEDS_TPS68470", None, MODULE],
+    ["SENSORS_SURFACE_FAN", None, MODULE],
+    ["SENSORS_SURFACE_TEMP", None, MODULE],
 
-    # Steam Deck HDR Color management
-    ["DRM_AMD_COLOR_STEAMDECK", None, UNSET],
+    # Steam Deck / amdgpu HDR Color management
+    ["DRM_AMD_COLOR_STEAMDECK", None, ENABLE],
+
+    # Rog Ally Gyro Fix
+    ["BMI323_I2C", None, MODULE],
+    ["BMI323_SPI", None, MODULE],
+
+    # Mac T2 supprot
+    ["DRM_APPLETBDRM", None, MODULE],
+    ["HID_APPLETB_BL", None, MODULE],
+    ["HID_APPLETB_KBD", None, MODULE],
+    ["HID_APPLE_MAGIC_BACKLIGHT", None, MODULE],
+    ["CONFIG_APPLE_BCE", None, MODULE],
 ]
 
 ARCH_PATCHES = {
@@ -139,10 +141,11 @@ def apply_patches(data: str, patches, flags = None) -> str:
         flags = []
 
     for name, *val in patches:
-        c = f"CONFIG_{name}"
+        if not name.startswith("CONFIG_"):
+            name = f"CONFIG_{name}"
 
-        s = f"{c}="
-        u = f"# {c} "
+        s = f"{name}="
+        u = f"# {name} "
 
         if len(val) == 3 and val[2] not in flags:
             continue
@@ -166,15 +169,15 @@ def apply_patches(data: str, patches, flags = None) -> str:
 
             if val[0] is not None:
                 # verify we found what we expect
-                l = generate_line(c, val[0])
+                l = generate_line(name, val[0])
                 if l != line:
                     #print(f"    Could not apply {name}: could not find expected config")
                     continue
-            data = data[:line_start] + generate_line(c, val[1]) + data[line_end:]
+            data = data[:line_start] + generate_line(name, val[1]) + data[line_end:]
 
         elif val[0] is None:
             # relevant entry does not exist yet and we don't want to replace anything specific
-            data += generate_line(c, val[1])
+            data += generate_line(name, val[1])
             data += "\n"
         else:
             print(f"    Couldn't find {name}")

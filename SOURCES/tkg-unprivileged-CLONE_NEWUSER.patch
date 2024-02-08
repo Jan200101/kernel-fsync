@@ -69,7 +69,7 @@ index 08969f5aa38d59..ff601cb7a1fae0 100644
 @@ -100,6 +100,10 @@
  #include <linux/user_events.h>
  #include <linux/iommu.h>
-
+ 
 +#ifdef CONFIG_USER_NS
 +#include <linux/user_namespace.h>
 +#endif
@@ -146,6 +146,6 @@ index 54211dbd516c57..16ca0c1516298d 100644
 +int unprivileged_userns_clone;
 +#endif
 +
- static struct kmem_cache *user_ns_cachep __read_mostly;
+ static struct kmem_cache *user_ns_cachep __ro_after_init;
  static DEFINE_MUTEX(userns_state_mutex);
 

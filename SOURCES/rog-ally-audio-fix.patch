@@ -54,7 +54,7 @@ index 2b8f8fd52..f4933be4c 100644
  struct cs35l41_prop_model {
  	const char *hid;
  	const char *ssid;
-@@ -360,7 +360,7 @@
+@@ -413,7 +413,7 @@
  	{ "CSC3551", "10431663", generic_dsd_config },
  	{ "CSC3551", "104316D3", generic_dsd_config },
  	{ "CSC3551", "104316F3", generic_dsd_config },

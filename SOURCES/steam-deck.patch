@@ -225,14 +225,14 @@ diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
 index 11d076cad8a2..d03c1e1d339f 100644
 --- a/drivers/hwmon/Makefile
 +++ b/drivers/hwmon/Makefile
-@@ -191,6 +191,7 @@ obj-$(CONFIG_SENSORS_SMSC47B397)+= smsc47b397.o
+@@ -199,6 +199,7 @@
  obj-$(CONFIG_SENSORS_SMSC47M1)	+= smsc47m1.o
  obj-$(CONFIG_SENSORS_SMSC47M192)+= smsc47m192.o
  obj-$(CONFIG_SENSORS_SPARX5)	+= sparx5-temp.o
 +obj-$(CONFIG_SENSORS_STEAMDECK) += steamdeck-hwmon.o
  obj-$(CONFIG_SENSORS_STTS751)	+= stts751.o
- obj-$(CONFIG_SENSORS_SY7636A)	+= sy7636a-hwmon.o
- obj-$(CONFIG_SENSORS_AMC6821)	+= amc6821.o
+ obj-$(CONFIG_SENSORS_SURFACE_FAN)+= surface_fan.o
+ obj-$(CONFIG_SENSORS_SURFACE_TEMP)+= surface_temp.o
 diff --git a/drivers/hwmon/steamdeck-hwmon.c b/drivers/hwmon/steamdeck-hwmon.c
 new file mode 100644
 index 000000000000..fab9e9460bd4
@@ -609,10 +609,10 @@ diff --git a/drivers/extcon/Kconfig b/drivers/extcon/Kconfig
 index 290186e44e6b..4d444a9e2c1f 100644
 --- a/drivers/extcon/Kconfig
 +++ b/drivers/extcon/Kconfig
-@@ -189,4 +189,11 @@ config EXTCON_USBC_TUSB320
- 	  Say Y here to enable support for USB Type C cable detection extcon
- 	  support using a TUSB320.
-
+@@ -202,4 +202,11 @@
+ 	  The DHC (Digital Home Hub) RTD series SoC contains a type c module.
+ 	  This driver will detect the status of the type-c port.
+ 
 +config EXTCON_STEAMDECK
 +	tristate "Steam Deck extcon support"
 +	depends on MFD_STEAMDECK
@@ -625,10 +625,10 @@ diff --git a/drivers/extcon/Makefile b/drivers/extcon/Makefile
 index 1b390d934ca9..1c7e217f29e4 100644
 --- a/drivers/extcon/Makefile
 +++ b/drivers/extcon/Makefile
-@@ -25,3 +25,4 @@ obj-$(CONFIG_EXTCON_SM5502)	+= extcon-sm5502.o
- obj-$(CONFIG_EXTCON_USB_GPIO)	+= extcon-usb-gpio.o
+@@ -26,3 +26,4 @@
  obj-$(CONFIG_EXTCON_USBC_CROS_EC) += extcon-usbc-cros-ec.o
  obj-$(CONFIG_EXTCON_USBC_TUSB320) += extcon-usbc-tusb320.o
+ obj-$(CONFIG_EXTCON_RTK_TYPE_C) += extcon-rtk-type-c.o
 +obj-$(CONFIG_EXTCON_STEAMDECK)  += extcon-steamdeck.o
 diff --git a/drivers/extcon/extcon-steamdeck.c b/drivers/extcon/extcon-steamdeck.c
 new file mode 100644

@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jan200101 <sentrycraft123@gmail.com>
+Date: Thu, 8 Feb 2024 00:14:36 +0100
+Subject: [PATCH] enable Nouveau GSP by default on all platforms
+
+Signed-off-by: Jan200101 <sentrycraft123@gmail.com>
+---
+ drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c b/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c
+index 9ee58e2a0eb2..e7864dedf01b 100644
+--- a/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c
++++ b/drivers/gpu/drm/nouveau/nvkm/subdev/gsp/r535.c
+@@ -2296,7 +2296,7 @@ r535_gsp_load(struct nvkm_gsp *gsp, int ver, const struct nvkm_gsp_fwif *fwif)
+ 	struct nvkm_subdev *subdev = &gsp->subdev;
+ 	int ret;
+ 
+-	if (!nvkm_boolopt(subdev->device->cfgopt, "NvGspRm", fwif->enable))
++	if (!nvkm_boolopt(subdev->device->cfgopt, "NvGspRm", true))
+ 		return -EINVAL;
+ 
+ 	if ((ret = r535_gsp_load_fw(gsp, "gsp", fwif->ver, &gsp->fws.rm)) ||

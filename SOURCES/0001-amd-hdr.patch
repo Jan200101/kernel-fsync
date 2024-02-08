@@ -13,9 +13,6 @@ Subject: [PATCH] hdr
  .../amd/display/amdgpu_dm/amdgpu_dm_plane.c   | 234 ++++-
  .../amd/display/dc/dcn10/dcn10_cm_common.c    |  95 +-
  .../amd/display/dc/dcn10/dcn10_hw_sequencer.c |  14 +-
- .../drm/amd/display/dc/dcn30/dcn30_hwseq.c    |  37 +
- .../drm/amd/display/dc/dcn30/dcn30_hwseq.h    |   3 +
- .../drm/amd/display/dc/dcn301/dcn301_init.c   |   2 +-
  .../gpu/drm/amd/display/include/fixed31_32.h  |  12 +
  drivers/gpu/drm/arm/malidp_crtc.c             |   2 +-
  drivers/gpu/drm/drm_atomic.c                  |   1 +
@@ -25,7 +22,6 @@ Subject: [PATCH] hdr
  include/drm/drm_plane.h                       |   7 +
  include/drm/drm_property.h                    |   6 +
  include/uapi/drm/drm_mode.h                   |   8 +
- 21 files changed, 1473 insertions(+), 97 deletions(-)
 
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_mode.h b/drivers/gpu/drm/amd/amdgpu/amdgpu_mode.h
 index 32fe05c81..84bf501b0 100644
@@ -1328,7 +1324,7 @@ index 97b7a0b8a..f1707c774 100644
  	state->crc_skip_count = cur->crc_skip_count;
  	state->mpo_requested = cur->mpo_requested;
  	/* TODO Duplicate dc_stream after objects are stream object is flattened */
-@@ -296,6 +297,70 @@ static int amdgpu_dm_crtc_late_register(struct drm_crtc *crtc)
+@@ -296,6 +296,70 @@
  }
  #endif
  
@@ -1398,7 +1394,7 @@ index 97b7a0b8a..f1707c774 100644
 +
  /* Implemented only the options currently available for the driver */
  static const struct drm_crtc_funcs amdgpu_dm_crtc_funcs = {
- 	.reset = dm_crtc_reset_state,
+ 	.reset = amdgpu_dm_crtc_reset_state,
 @@ -314,6 +379,10 @@ static const struct drm_crtc_funcs amdgpu_dm_crtc_funcs = {
  #if defined(CONFIG_DEBUG_FS)
  	.late_register = amdgpu_dm_crtc_late_register,
@@ -1409,7 +1405,7 @@ index 97b7a0b8a..f1707c774 100644
 +#endif
  };
  
- static void dm_crtc_helper_disable(struct drm_crtc *crtc)
+ static void amdgpu_dm_crtc_helper_disable(struct drm_crtc *crtc)
 @@ -489,6 +558,9 @@ int amdgpu_dm_crtc_init(struct amdgpu_display_manager *dm,
  
  	drm_mode_crtc_set_gamma_size(&acrtc->base, MAX_COLOR_LEGACY_LUT_ENTRIES);
@@ -1424,7 +1420,7 @@ diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c b/drivers/g
 index cc74dd69a..2ed20e6e4 100644
 --- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
 +++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
-@@ -1333,8 +1333,14 @@ static void dm_drm_plane_reset(struct drm_plane *plane)
+@@ -1337,8 +1337,14 @@
  	amdgpu_state = kzalloc(sizeof(*amdgpu_state), GFP_KERNEL);
  	WARN_ON(amdgpu_state == NULL);
  
@@ -1440,7 +1436,7 @@ index cc74dd69a..2ed20e6e4 100644
 +	amdgpu_state->blend_tf = AMDGPU_TRANSFER_FUNCTION_DEFAULT;
  }
  
- static struct drm_plane_state *
+ static struct drm_plane_state *amdgpu_dm_plane_drm_plane_duplicate_state(struct drm_plane *plane)
 @@ -1354,6 +1360,32 @@ dm_drm_plane_duplicate_state(struct drm_plane *plane)
  		dc_plane_state_retain(dm_plane_state->dc_state);
  	}
@@ -1497,7 +1493,7 @@ index cc74dd69a..2ed20e6e4 100644
  
 +#ifdef CONFIG_DRM_AMD_COLOR_STEAMDECK
 +static void
-+dm_atomic_plane_attach_color_mgmt_properties(struct amdgpu_display_manager *dm,
++amdgpu_dm_atomic_plane_attach_color_mgmt_properties(struct amdgpu_display_manager *dm,
 +					     struct drm_plane *plane)
 +{
 +	struct amdgpu_mode_info mode_info = dm->adev->mode_info;
@@ -1553,7 +1549,7 @@ index cc74dd69a..2ed20e6e4 100644
 +}
 +
 +static int
-+dm_atomic_plane_set_property(struct drm_plane *plane,
++amdgpu_dm_atomic_plane_set_property(struct drm_plane *plane,
 +			     struct drm_plane_state *state,
 +			     struct drm_property *property,
 +			     uint64_t val)
@@ -1635,7 +1631,7 @@ index cc74dd69a..2ed20e6e4 100644
 +}
 +
 +static int
-+dm_atomic_plane_get_property(struct drm_plane *plane,
++amdgpu_dm_atomic_plane_get_property(struct drm_plane *plane,
 +			     const struct drm_plane_state *state,
 +			     struct drm_property *property,
 +			     uint64_t *val)
@@ -1678,23 +1674,23 @@ index cc74dd69a..2ed20e6e4 100644
  static const struct drm_plane_funcs dm_plane_funcs = {
  	.update_plane	= drm_atomic_helper_update_plane,
  	.disable_plane	= drm_atomic_helper_disable_plane,
-@@ -1435,6 +1658,10 @@ static const struct drm_plane_funcs dm_plane_funcs = {
- 	.atomic_duplicate_state = dm_drm_plane_duplicate_state,
- 	.atomic_destroy_state = dm_drm_plane_destroy_state,
- 	.format_mod_supported = dm_plane_format_mod_supported,
+@@ -1658,6 +1881,10 @@ static const struct drm_plane_funcs dm_plane_funcs = {
+ 	.atomic_duplicate_state = amdgpu_dm_plane_drm_plane_duplicate_state,
+ 	.atomic_destroy_state = amdgpu_dm_plane_drm_plane_destroy_state,
+ 	.format_mod_supported = amdgpu_dm_plane_format_mod_supported,
 +#ifdef CONFIG_DRM_AMD_COLOR_STEAMDECK
-+	.atomic_set_property = dm_atomic_plane_set_property,
-+	.atomic_get_property = dm_atomic_plane_get_property,
++	.atomic_set_property = amdgpu_dm_atomic_plane_set_property,
++	.atomic_get_property = amdgpu_dm_atomic_plane_get_property,
 +#endif
  };
- 
+
  int amdgpu_dm_plane_init(struct amdgpu_display_manager *dm,
 @@ -1514,6 +1741,9 @@ int amdgpu_dm_plane_init(struct amdgpu_display_manager *dm,
  
  	drm_plane_helper_add(plane, &dm_plane_helper_funcs);
  
 +#ifdef CONFIG_DRM_AMD_COLOR_STEAMDECK
-+	dm_atomic_plane_attach_color_mgmt_properties(dm, plane);
++	amdgpu_dm_atomic_plane_attach_color_mgmt_properties(dm, plane);
 +#endif
  	/* Create (reset) the plane state */
  	if (plane->funcs->reset)
@@ -1817,10 +1813,10 @@ index 3538973bd..04b2e04b6 100644
  			j++;
  		}
  	}
-diff --git a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c
+diff --git a/drivers/gpu/drm/amd/display/dc/hwss/dcn10/dcn10_hwseq.c b/drivers/gpu/drm/amd/display/dc/hwss/dcn10/dcn10_hwseq.c
 index 79befa17b..4daf8621b 100644
---- a/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c
-+++ b/drivers/gpu/drm/amd/display/dc/dcn10/dcn10_hw_sequencer.c
+--- a/drivers/gpu/drm/amd/display/dc/hwss/dcn10/dcn10_hwseq.c
++++ b/drivers/gpu/drm/amd/display/dc/hwss/dcn10/dcn10_hwseq.c
 @@ -2486,17 +2486,17 @@ void dcn10_program_gamut_remap(struct pipe_ctx *pipe_ctx)
  	adjust.gamut_adjust_type = GRAPHICS_GAMUT_ADJUST_TYPE_BYPASS;
  
@@ -1855,81 +1851,6 @@ index 79befa17b..4daf8621b 100644
  		hws->funcs.set_input_transfer_func(dc, pipe_ctx, pipe_ctx->plane_state);
  
  	/* dcn10_translate_regamma_to_hw_format takes 750us to finish
-diff --git a/drivers/gpu/drm/amd/display/dc/dcn30/dcn30_hwseq.c b/drivers/gpu/drm/amd/display/dc/dcn30/dcn30_hwseq.c
-index 255713ec2..fce9b33c0 100644
---- a/drivers/gpu/drm/amd/display/dc/dcn30/dcn30_hwseq.c
-+++ b/drivers/gpu/drm/amd/display/dc/dcn30/dcn30_hwseq.c
-@@ -186,6 +186,43 @@ bool dcn30_set_input_transfer_func(struct dc *dc,
- 	return result;
- }
- 
-+void dcn30_program_gamut_remap(struct pipe_ctx *pipe_ctx)
-+{
-+	int i = 0;
-+	struct dpp_grph_csc_adjustment dpp_adjust;
-+	struct mpc_grph_gamut_adjustment mpc_adjust;
-+	int mpcc_id = pipe_ctx->plane_res.hubp->inst;
-+	struct mpc *mpc = pipe_ctx->stream_res.opp->ctx->dc->res_pool->mpc;
-+
-+	memset(&dpp_adjust, 0, sizeof(dpp_adjust));
-+	dpp_adjust.gamut_adjust_type = GRAPHICS_GAMUT_ADJUST_TYPE_BYPASS;
-+
-+	if (pipe_ctx->plane_state &&
-+	    pipe_ctx->plane_state->gamut_remap_matrix.enable_remap == true) {
-+		dpp_adjust.gamut_adjust_type = GRAPHICS_GAMUT_ADJUST_TYPE_SW;
-+		for (i = 0; i < CSC_TEMPERATURE_MATRIX_SIZE; i++)
-+			dpp_adjust.temperature_matrix[i] =
-+				pipe_ctx->plane_state->gamut_remap_matrix.matrix[i];
-+	}
-+
-+	pipe_ctx->plane_res.dpp->funcs->dpp_set_gamut_remap(pipe_ctx->plane_res.dpp,
-+							    &dpp_adjust);
-+
-+	memset(&mpc_adjust, 0, sizeof(mpc_adjust));
-+	mpc_adjust.gamut_adjust_type = GRAPHICS_GAMUT_ADJUST_TYPE_BYPASS;
-+
-+	if (pipe_ctx->top_pipe == NULL) {
-+		if (pipe_ctx->stream->gamut_remap_matrix.enable_remap == true) {
-+			mpc_adjust.gamut_adjust_type = GRAPHICS_GAMUT_ADJUST_TYPE_SW;
-+			for (i = 0; i < CSC_TEMPERATURE_MATRIX_SIZE; i++)
-+				mpc_adjust.temperature_matrix[i] =
-+					pipe_ctx->stream->gamut_remap_matrix.matrix[i];
-+		}
-+	}
-+
-+	mpc->funcs->set_gamut_remap(mpc, mpcc_id, &mpc_adjust);
-+}
-+
- bool dcn30_set_output_transfer_func(struct dc *dc,
- 				struct pipe_ctx *pipe_ctx,
- 				const struct dc_stream_state *stream)
-diff --git a/drivers/gpu/drm/amd/display/dc/dcn30/dcn30_hwseq.h b/drivers/gpu/drm/amd/display/dc/dcn30/dcn30_hwseq.h
-index ce19c5409..e557e2b98 100644
---- a/drivers/gpu/drm/amd/display/dc/dcn30/dcn30_hwseq.h
-+++ b/drivers/gpu/drm/amd/display/dc/dcn30/dcn30_hwseq.h
-@@ -58,6 +58,9 @@ bool dcn30_set_blend_lut(struct pipe_ctx *pipe_ctx,
- bool dcn30_set_input_transfer_func(struct dc *dc,
- 				struct pipe_ctx *pipe_ctx,
- 				const struct dc_plane_state *plane_state);
-+
-+void dcn30_program_gamut_remap(struct pipe_ctx *pipe_ctx);
-+
- bool dcn30_set_output_transfer_func(struct dc *dc,
- 				struct pipe_ctx *pipe_ctx,
- 				const struct dc_stream_state *stream);
-diff --git a/drivers/gpu/drm/amd/display/dc/dcn301/dcn301_init.c b/drivers/gpu/drm/amd/display/dc/dcn301/dcn301_init.c
-index 61205cdbe..fdbe3d42c 100644
---- a/drivers/gpu/drm/amd/display/dc/dcn301/dcn301_init.c
-+++ b/drivers/gpu/drm/amd/display/dc/dcn301/dcn301_init.c
-@@ -33,7 +33,7 @@
- #include "dcn301_init.h"
- 
- static const struct hw_sequencer_funcs dcn301_funcs = {
--	.program_gamut_remap = dcn10_program_gamut_remap,
-+	.program_gamut_remap = dcn30_program_gamut_remap,
- 	.init_hw = dcn10_init_hw,
- 	.power_down_on_boot = dcn10_power_down_on_boot,
- 	.apply_ctx_to_hw = dce110_apply_ctx_to_hw,
 diff --git a/drivers/gpu/drm/amd/display/include/fixed31_32.h b/drivers/gpu/drm/amd/display/include/fixed31_32.h
 index d4cf7ead1..84da1dd34 100644
 --- a/drivers/gpu/drm/amd/display/include/fixed31_32.h
@@ -2120,3 +2041,28 @@ index ea1b639bc..cea5653e4 100644
 -- 
 2.43.0
 
+From b938468f07222b4faab5ae5cf5391eccd9532bb0 Mon Sep 17 00:00:00 2001
+From: Bouke Sybren Haarsma <boukehaarsma23@gmail.com>
+Date: Fri, 15 Dec 2023 11:14:58 +0100
+Subject: [PATCH] Don't create color_mgmt_properties on asics < SIENNA_CICHLID
+
+---
+ drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
+index 2ed20e6e439bb5..65ee8745e96540 100644
+--- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
++++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
+@@ -1742,7 +1742,8 @@ int amdgpu_dm_plane_init(struct amdgpu_display_manager *dm,
+ 	drm_plane_helper_add(plane, &dm_plane_helper_funcs);
+
+ #ifdef CONFIG_DRM_AMD_COLOR_STEAMDECK
+-	amdgpu_dm_atomic_plane_attach_color_mgmt_properties(dm, plane);
++	if (dm->adev->asic_type >= CHIP_SIENNA_CICHLID)
++		amdgpu_dm_atomic_plane_attach_color_mgmt_properties(dm, plane);
+ #endif
+ 	/* Create (reset) the plane state */
+ 	if (plane->funcs->reset)
+--
+2.43.0
