@@ -125,10 +125,10 @@ diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_mode.h b/drivers/gpu/drm/amd/amdg
 index b8633df418d43..77a1bedaee98c 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_mode.h
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_mode.h
-@@ -346,8 +346,6 @@ struct amdgpu_mode_info {
- 	const enum drm_plane_type *plane_type;
+@@ -416,8 +416,6 @@
+ 	struct drm_property *regamma_tf_property;
  };
-
+ 
 -#define AMDGPU_MAX_BL_LEVEL 0xFF
 -
  struct amdgpu_backlight_privdata {
@@ -276,90 +276,6 @@ index e1a77a0d66336..8e61c86819fe2 100644
 --
 GitLab
 
-
-From f1f63fbd6a31efad6165f4b35b20ba65f25f877b Mon Sep 17 00:00:00 2001
-From: Christian Marcheselli <christianm@valvesoftware.com>
-Date: Thu, 23 Feb 2023 16:41:42 -0800
-Subject: [PATCH] Galileo-only workaround for backlight settings
-
-(cherry picked from commit 657d5054e6ed013000111db0cc2612f525d5e42d)
----
- drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-index e959aa28b019..ccda049be022 100644
---- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-+++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-@@ -147,7 +147,7 @@ MODULE_FIRMWARE(FIRMWARE_NAVI12_DMCU);
- #define PSP_FOOTER_BYTES 0x100
-
- /* Maximum backlight level. */
--#define AMDGPU_MAX_BL_LEVEL 0xFFFF
-+#define AMDGPU_MAX_BL_LEVEL 0xFFF
-
- /**
-  * DOC: overview
-@@ -4103,9 +4103,12 @@ static u32 convert_brightness_from_user(const struct amdgpu_dm_backlight_caps *c
- {
- 	unsigned min, max;
-
--	if (!get_brightness_range(caps, &min, &max))
--		return brightness;
-+	//if (!get_brightness_range(caps, &min, &max))
-+	//	return brightness;
-+        min = 0;
-+	max = 500000;
-
-+	DRM_INFO("[%s, %d] brightness range %d - %d", __func__, __LINE__, min, max);
- 	// Rescale 0..AMDGPU_MAX_BL_LEVEL to min..max
- 	return min + DIV_ROUND_CLOSEST((max - min) * brightness,
- 				       AMDGPU_MAX_BL_LEVEL);
---
-GitLab
-
-
-From 234d6d21b9eda7fba368e6423626db4bd04e4afd Mon Sep 17 00:00:00 2001
-From: "Pierre-Loup A. Griffais" <pgriffais@valvesoftware.com>
-Date: Tue, 7 Nov 2023 16:57:15 -0800
-Subject: [PATCH] Revert "Galileo-only workaround for backlight settings"
-
-This reverts commit f1f63fbd6a31efad6165f4b35b20ba65f25f877b.
----
- drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-index b004154ba913..6d7df6ae890a 100644
---- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-+++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-@@ -147,7 +147,7 @@ MODULE_FIRMWARE(FIRMWARE_NAVI12_DMCU);
- #define PSP_FOOTER_BYTES 0x100
-
- /* Maximum backlight level. */
--#define AMDGPU_MAX_BL_LEVEL 0xFFF
-+#define AMDGPU_MAX_BL_LEVEL 0xFFFF
-
- /**
-  * DOC: overview
-@@ -4123,12 +4123,9 @@ static u32 convert_brightness_from_user(const struct amdgpu_dm_backlight_caps *c
- {
- 	unsigned min, max;
-
--	//if (!get_brightness_range(caps, &min, &max))
--	//	return brightness;
--        min = 0;
--	max = 500000;
-+	if (!get_brightness_range(caps, &min, &max))
-+		return brightness;
-
--	DRM_INFO("[%s, %d] brightness range %d - %d", __func__, __LINE__, min, max);
- 	// Rescale 0..AMDGPU_MAX_BL_LEVEL to min..max
- 	return min + DIV_ROUND_CLOSEST((max - min) * brightness,
- 				       AMDGPU_MAX_BL_LEVEL);
---
-GitLab
-
 From ab7d646eacf9f1c745d284e293211569a4428573 Mon Sep 17 00:00:00 2001
 From: "Pierre-Loup A. Griffais" <pgriffais@valvesoftware.com>
 Date: Wed, 8 Nov 2023 19:45:52 -0800
@@ -424,8 +340,8 @@ index 30e7c627f21a7..472fa2c8ebcec 100644
  {
  	u32 class = pdev->class;
  
-@@ -613,9 +613,7 @@ static void quirk_amd_dwc_class(struct pci_dev *pdev)
- 		 class, pdev->class);
+@@ -711,9 +711,7 @@
+ 	}
  }
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_NL_USB,
 -		quirk_amd_dwc_class);
@@ -552,96 +468,3 @@ index 715f442a0e3b..06dcd463f841 100644
  				mod_freesync_handle_v_update(
 --
 GitLab
-
-From d426d1ad3f92605c95bdf58bbc19129a128f5590 Mon Sep 17 00:00:00 2001
-From: Friedrich Vock <friedrich.vock@gmx.de>
-Date: Fri, 1 Dec 2023 15:15:58 +0100
-Subject: [PATCH] drm/amdgpu: Enable tunneling on high-priority compute queues
-
-This improves latency if the GPU is already busy with other work.
-This is useful for VR compositors that submit highly latency-sensitive
-compositing work on high-priority compute queues while the GPU is busy
-rendering the next frame.
-
-Userspace merge request:
-https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/26462
-
-Signed-off-by: Friedrich Vock <friedrich.vock@gmx.de>
----
- drivers/gpu/drm/amd/amdgpu/amdgpu.h      |  1 +
- drivers/gpu/drm/amd/amdgpu/amdgpu_ring.c | 10 ++++++----
- drivers/gpu/drm/amd/amdgpu/gfx_v10_0.c   |  3 ++-
- drivers/gpu/drm/amd/amdgpu/gfx_v11_0.c   |  3 ++-
- 4 files changed, 11 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu.h b/drivers/gpu/drm/amd/amdgpu/amdgpu.h
-index df59a6919d878..04686b816fa11 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu.h
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu.h
-@@ -768,6 +768,7 @@ struct amdgpu_mqd_prop {
- 	uint64_t eop_gpu_addr;
- 	uint32_t hqd_pipe_priority;
- 	uint32_t hqd_queue_priority;
-+	bool allow_tunneling;
- 	bool hqd_active;
- };
-
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_ring.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_ring.c
-index 72085a3ef53c0..5d1a6e95b02e8 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_ring.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_ring.c
-@@ -637,6 +637,10 @@ static void amdgpu_ring_to_mqd_prop(struct amdgpu_ring *ring,
- 				    struct amdgpu_mqd_prop *prop)
- {
- 	struct amdgpu_device *adev = ring->adev;
-+	bool is_high_prio_compute = ring->funcs->type == AMDGPU_RING_TYPE_COMPUTE &&
-+				    amdgpu_gfx_is_high_priority_compute_queue(adev, ring);
-+	bool is_high_prio_gfx = ring->funcs->type == AMDGPU_RING_TYPE_GFX &&
-+				amdgpu_gfx_is_high_priority_graphics_queue(adev, ring);
-
- 	memset(prop, 0, sizeof(*prop));
-
-@@ -654,10 +658,8 @@ static void amdgpu_ring_to_mqd_prop(struct amdgpu_ring *ring,
- 	 */
- 	prop->hqd_active = ring->funcs->type == AMDGPU_RING_TYPE_KIQ;
-
--	if ((ring->funcs->type == AMDGPU_RING_TYPE_COMPUTE &&
--	     amdgpu_gfx_is_high_priority_compute_queue(adev, ring)) ||
--	    (ring->funcs->type == AMDGPU_RING_TYPE_GFX &&
--	     amdgpu_gfx_is_high_priority_graphics_queue(adev, ring))) {
-+	prop->allow_tunneling = is_high_prio_compute;
-+	if (is_high_prio_compute || is_high_prio_gfx) {
- 		prop->hqd_pipe_priority = AMDGPU_GFX_PIPE_PRIO_HIGH;
- 		prop->hqd_queue_priority = AMDGPU_GFX_QUEUE_PRIORITY_MAXIMUM;
- 	}
-diff --git a/drivers/gpu/drm/amd/amdgpu/gfx_v10_0.c b/drivers/gpu/drm/amd/amdgpu/gfx_v10_0.c
-index 8256f80d468dd..fc58924e8a5e0 100644
---- a/drivers/gpu/drm/amd/amdgpu/gfx_v10_0.c
-+++ b/drivers/gpu/drm/amd/amdgpu/gfx_v10_0.c
-@@ -6572,7 +6572,8 @@ static int gfx_v10_0_compute_mqd_init(struct amdgpu_device *adev, void *m,
- 	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, ENDIAN_SWAP, 1);
- #endif
- 	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, UNORD_DISPATCH, 0);
--	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, TUNNEL_DISPATCH, 0);
-+	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, TUNNEL_DISPATCH,
-+			    prop->allow_tunneling);
- 	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, PRIV_STATE, 1);
- 	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, KMD_QUEUE, 1);
- 	mqd->cp_hqd_pq_control = tmp;
-diff --git a/drivers/gpu/drm/amd/amdgpu/gfx_v11_0.c b/drivers/gpu/drm/amd/amdgpu/gfx_v11_0.c
-index da21bf868080e..6d4dbb3f0e381 100644
---- a/drivers/gpu/drm/amd/amdgpu/gfx_v11_0.c
-+++ b/drivers/gpu/drm/amd/amdgpu/gfx_v11_0.c
-@@ -3795,7 +3795,8 @@ static int gfx_v11_0_compute_mqd_init(struct amdgpu_device *adev, void *m,
- 	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, RPTR_BLOCK_SIZE,
- 			    (order_base_2(AMDGPU_GPU_PAGE_SIZE / 4) - 1));
- 	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, UNORD_DISPATCH, 0);
--	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, TUNNEL_DISPATCH, 0);
-+	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, TUNNEL_DISPATCH,
-+			    prop->allow_tunneling);
- 	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, PRIV_STATE, 1);
- 	tmp = REG_SET_FIELD(tmp, CP_HQD_PQ_CONTROL, KMD_QUEUE, 1);
- 	mqd->cp_hqd_pq_control = tmp;
---
-GitLab
-
