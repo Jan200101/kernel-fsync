@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 203%{?buildid}%{?dist}
+%define specrelease 204%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.7.4
 
@@ -1014,10 +1014,10 @@ Patch309: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
 # ROG Ally
 Patch315: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
-Patch318: v10-0001-HID-asus-fix-more-n-key-report-descriptors-if-n-.patch
-Patch319: v10-0002-HID-asus-make-asus_kbd_init-generic-remove-rog_n.patch
-Patch320: v10-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
-Patch321: v10-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
+Patch318: v14.8-0001-HID-asus-fix-more-n-key-report-descriptors-if-.patch
+Patch319: v14.8-0002-HID-asus-make-asus_kbd_init-generic-remove-rog.patch
+Patch320: v14.8-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
+Patch321: v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 Patch323: rog-ally-bmc150.patch
 Patch404: rog-ally-gyro-fix.patch
 
@@ -1866,10 +1866,10 @@ ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.pat
 # ROG Ally
 ApplyOptionalPatch rog-ally-audio-fix.patch
 ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
-ApplyOptionalPatch v10-0001-HID-asus-fix-more-n-key-report-descriptors-if-n-.patch
-ApplyOptionalPatch v10-0002-HID-asus-make-asus_kbd_init-generic-remove-rog_n.patch
-ApplyOptionalPatch v10-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
-ApplyOptionalPatch v10-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
+ApplyOptionalPatch v14.8-0001-HID-asus-fix-more-n-key-report-descriptors-if-.patch
+ApplyOptionalPatch v14.8-0002-HID-asus-make-asus_kbd_init-generic-remove-rog.patch
+ApplyOptionalPatch v14.8-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
+ApplyOptionalPatch v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 ApplyOptionalPatch rog-ally-bmc150.patch
 ApplyOptionalPatch rog-ally-gyro-fix.patch
 
@@ -3971,6 +3971,9 @@ fi\
 #
 #
 %changelog
+* Sun Feb 11 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.4-204.fsync.1
+- kernel-fsync v6.7.4 rog ally patches update
+
 * Sun Feb 11 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.4-203.fsync.1
 - kernel-fsync v6.7.4 Steam Deck OLED fixes 2
 
