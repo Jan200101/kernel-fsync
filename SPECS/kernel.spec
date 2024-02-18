@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.7.4
-%define specversion 6.7.4
+%define specrpmversion 6.7.5
+%define specversion 6.7.5
 %define patchversion 6.7
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.7.4
+%define tarfile_release 6.7.5
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 204%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.7.4
+%define kabiversion 6.7.5
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1050,6 +1050,8 @@ Patch408: 0001-acpi-proc-idle-skip-dummy-wait.patch
 Patch411: 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
 # Allows corectl to work out of the box
 Patch412: 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
+# fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
+Patch413: amdgpu-ignore-min-pcap.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -1903,6 +1905,8 @@ ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
 ApplyOptionalPatch 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
 #  enable full amd power control by default
 ApplyOptionalPatch 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
+# fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
+ApplyOptionalPatch amdgpu-ignore-min-pcap.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -3971,17 +3975,23 @@ fi\
 #
 #
 %changelog
-* Sun Feb 11 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.4-204.fsync.1
-- kernel-fsync v6.7.4 rog ally patches update
+* Sun Feb 18 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.5-201.fsync
+- kernel-fsync v6.7.5
 
-* Sun Feb 11 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.4-203.fsync.1
-- kernel-fsync v6.7.4 Steam Deck OLED fixes 2
-
-* Sat Feb 10 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.4-202.fsync.1
-- kernel-fsync v6.7.4 Steam Deck OLED fixes
-
-* Thu Feb 08 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.4-201.fsync
-- kernel-fsync v6.7.4
+* Sat Feb 17 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.7.5-0]
+- Backported some CVE fixes lets note them in BugsFixed (Justin M. Forbes)
+- selftests: openvswitch: Add validation for the recursion test (Aaron Conole)
+- net: openvswitch: limit the number of recursions from action sets (Aaron Conole)
+- dm: limit the number of targets and parameter size area (Mikulas Patocka)
+- Add btrfs bug for 6.7.5 (Justin M. Forbes)
+- btrfs: don't refill whole delayed refs block reserve when starting transaction (Filipe Manana)
+- Add 6.7.5 fix to BugsFixed (Justin M. Forbes)
+- drm/amd: Stop evicting resources on APUs in suspend (Mario Limonciello)
+- Revert "drm/amd: flush any delayed gfxoff on suspend entry" (Mario Limonciello)
+- smb: client: set correct id, uid and cruid for multiuser automounts (Paulo Alcantara)
+- Turn off CONFIG_INTEL_VSC for Fedora (Justin M. Forbes)
+- platform/x86: Support for mode FN key (Mark Pearson)
+- Linux v6.7.5
 
 * Mon Feb 05 2024 Augusto Caringi <acaringi@redhat.com> [6.7.4-0]
 - Add keyboard resume bugfixes (Justin M. Forbes)

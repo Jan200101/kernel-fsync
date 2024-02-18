@@ -6814,13 +6814,12 @@ diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
 index 902a59928..dd5509eeb 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
-@@ -78,6 +78,8 @@ MODULE_LICENSE("GPL");
+@@ -78,6 +78,7 @@
  #define MT_QUIRK_ORIENTATION_INVERT	BIT(22)
  #define MT_QUIRK_HAS_TYPE_COVER_BACKLIGHT	BIT(23)
  #define MT_QUIRK_HAS_TYPE_COVER_TABLET_MODE_SWITCH	BIT(24)
 +#define MT_QUIRK_TOUCH_IS_TIPSTATE	BIT(25)
-+
-
+ 
  #define MT_INPUTMODE_TOUCHSCREEN	0x02
  #define MT_INPUTMODE_TOUCHPAD		0x03
 @@ -810,6 +811,15 @@ static int mt_touch_input_mapping(struct hid_device *hdev, struct hid_input *hi,
@@ -6982,12 +6981,12 @@ diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
 index f98fb36ff..f881b19db 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
-@@ -226,6 +229,7 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app);
+@@ -226,6 +226,7 @@
  #define MT_CLS_RAZER_BLADE_STEALTH		0x0112
  #define MT_CLS_SMART_TECH			0x0113
  #define MT_CLS_WIN_8_MS_SURFACE_TYPE_COVER	0x0114
 +#define MT_CLS_APPLE_TOUCHBAR			0x0115
-
+ 
  #define MT_DEFAULT_MAXCONTACT	10
  #define MT_MAX_MAXCONTACT	250
 @@ -421,6 +421,13 @@
@@ -7004,10 +7003,10 @@ index f98fb36ff..f881b19db 100644
  	{ }
  };
  
-@@ -1883,6 +1906,17 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
+@@ -1883,6 +1883,17 @@
  		}
  	}
-
+ 
 +	ret = hid_parse(hdev);
 +	if (ret != 0) {
 +		unregister_pm_notifier(&td->pm_notifier);
@@ -7015,17 +7014,17 @@ index f98fb36ff..f881b19db 100644
 +	}
 +
 +	if (mtclass->name == MT_CLS_APPLE_TOUCHBAR &&
-+	    !hid_find_field(hdev, HID_INPUT_REPORT,
-+			    HID_DG_TOUCHPAD, HID_DG_TRANSDUCER_INDEX))
++		!hid_find_field(hdev, HID_INPUT_REPORT,
++				HID_DG_TOUCHPAD, HID_DG_TRANSDUCER_INDEX))
 +		return -ENODEV;
 +
  	td = devm_kzalloc(&hdev->dev, sizeof(struct mt_device), GFP_KERNEL);
  	if (!td) {
  		dev_err(&hdev->dev, "cannot allocate multitouch data\n");
-@@ -1933,12 +1967,6 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
-
+@@ -1933,12 +1944,6 @@
+ 
  	timer_setup(&td->release_timer, mt_expired_timeout, 0);
-
+ 
 -	ret = hid_parse(hdev);
 -	if (ret != 0) {
 -		unregister_pm_notifier(&td->pm_notifier);
@@ -7034,15 +7033,15 @@ index f98fb36ff..f881b19db 100644
 -
  	if (mtclass->quirks & MT_QUIRK_FIX_CONST_CONTACT_ID)
  		mt_fix_const_fields(hdev, HID_DG_CONTACTID);
-
-@@ -2418,6 +2418,11 @@
+ 
+@@ -2423,6 +2423,11 @@
  		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY,
  			USB_VENDOR_ID_MICROSOFT, 0x09c0) },
  
 +	/* Apple Touch Bars */
 +	{ .driver_data = MT_CLS_APPLE_TOUCHBAR,
 +		HID_USB_DEVICE(USB_VENDOR_ID_APPLE,
-+			       USB_DEVICE_ID_APPLE_TOUCHBAR_DISPLAY) },
++			USB_DEVICE_ID_APPLE_TOUCHBAR_DISPLAY) },
 +
  	/* Google MT devices */
  	{ .driver_data = MT_CLS_GOOGLE,
@@ -8829,8 +8828,8 @@ index 70b325a2f..2131f8543 100644
 +	}
 +}
 +
- void efi_adjust_memory_range_protection(unsigned long start,
- 					unsigned long size)
+ efi_status_t efi_adjust_memory_range_protection(unsigned long start,
+ 						unsigned long size)
  {
 @@ -321,6 +345,9 @@ static void setup_quirks(struct boot_params *boot_params)
  	if (IS_ENABLED(CONFIG_APPLE_PROPERTIES) &&
