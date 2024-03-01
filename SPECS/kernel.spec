@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.7.5
-%define specversion 6.7.5
+%define specrpmversion 6.7.6
+%define specversion 6.7.6
 %define patchversion 6.7
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.7.5
+%define tarfile_release 6.7.6
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.7.5
+%define kabiversion 6.7.6
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -998,7 +998,6 @@ Patch202: fsync.patch
 Patch203: OpenRGB.patch
 Patch206: amdgpu-si-cik-default.patch
 Patch207: nouveau-gsp-default.patch
-Patch208: winesync.patch
 Patch211: tkg-misc-additions.patch
 Patch212: tkg-unprivileged-CLONE_NEWUSER.patch
 
@@ -1022,6 +1021,8 @@ Patch323: rog-ally-bmc150.patch
 Patch404: rog-ally-gyro-fix.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
+Patch208: 0001-ntsync.patch
+Patch325: 0001-amd-pstate.patch
 Patch326: 0001-amd-hdr.patch
 Patch327: 0001-add-acpi_call.patch
 Patch328: uinput.patch
@@ -1852,7 +1853,6 @@ ApplyOptionalPatch fsync.patch
 ApplyOptionalPatch OpenRGB.patch
 ApplyOptionalPatch amdgpu-si-cik-default.patch
 ApplyOptionalPatch nouveau-gsp-default.patch
-ApplyOptionalPatch winesync.patch
 ApplyOptionalPatch tkg-misc-additions.patch
 ApplyOptionalPatch tkg-unprivileged-CLONE_NEWUSER.patch
 
@@ -1876,6 +1876,8 @@ ApplyOptionalPatch rog-ally-bmc150.patch
 ApplyOptionalPatch rog-ally-gyro-fix.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
+ApplyOptionalPatch 0001-ntsync.patch
+ApplyOptionalPatch 0001-amd-pstate.patch
 ApplyOptionalPatch 0001-amd-hdr.patch
 ApplyOptionalPatch 0001-add-acpi_call.patch
 ApplyOptionalPatch uinput.patch
@@ -3975,11 +3977,12 @@ fi\
 #
 #
 %changelog
-* Thu Feb 22 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.5-202.fsync
-- kernel-fsync v6.7.5 update HDR patch
+* Fri Mar 01 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.6-201.fsync
+- kernel-fsync v6.7.6
 
-* Sun Feb 18 2024 Jan Drögehoff <sentrycraft123@gmail.com> - 6.7.5-201.fsync
-- kernel-fsync v6.7.5
+* Fri Feb 23 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.7.6-0]
+- Add CVE fix for 6.7.6 (Justin M. Forbes)
+- Linux v6.7.6
 
 * Sat Feb 17 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.7.5-0]
 - Backported some CVE fixes lets note them in BugsFixed (Justin M. Forbes)
