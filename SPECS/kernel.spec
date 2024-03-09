@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.7.9
 
@@ -1010,6 +1010,8 @@ Patch303: lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 Patch308: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 Patch309: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
+#  improve AMD SFH 1.1 gyro and accel sensitivity
+Patch324: 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally
 Patch315: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
@@ -1878,6 +1880,8 @@ ApplyOptionalPatch lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
+#  improve AMD SFH 1.1 gyro and accel sensitivity
+ApplyOptionalPatch 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally
 ApplyOptionalPatch rog-ally-audio-fix.patch
 ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
@@ -3994,6 +3998,9 @@ fi\
 #
 #
 %changelog
+* Sat Mar 09 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-202.fsync
+- kernel-fsync v6.7.9 AMD SFH sensitivity patch
+
 * Sat Mar 09 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-201.fsync
 - kernel-fsync v6.7.9
 
