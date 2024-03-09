@@ -126,7 +126,7 @@ index b8633df418d43..77a1bedaee98c 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu_mode.h
 +++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_mode.h
 @@ -416,8 +416,6 @@
- 	struct drm_property *plane_blend_tf_property;
+ 	struct drm_property *regamma_tf_property;
  };
  
 -#define AMDGPU_MAX_BL_LEVEL 0xFF
