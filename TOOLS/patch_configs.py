@@ -20,6 +20,7 @@ GENERIC_PATCHES = [
     ["NTSYNC", None, ENABLE],
     ["USER_NS_UNPRIVILEGED", None, ENABLE],
     ["TCP_CONG_BBR2", None, MODULE],
+    ["SECURITY_LOCKDOWN_LSM_EARLY", None, UNSET],
 
     # device specific config
     # Microsoft Surface
