@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 204%{?buildid}%{?dist}
+%define specrelease 205%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.7.9
 
@@ -1000,6 +1000,7 @@ Patch206: amdgpu-si-cik-default.patch
 Patch207: nouveau-gsp-default.patch
 Patch211: tkg-misc-additions.patch
 Patch212: tkg-unprivileged-CLONE_NEWUSER.patch
+Patch213: tkg-prjc_v6.7-r2.patch
 
 # device specific patches
 Patch300: linux-surface.patch
@@ -1870,6 +1871,7 @@ ApplyOptionalPatch amdgpu-si-cik-default.patch
 ApplyOptionalPatch nouveau-gsp-default.patch
 ApplyOptionalPatch tkg-misc-additions.patch
 ApplyOptionalPatch tkg-unprivileged-CLONE_NEWUSER.patch
+ApplyOptionalPatch tkg-prjc_v6.7-r2.patch
 
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
@@ -3998,6 +4000,9 @@ fi\
 #
 #
 %changelog
+* Sun Mar 10 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-205.fsync
+- kernel-fsync v6.7.7 add ProjectC patch
+
 * Sun Mar 10 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-204.fsync
 - kernel-fsync v6.7.7 revert oled quirks
 
