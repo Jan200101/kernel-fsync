@@ -7,4 +7,7 @@ TOPDIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 SOURCEDIR="${TOPDIR}/SOURCES"
 SPECDIR="${TOPDIR}/SPECS"
 
-rpmbuild --define "_sourcedir ${SOURCEDIR}" $@
+rpmbuild \
+    --define "_sourcedir ${SOURCEDIR}" \
+    --define "_specdir ${SPECDIR}" \
+    $@
