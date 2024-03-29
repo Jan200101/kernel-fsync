@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.7.9
-%define specversion 6.7.9
+%define specrpmversion 6.7.10
+%define specversion 6.7.10
 %define patchversion 6.7
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.7.9
+%define tarfile_release 6.7.10
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 207%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.7.9
+%define kabiversion 6.7.10
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4000,26 +4000,12 @@ fi\
 #
 #
 %changelog
-* Wed Mar 13 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-207.fsync
-- kernel-fsync v6.7.7 revert AMD Pstate fixes
+* Fri Mar 29 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.10-201.fsync
+- kernel-fsync v6.7.10
 
-* Sun Mar 10 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-206.fsync
-- kernel-fsync v6.7.7 AMD Pstate fixes
-
-* Sun Mar 10 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-205.fsync
-- kernel-fsync v6.7.7 add ProjectC patch
-
-* Sun Mar 10 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-204.fsync
-- kernel-fsync v6.7.7 revert oled quirks
-
-* Sun Mar 10 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-203.fsync
-- kernel-fsync v6.7.7 disable early lockdown
-
-* Sat Mar 09 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-202.fsync
-- kernel-fsync v6.7.9 AMD SFH sensitivity patch
-
-* Sat Mar 09 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.9-201.fsync
-- kernel-fsync v6.7.9
+* Mon Mar 18 2024 Augusto Caringi <acaringi@redhat.com> [6.7.10-0]
+- redhat/configs: Enable CONFIG_MITIGATION_RFDS (Augusto Caringi)
+- Linux v6.7.10
 
 * Wed Mar 06 2024 Augusto Caringi <acaringi@redhat.com> [6.7.9-0]
 - Add some CVE fixes for 6.7.9 (Justin M. Forbes)
