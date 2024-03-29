@@ -1,3 +1,10 @@
+* Wed Mar 27 2024 Augusto Caringi <acaringi@redhat.com> [6.7.11-0]
+- Config updates for stable (Justin M. Forbes)
+- xfs: fix SEEK_HOLE/DATA for regions with active COW extents (Dave Chinner)
+- drm/amd: Flush GFXOFF requests in prepare stage (Mario Limonciello)
+- Linux v6.7.11
+Resolves: 
+
 * Mon Mar 18 2024 Augusto Caringi <acaringi@redhat.com> [6.7.10-0]
 - redhat/configs: Enable CONFIG_MITIGATION_RFDS (Augusto Caringi)
 - Linux v6.7.10

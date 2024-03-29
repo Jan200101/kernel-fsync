@@ -1,3 +1,9 @@
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/c0412c5250f7bdb2ea61b61f27eada0d8a135692
+ c0412c5250f7bdb2ea61b61f27eada0d8a135692 xfs: fix SEEK_HOLE/DATA for regions with active COW extents
+
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/fed615a24400369495f10f93cd7f644e7983020a
+ fed615a24400369495f10f93cd7f644e7983020a drm/amd: Flush GFXOFF requests in prepare stage
+
 "https://gitlab.com/cki-project/kernel-ark/-/commit"/f65fe5e93408aed742291b98358a9873317a59ef
  f65fe5e93408aed742291b98358a9873317a59ef Bluetooth: rfcomm: Fix null-ptr-deref in rfcomm_check_security
 
