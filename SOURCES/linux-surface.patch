@@ -1,4 +1,4 @@
-From c9479d2ee549e4b5392c5f788d9905244404e207 Mon Sep 17 00:00:00 2001
+From 45a9e7f97fc36942e3d70a78fe5313fa78733933 Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 18 Oct 2020 16:42:44 +0900
 Subject: [PATCH] (surface3-oemb) add DMI matches for Surface 3 with broken DMI
@@ -58,10 +58,10 @@ index c15ed7a12784..1ec8edb5aafa 100644
  	{ }
  };
 diff --git a/sound/soc/codecs/rt5645.c b/sound/soc/codecs/rt5645.c
-index edcb85bd8ea7..cea19fa3fa56 100644
+index 20191a4473c2..5ba599b5aba6 100644
 --- a/sound/soc/codecs/rt5645.c
 +++ b/sound/soc/codecs/rt5645.c
-@@ -3753,6 +3753,15 @@ static const struct dmi_system_id dmi_platform_data[] = {
+@@ -3768,6 +3768,15 @@ static const struct dmi_system_id dmi_platform_data[] = {
  		},
  		.driver_data = (void *)&intel_braswell_platform_data,
  	},
@@ -97,9 +97,9 @@ index 5e2ec60e2954..207868c699f2 100644
  };
  
 -- 
-2.43.0
+2.44.0
 
-From 38181ea8d1f9130ce6d677d306f819d2fa3b5f57 Mon Sep 17 00:00:00 2001
+From 2c7ff35a85341dcd8fa2ea575088881df9dea874 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Tue, 3 Nov 2020 13:28:04 +0100
 Subject: [PATCH] mwifiex: Add quirk resetting the PCI bridge on MS Surface
@@ -264,9 +264,9 @@ index d6ff964aec5b..5d30ae39d65e 100644
  void mwifiex_initialize_quirks(struct pcie_service_card *card);
  int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
 -- 
-2.43.0
+2.44.0
 
-From 86149f1c99b17f67d717419af83f3ec76315e35b Mon Sep 17 00:00:00 2001
+From 4a326d9e87d1dc4945903560d3d22fbd69a8962c Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 4 Oct 2020 00:11:49 +0900
 Subject: [PATCH] mwifiex: pcie: disable bridge_d3 for Surface gen4+
@@ -419,9 +419,9 @@ index 5d30ae39d65e..c14eb56eb911 100644
  void mwifiex_initialize_quirks(struct pcie_service_card *card);
  int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
 -- 
-2.43.0
+2.44.0
 
-From 23775dc0be26e58d04574ab75768cedd8b0076f8 Mon Sep 17 00:00:00 2001
+From dddda6f9c25716dea1265f71b8286936afa192b5 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 25 Mar 2021 11:33:02 +0100
 Subject: [PATCH] Bluetooth: btusb: Lower passive lescan interval on Marvell
@@ -457,7 +457,7 @@ Patchset: mwifiex
  1 file changed, 15 insertions(+)
 
 diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index b8e9de887b5d..66a418ae9584 100644
+index d31edad7a056..fc08e0c51c87 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
 @@ -65,6 +65,7 @@ static struct usb_driver btusb_driver;
@@ -476,7 +476,7 @@ index b8e9de887b5d..66a418ae9584 100644
  
  	/* Intel Bluetooth devices */
  	{ USB_DEVICE(0x8087, 0x0025), .driver_info = BTUSB_INTEL_COMBINED },
-@@ -4399,6 +4401,19 @@ static int btusb_probe(struct usb_interface *intf,
+@@ -4401,6 +4403,19 @@ static int btusb_probe(struct usb_interface *intf,
  	if (id->driver_info & BTUSB_MARVELL)
  		hdev->set_bdaddr = btusb_set_bdaddr_marvell;
  
@@ -497,9 +497,9 @@ index b8e9de887b5d..66a418ae9584 100644
  	    (id->driver_info & BTUSB_MEDIATEK)) {
  		hdev->setup = btusb_mtk_setup;
 -- 
-2.43.0
+2.44.0
 
-From 825328cce718ba6de0fce529e8fd1f4cd6b94dde Mon Sep 17 00:00:00 2001
+From 7b414f11dfa0be3204b0a43b82a75744f8218d57 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 27 Feb 2021 00:45:52 +0100
 Subject: [PATCH] ath10k: Add module parameters to override board files
@@ -521,10 +521,10 @@ Patchset: ath10k
  1 file changed, 58 insertions(+)
 
 diff --git a/drivers/net/wireless/ath/ath10k/core.c b/drivers/net/wireless/ath/ath10k/core.c
-index 6cdb225b7eac..19c036751fb1 100644
+index 0032f8aa892f..17717b53316b 100644
 --- a/drivers/net/wireless/ath/ath10k/core.c
 +++ b/drivers/net/wireless/ath/ath10k/core.c
-@@ -38,6 +38,9 @@ static bool fw_diag_log;
+@@ -39,6 +39,9 @@ static bool fw_diag_log;
  /* frame mode values are mapped as per enum ath10k_hw_txrx_mode */
  unsigned int ath10k_frame_mode = ATH10K_HW_TXRX_NATIVE_WIFI;
  
@@ -534,7 +534,7 @@ index 6cdb225b7eac..19c036751fb1 100644
  unsigned long ath10k_coredump_mask = BIT(ATH10K_FW_CRASH_DUMP_REGISTERS) |
  				     BIT(ATH10K_FW_CRASH_DUMP_CE_DATA);
  
-@@ -50,6 +53,9 @@ module_param(fw_diag_log, bool, 0644);
+@@ -51,6 +54,9 @@ module_param(fw_diag_log, bool, 0644);
  module_param_named(frame_mode, ath10k_frame_mode, uint, 0644);
  module_param_named(coredump_mask, ath10k_coredump_mask, ulong, 0444);
  
@@ -544,7 +544,7 @@ index 6cdb225b7eac..19c036751fb1 100644
  MODULE_PARM_DESC(debug_mask, "Debugging mask");
  MODULE_PARM_DESC(uart_print, "Uart target debugging");
  MODULE_PARM_DESC(skip_otp, "Skip otp failure for calibration in testmode");
-@@ -59,6 +65,9 @@ MODULE_PARM_DESC(frame_mode,
+@@ -60,6 +66,9 @@ MODULE_PARM_DESC(frame_mode,
  MODULE_PARM_DESC(coredump_mask, "Bitfield of what to include in firmware crash file");
  MODULE_PARM_DESC(fw_diag_log, "Diag based fw log debugging");
  
@@ -554,7 +554,7 @@ index 6cdb225b7eac..19c036751fb1 100644
  static const struct ath10k_hw_params ath10k_hw_params_list[] = {
  	{
  		.id = QCA988X_HW_2_0_VERSION,
-@@ -911,6 +920,42 @@ static int ath10k_init_configure_target(struct ath10k *ar)
+@@ -928,6 +937,42 @@ static int ath10k_init_configure_target(struct ath10k *ar)
  	return 0;
  }
  
@@ -597,7 +597,7 @@ index 6cdb225b7eac..19c036751fb1 100644
  static const struct firmware *ath10k_fetch_fw_file(struct ath10k *ar,
  						   const char *dir,
  						   const char *file)
-@@ -925,6 +970,19 @@ static const struct firmware *ath10k_fetch_fw_file(struct ath10k *ar,
+@@ -942,6 +987,19 @@ static const struct firmware *ath10k_fetch_fw_file(struct ath10k *ar,
  	if (dir == NULL)
  		dir = ".";
  
@@ -618,13 +618,14 @@ index 6cdb225b7eac..19c036751fb1 100644
  	ret = firmware_request_nowarn(&fw, filename, ar->dev);
  	ath10k_dbg(ar, ATH10K_DBG_BOOT, "boot fw request '%s': %d\n",
 -- 
-2.43.0
+2.44.0
 
-From f4e5ac291e877f3e7e5d888f4965310eb85379f5 Mon Sep 17 00:00:00 2001
+From 4a1fdfebd3e84fe581b512f73bbc551ec9e2d0e8 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 30 Jul 2020 13:21:53 +0200
-Subject: [PATCH] misc: mei: Add missing IPTS device IDs
+Subject: [PATCH] mei: me: Add Icelake device ID for iTouch
 
+Signed-off-by: Dorian Stoll <dorian.stoll@tmsp.io>
 Patchset: ipts
 ---
  drivers/misc/mei/hw-me-regs.h | 1 +
@@ -632,7 +633,7 @@ Patchset: ipts
  2 files changed, 2 insertions(+)
 
 diff --git a/drivers/misc/mei/hw-me-regs.h b/drivers/misc/mei/hw-me-regs.h
-index 961e5d53a27a..860f99b6ecd6 100644
+index aac36750d2c5..2ba8db8a9583 100644
 --- a/drivers/misc/mei/hw-me-regs.h
 +++ b/drivers/misc/mei/hw-me-regs.h
 @@ -92,6 +92,7 @@
@@ -644,7 +645,7 @@ index 961e5d53a27a..860f99b6ecd6 100644
  
  #define MEI_DEV_ID_JSP_N      0x4DE0  /* Jasper Lake Point N */
 diff --git a/drivers/misc/mei/pci-me.c b/drivers/misc/mei/pci-me.c
-index 676d566f38dd..6b37dd1f8b2a 100644
+index 8cf636c54032..078d3e773cda 100644
 --- a/drivers/misc/mei/pci-me.c
 +++ b/drivers/misc/mei/pci-me.c
 @@ -97,6 +97,7 @@ static const struct pci_device_id mei_me_pci_tbl[] = {
@@ -656,12 +657,12 @@ index 676d566f38dd..6b37dd1f8b2a 100644
  
  	{MEI_PCI_DEVICE(MEI_DEV_ID_TGP_LP, MEI_ME_PCH15_CFG)},
 -- 
-2.43.0
+2.44.0
 
-From 4c91dcde022856325e3babe1a1b9e01fcc21ab0f Mon Sep 17 00:00:00 2001
+From b1e22125c8f241f49cc3a6b7eaa0b6430bb1f1ce Mon Sep 17 00:00:00 2001
 From: Liban Hannan <liban.p@gmail.com>
 Date: Tue, 12 Apr 2022 23:31:12 +0100
-Subject: [PATCH] iommu: ipts: use IOMMU passthrough mode for IPTS
+Subject: [PATCH] iommu: Use IOMMU passthrough mode for IPTS
 
 Adds a quirk so that IOMMU uses passthrough mode for the IPTS device.
 Otherwise, when IOMMU is enabled, IPTS produces DMAR errors like:
@@ -674,25 +675,30 @@ https://bugs.launchpad.net/bugs/1958004
 
 Fixed with the following patch which this patch basically copies:
 https://launchpadlibrarian.net/586396847/43255ca.diff
+
+Signed-off-by: Dorian Stoll <dorian.stoll@tmsp.io>
 Patchset: ipts
 ---
- drivers/iommu/intel/iommu.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ drivers/iommu/intel/iommu.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index 897159dba47d..cc6569613255 100644
+index 11652e0bcab3..6c01b1aebf27 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
-@@ -38,6 +38,8 @@
- #define IS_GFX_DEVICE(pdev) ((pdev->class >> 16) == PCI_BASE_CLASS_DISPLAY)
- #define IS_USB_DEVICE(pdev) ((pdev->class >> 8) == PCI_CLASS_SERIAL_USB)
+@@ -40,6 +40,11 @@
  #define IS_ISA_DEVICE(pdev) ((pdev->class >> 8) == PCI_CLASS_BRIDGE_ISA)
-+#define IS_IPTS(pdev) ((pdev)->vendor == PCI_VENDOR_ID_INTEL &&	\
-+			    ((pdev)->device == 0x9d3e))
  #define IS_AZALIA(pdev) ((pdev)->vendor == 0x8086 && (pdev)->device == 0x3a3e)
  
++#define IS_IPTS(pdev) ( \
++		((pdev)->vendor == PCI_VENDOR_ID_INTEL && (pdev)->device == 0x9D3E) || \
++		((pdev)->vendor == PCI_VENDOR_ID_INTEL && (pdev)->device == 0x34E4) \
++	)
++
  #define IOAPIC_RANGE_START	(0xfee00000)
-@@ -291,12 +293,14 @@ int intel_iommu_enabled = 0;
+ #define IOAPIC_RANGE_END	(0xfeefffff)
+ #define IOVA_START_ADDR		(0x1000)
+@@ -148,12 +153,14 @@ int intel_iommu_enabled = 0;
  EXPORT_SYMBOL_GPL(intel_iommu_enabled);
  
  static int dmar_map_gfx = 1;
@@ -707,7 +713,7 @@ index 897159dba47d..cc6569613255 100644
  
  const struct iommu_ops intel_iommu_ops;
  static const struct iommu_dirty_ops intel_dirty_ops;
-@@ -2548,6 +2552,9 @@ static int device_def_domain_type(struct device *dev)
+@@ -2412,6 +2419,9 @@ static int device_def_domain_type(struct device *dev)
  
  		if ((iommu_identity_mapping & IDENTMAP_GFX) && IS_GFX_DEVICE(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
@@ -717,7 +723,7 @@ index 897159dba47d..cc6569613255 100644
  	}
  
  	return 0;
-@@ -2855,6 +2862,9 @@ static int __init init_dmars(void)
+@@ -2719,6 +2729,9 @@ static int __init init_dmars(void)
  	if (!dmar_map_gfx)
  		iommu_identity_mapping |= IDENTMAP_GFX;
  
@@ -727,7 +733,7 @@ index 897159dba47d..cc6569613255 100644
  	check_tylersburg_isoch();
  
  	ret = si_domain_init(hw_pass_through);
-@@ -4977,6 +4987,17 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
+@@ -4896,6 +4909,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
  	dmar_map_gfx = 0;
  }
  
@@ -739,26 +745,28 @@ index 897159dba47d..cc6569613255 100644
 +	if (risky_device(dev))
 +		return;
 +
-+	pci_info(dev, "Passthrough IOMMU for IPTS\n");
++	pci_info(dev, "Disabling IOMMU for IPTS\n");
 +	dmar_map_ipts = 0;
 +}
++
  /* G4x/GM45 integrated gfx dmar support is totally busted. */
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
-@@ -5012,6 +5033,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
+@@ -4931,6 +4956,10 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163A, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
  
 +/* disable IPTS dmar support */
 +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9D3E, quirk_iommu_ipts);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x34E4, quirk_iommu_ipts);
 +
  static void quirk_iommu_rwbf(struct pci_dev *dev)
  {
  	if (risky_device(dev))
 -- 
-2.43.0
+2.44.0
 
-From 7a9591af425eafbb76700f7ab1ab3ae0c3a08e4c Mon Sep 17 00:00:00 2001
+From fa7796bc06659b87f47d8921d0441314612870b9 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Sun, 11 Dec 2022 12:00:59 +0100
 Subject: [PATCH] hid: Add support for Intel Precise Touch and Stylus
@@ -825,10 +833,10 @@ Patchset: ipts
  create mode 100644 drivers/hid/ipts/thread.h
 
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index 4ce74af79657..86c6c815bd5b 100644
+index 4c682c650704..a263e49b2ae2 100644
 --- a/drivers/hid/Kconfig
 +++ b/drivers/hid/Kconfig
-@@ -1341,4 +1341,6 @@ source "drivers/hid/amd-sfh-hid/Kconfig"
+@@ -1351,4 +1351,6 @@ source "drivers/hid/amd-sfh-hid/Kconfig"
  
  source "drivers/hid/surface-hid/Kconfig"
  
@@ -836,10 +844,10 @@ index 4ce74af79657..86c6c815bd5b 100644
 +
  endif # HID_SUPPORT
 diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
-index 8a06d0f840bc..2ef21b257d0b 100644
+index 082a728eac60..f4bad1b8d813 100644
 --- a/drivers/hid/Makefile
 +++ b/drivers/hid/Makefile
-@@ -169,3 +169,5 @@ obj-$(INTEL_ISH_FIRMWARE_DOWNLOADER)	+= intel-ish-hid/
+@@ -170,3 +170,5 @@ obj-$(INTEL_ISH_FIRMWARE_DOWNLOADER)	+= intel-ish-hid/
  obj-$(CONFIG_AMD_SFH_HID)       += amd-sfh-hid/
  
  obj-$(CONFIG_SURFACE_HID_CORE)  += surface-hid/
@@ -3848,9 +3856,9 @@ index 000000000000..1f966b8b32c4
 +
 +#endif /* IPTS_THREAD_H */
 -- 
-2.43.0
+2.44.0
 
-From 8aadfc38967cb2804446c8bdae851377651e6248 Mon Sep 17 00:00:00 2001
+From 619b488e58367467f52d636b5182ff2134df68c0 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Sun, 11 Dec 2022 12:03:38 +0100
 Subject: [PATCH] iommu: intel: Disable source id verification for ITHC
@@ -3862,7 +3870,7 @@ Patchset: ithc
  1 file changed, 16 insertions(+)
 
 diff --git a/drivers/iommu/intel/irq_remapping.c b/drivers/iommu/intel/irq_remapping.c
-index 29b9e55dcf26..986e91c813ae 100644
+index 566297bc87dd..a8cd8f12d593 100644
 --- a/drivers/iommu/intel/irq_remapping.c
 +++ b/drivers/iommu/intel/irq_remapping.c
 @@ -386,6 +386,22 @@ static int set_msi_sid(struct irte *irte, struct pci_dev *dev)
@@ -3889,9 +3897,9 @@ index 29b9e55dcf26..986e91c813ae 100644
  	 * DMA alias provides us with a PCI device and alias.  The only case
  	 * where the it will return an alias on a different bus than the
 -- 
-2.43.0
+2.44.0
 
-From fe08b40d122fdb102c2cc4876d2d68ac19d74ae3 Mon Sep 17 00:00:00 2001
+From ee5106b4069dd150a323dce8bce7879d2b27ed0b Mon Sep 17 00:00:00 2001
 From: quo <tuple@list.ru>
 Date: Sun, 11 Dec 2022 12:10:54 +0100
 Subject: [PATCH] hid: Add support for Intel Touch Host Controller
@@ -3924,10 +3932,10 @@ Patchset: ithc
  create mode 100644 drivers/hid/ithc/ithc.h
 
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index 86c6c815bd5b..a87c3c6911fb 100644
+index a263e49b2ae2..03f0f5af289a 100644
 --- a/drivers/hid/Kconfig
 +++ b/drivers/hid/Kconfig
-@@ -1343,4 +1343,6 @@ source "drivers/hid/surface-hid/Kconfig"
+@@ -1353,4 +1353,6 @@ source "drivers/hid/surface-hid/Kconfig"
  
  source "drivers/hid/ipts/Kconfig"
  
@@ -3935,10 +3943,10 @@ index 86c6c815bd5b..a87c3c6911fb 100644
 +
  endif # HID_SUPPORT
 diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
-index 2ef21b257d0b..e94b79727b48 100644
+index f4bad1b8d813..d32c194400ae 100644
 --- a/drivers/hid/Makefile
 +++ b/drivers/hid/Makefile
-@@ -171,3 +171,4 @@ obj-$(CONFIG_AMD_SFH_HID)       += amd-sfh-hid/
+@@ -172,3 +172,4 @@ obj-$(CONFIG_AMD_SFH_HID)       += amd-sfh-hid/
  obj-$(CONFIG_SURFACE_HID_CORE)  += surface-hid/
  
  obj-$(CONFIG_HID_IPTS)          += ipts/
@@ -5668,9 +5676,9 @@ index 000000000000..028e55a4ec53
 +void ithc_log_regs(struct ithc *ithc);
 +
 -- 
-2.43.0
+2.44.0
 
-From fb7e9294f3970a450b891c2cc7b2195861d454e3 Mon Sep 17 00:00:00 2001
+From 973bf943acca4abdd932b5fdff032de0af07f96e Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sun, 22 Oct 2023 14:57:11 +0200
 Subject: [PATCH] platform/surface: aggregator_registry: Add support for
@@ -5701,9 +5709,9 @@ index aeb3feae40ff..2bc4977037fc 100644
  	{ "MSHW0123", (unsigned long)ssam_node_group_sls },
  
 -- 
-2.43.0
+2.44.0
 
-From 2de16abc5d0d2334e2935b1bdb3667a95d0009f2 Mon Sep 17 00:00:00 2001
+From 7dedc84364f9c1fb73d271c859dce19b4a9644d6 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Mon, 20 Nov 2023 19:47:00 +0100
 Subject: [PATCH] platform/surface: aggregator_registry: Add support for
@@ -5771,9 +5779,9 @@ index 2bc4977037fc..26cb6229ad16 100644
  	{ },
  };
 -- 
-2.43.0
+2.44.0
 
-From c06e370b5ed873b603aa0dc2faafe24a9e63b3e8 Mon Sep 17 00:00:00 2001
+From 96a7b3dd527f3e1b97e2d089a727c16cd5045aa5 Mon Sep 17 00:00:00 2001
 From: Ivor Wanders <ivor@iwanders.net>
 Date: Mon, 18 Dec 2023 19:21:32 -0500
 Subject: [PATCH] platform/surface: aggregator_registry: add entry for fan
@@ -5816,9 +5824,9 @@ index 26cb6229ad16..f02a933160ff 100644
  	&ssam_node_hid_kip_keyboard,
  	&ssam_node_hid_kip_penstash,
 -- 
-2.43.0
+2.44.0
 
-From 63dcbbcad69219e1487db46a5c26c1ebdd9ef6be Mon Sep 17 00:00:00 2001
+From b4eb65349df9859f65aa9990c24c5036d35382da Mon Sep 17 00:00:00 2001
 From: Ivor Wanders <ivor@iwanders.net>
 Date: Thu, 30 Nov 2023 20:20:24 -0500
 Subject: [PATCH] hwmon: add fan speed monitoring driver for Surface devices
@@ -5842,10 +5850,10 @@ Patchset: surface-sam
  create mode 100644 drivers/hwmon/surface_fan.c
 
 diff --git a/Documentation/hwmon/index.rst b/Documentation/hwmon/index.rst
-index 72f4e6065bae..7c254562abd6 100644
+index c7ed1f73ac06..58be92e94a8d 100644
 --- a/Documentation/hwmon/index.rst
 +++ b/Documentation/hwmon/index.rst
-@@ -204,6 +204,7 @@ Hardware Monitoring Kernel Drivers
+@@ -208,6 +208,7 @@ Hardware Monitoring Kernel Drivers
     smsc47m1
     sparx5-temp
     stpddc60
@@ -5885,10 +5893,10 @@ index 000000000000..07942574c4f0
 +``fan1_input``          RO      Current fan speed in RPM.
 +======================= ======= =========================================
 diff --git a/MAINTAINERS b/MAINTAINERS
-index a7c4cf8201e0..77eb076e77da 100644
+index 1aabf1c15bb3..b6416cf3f022 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -14331,6 +14331,14 @@ F:	Documentation/driver-api/surface_aggregator/clients/dtx.rst
+@@ -14576,6 +14576,14 @@ F:	Documentation/driver-api/surface_aggregator/clients/dtx.rst
  F:	drivers/platform/surface/surface_dtx.c
  F:	include/uapi/linux/surface_aggregator/dtx.h
  
@@ -5904,10 +5912,10 @@ index a7c4cf8201e0..77eb076e77da 100644
  M:	Maximilian Luz <luzmaximilian@gmail.com>
  L:	platform-driver-x86@vger.kernel.org
 diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index cf27523eed5a..1cef428c79ea 100644
+index a608264da87d..e762f6138970 100644
 --- a/drivers/hwmon/Kconfig
 +++ b/drivers/hwmon/Kconfig
-@@ -1983,6 +1983,19 @@ config SENSORS_SFCTEMP
+@@ -1994,6 +1994,19 @@ config SENSORS_SFCTEMP
  	  This driver can also be built as a module.  If so, the module
  	  will be called sfctemp.
  
@@ -5928,10 +5936,10 @@ index cf27523eed5a..1cef428c79ea 100644
  	tristate "Texas Instruments ADC128D818"
  	depends on I2C
 diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index e84bd9685b5c..30a284fc5ab6 100644
+index 47be39af5c03..30cc90f40844 100644
 --- a/drivers/hwmon/Makefile
 +++ b/drivers/hwmon/Makefile
-@@ -200,6 +200,7 @@ obj-$(CONFIG_SENSORS_SMSC47M1)	+= smsc47m1.o
+@@ -201,6 +201,7 @@ obj-$(CONFIG_SENSORS_SMSC47M1)	+= smsc47m1.o
  obj-$(CONFIG_SENSORS_SMSC47M192)+= smsc47m192.o
  obj-$(CONFIG_SENSORS_SPARX5)	+= sparx5-temp.o
  obj-$(CONFIG_SENSORS_STTS751)	+= stts751.o
@@ -6039,9 +6047,9 @@ index 000000000000..7c2e3ae3eb40
 +MODULE_DESCRIPTION("Fan Driver for Surface System Aggregator Module");
 +MODULE_LICENSE("GPL");
 -- 
-2.43.0
+2.44.0
 
-From 5f549c253e4df330fa8f311fe151df80e199bec4 Mon Sep 17 00:00:00 2001
+From 5c18bed9c7ad073b61e3c3686dc4bc1858f958dc Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 30 Dec 2023 18:07:54 +0100
 Subject: [PATCH] hwmon: Add thermal sensor driver for Surface Aggregator
@@ -6063,10 +6071,10 @@ Patchset: surface-sam
  create mode 100644 drivers/hwmon/surface_temp.c
 
 diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 1cef428c79ea..ca20716911ad 100644
+index e762f6138970..41261b49f8be 100644
 --- a/drivers/hwmon/Kconfig
 +++ b/drivers/hwmon/Kconfig
-@@ -1996,6 +1996,16 @@ config SENSORS_SURFACE_FAN
+@@ -2007,6 +2007,16 @@ config SENSORS_SURFACE_FAN
  
  	  Select M or Y here, if you want to be able to read the fan's speed.
  
@@ -6084,10 +6092,10 @@ index 1cef428c79ea..ca20716911ad 100644
  	tristate "Texas Instruments ADC128D818"
  	depends on I2C
 diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index 30a284fc5ab6..a6bcde6b4843 100644
+index 30cc90f40844..6644fd4598a4 100644
 --- a/drivers/hwmon/Makefile
 +++ b/drivers/hwmon/Makefile
-@@ -201,6 +201,7 @@ obj-$(CONFIG_SENSORS_SMSC47M192)+= smsc47m192.o
+@@ -202,6 +202,7 @@ obj-$(CONFIG_SENSORS_SMSC47M192)+= smsc47m192.o
  obj-$(CONFIG_SENSORS_SPARX5)	+= sparx5-temp.o
  obj-$(CONFIG_SENSORS_STTS751)	+= stts751.o
  obj-$(CONFIG_SENSORS_SURFACE_FAN)+= surface_fan.o
@@ -6267,9 +6275,9 @@ index 000000000000..48c3e826713f
 +MODULE_DESCRIPTION("Thermal sensor subsystem driver for Surface System Aggregator Module");
 +MODULE_LICENSE("GPL");
 -- 
-2.43.0
+2.44.0
 
-From 3ccfa3b6be4794f247488f7e665ba91793ec09c7 Mon Sep 17 00:00:00 2001
+From 8b1e37ad9423a6fdf8a8b3bfb1e15aadefe136de Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 30 Dec 2023 18:12:23 +0100
 Subject: [PATCH] hwmon: surface_temp: Add support for sensor names
@@ -6462,9 +6470,9 @@ index 48c3e826713f..4c08926139db 100644
  			"surface_thermal", ssam_temp, &ssam_temp_hwmon_chip_info,
  			NULL);
 -- 
-2.43.0
+2.44.0
 
-From 8ccf7b86ad270655bd1e8cd0ab8d2ff475ad0ea7 Mon Sep 17 00:00:00 2001
+From 9b490a17f59518e59cf3c77c103bf5ddc52041a3 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 30 Dec 2023 18:21:12 +0100
 Subject: [PATCH] platform/surface: aggregator_registry: Add support for
@@ -6505,9 +6513,336 @@ index f02a933160ff..67686042e009 100644
  	&ssam_node_pos_tablet_switch,
  	&ssam_node_hid_kip_keyboard,
 -- 
-2.43.0
+2.44.0
 
-From 38a76c85dee37facde40f245d994c4209ccddd15 Mon Sep 17 00:00:00 2001
+From ec0b680c0ce36ef6bffd682e10589cf5d8d467ae Mon Sep 17 00:00:00 2001
+From: Ivor Wanders <ivor@iwanders.net>
+Date: Sat, 16 Dec 2023 15:56:39 -0500
+Subject: [PATCH] platform/surface: platform_profile: add fan profile switching
+
+Change naming from tmp to platform profile to clarify the module may
+interact with both the TMP and FAN subystems. Add functionality that
+switches the fan profile when the platform profile is changed.
+
+Signed-off-by: Ivor Wanders <ivor@iwanders.net>
+Patchset: surface-sam
+---
+ .../surface/surface_aggregator_registry.c     | 38 +++++---
+ .../surface/surface_platform_profile.c        | 86 ++++++++++++++++---
+ 2 files changed, 100 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
+index 67686042e009..058b6654a91a 100644
+--- a/drivers/platform/surface/surface_aggregator_registry.c
++++ b/drivers/platform/surface/surface_aggregator_registry.c
+@@ -68,8 +68,8 @@ static const struct software_node ssam_node_bat_sb3base = {
+ 	.parent = &ssam_node_hub_base,
+ };
+ 
+-/* Platform profile / performance-mode device. */
+-static const struct software_node ssam_node_tmp_pprof = {
++/* Platform profile / performance-mode device without a fan. */
++static const struct software_node ssam_node_tmp_perf_profile = {
+ 	.name = "ssam:01:03:01:00:01",
+ 	.parent = &ssam_node_root,
+ };
+@@ -86,6 +86,20 @@ static const struct software_node ssam_node_fan_speed = {
+ 	.parent = &ssam_node_root,
+ };
+ 
++/* Platform profile / performance-mode device with a fan, such that
++ * the fan controller profile can also be switched.
++ */
++static const struct property_entry ssam_node_tmp_perf_profile_has_fan[] = {
++	PROPERTY_ENTRY_BOOL("has_fan"),
++	{ }
++};
++
++static const struct software_node ssam_node_tmp_perf_profile_with_fan = {
++	.name = "ssam:01:03:01:00:01",
++	.parent = &ssam_node_root,
++	.properties = ssam_node_tmp_perf_profile_has_fan,
++};
++
+ /* Tablet-mode switch via KIP subsystem. */
+ static const struct software_node ssam_node_kip_tablet_switch = {
+ 	.name = "ssam:01:0e:01:00:01",
+@@ -214,7 +228,7 @@ static const struct software_node ssam_node_pos_tablet_switch = {
+  */
+ static const struct software_node *ssam_node_group_gen5[] = {
+ 	&ssam_node_root,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile,
+ 	NULL,
+ };
+ 
+@@ -225,7 +239,7 @@ static const struct software_node *ssam_node_group_sb3[] = {
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+ 	&ssam_node_bat_sb3base,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile,
+ 	&ssam_node_bas_dtx,
+ 	&ssam_node_hid_base_keyboard,
+ 	&ssam_node_hid_base_touchpad,
+@@ -239,7 +253,7 @@ static const struct software_node *ssam_node_group_sl3[] = {
+ 	&ssam_node_root,
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile,
+ 	&ssam_node_hid_main_keyboard,
+ 	&ssam_node_hid_main_touchpad,
+ 	&ssam_node_hid_main_iid5,
+@@ -251,7 +265,7 @@ static const struct software_node *ssam_node_group_sl5[] = {
+ 	&ssam_node_root,
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile,
+ 	&ssam_node_hid_main_keyboard,
+ 	&ssam_node_hid_main_touchpad,
+ 	&ssam_node_hid_main_iid5,
+@@ -264,7 +278,7 @@ static const struct software_node *ssam_node_group_sls1[] = {
+ 	&ssam_node_root,
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile,
+ 	&ssam_node_pos_tablet_switch,
+ 	&ssam_node_hid_sam_keyboard,
+ 	&ssam_node_hid_sam_penstash,
+@@ -280,7 +294,7 @@ static const struct software_node *ssam_node_group_sls2[] = {
+ 	&ssam_node_root,
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile,
+ 	&ssam_node_pos_tablet_switch,
+ 	&ssam_node_hid_sam_keyboard,
+ 	&ssam_node_hid_sam_penstash,
+@@ -294,7 +308,7 @@ static const struct software_node *ssam_node_group_slg1[] = {
+ 	&ssam_node_root,
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile,
+ 	NULL,
+ };
+ 
+@@ -303,7 +317,7 @@ static const struct software_node *ssam_node_group_sp7[] = {
+ 	&ssam_node_root,
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile,
+ 	NULL,
+ };
+ 
+@@ -313,7 +327,7 @@ static const struct software_node *ssam_node_group_sp8[] = {
+ 	&ssam_node_hub_kip,
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile,
+ 	&ssam_node_kip_tablet_switch,
+ 	&ssam_node_hid_kip_keyboard,
+ 	&ssam_node_hid_kip_penstash,
+@@ -330,7 +344,7 @@ static const struct software_node *ssam_node_group_sp9[] = {
+ 	&ssam_node_hub_kip,
+ 	&ssam_node_bat_ac,
+ 	&ssam_node_bat_main,
+-	&ssam_node_tmp_pprof,
++	&ssam_node_tmp_perf_profile_with_fan,
+ 	&ssam_node_tmp_sensors,
+ 	&ssam_node_fan_speed,
+ 	&ssam_node_pos_tablet_switch,
+diff --git a/drivers/platform/surface/surface_platform_profile.c b/drivers/platform/surface/surface_platform_profile.c
+index a5a3941b3f43..e54d0a8f7daa 100644
+--- a/drivers/platform/surface/surface_platform_profile.c
++++ b/drivers/platform/surface/surface_platform_profile.c
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0+
+ /*
+  * Surface Platform Profile / Performance Mode driver for Surface System
+- * Aggregator Module (thermal subsystem).
++ * Aggregator Module (thermal and fan subsystem).
+  *
+  * Copyright (C) 2021-2022 Maximilian Luz <luzmaximilian@gmail.com>
+  */
+@@ -14,6 +14,7 @@
+ 
+ #include <linux/surface_aggregator/device.h>
+ 
++// Enum for the platform performance profile sent to the TMP module.
+ enum ssam_tmp_profile {
+ 	SSAM_TMP_PROFILE_NORMAL             = 1,
+ 	SSAM_TMP_PROFILE_BATTERY_SAVER      = 2,
+@@ -21,15 +22,26 @@ enum ssam_tmp_profile {
+ 	SSAM_TMP_PROFILE_BEST_PERFORMANCE   = 4,
+ };
+ 
++// Enum for the fan profile sent to the FAN module. This fan profile is
++// only sent to the EC if the 'has_fan' property is set. The integers are
++// not a typo, they differ from the performance profile indices.
++enum ssam_fan_profile {
++	SSAM_FAN_PROFILE_NORMAL             = 2,
++	SSAM_FAN_PROFILE_BATTERY_SAVER      = 1,
++	SSAM_FAN_PROFILE_BETTER_PERFORMANCE = 3,
++	SSAM_FAN_PROFILE_BEST_PERFORMANCE   = 4,
++};
++
+ struct ssam_tmp_profile_info {
+ 	__le32 profile;
+ 	__le16 unknown1;
+ 	__le16 unknown2;
+ } __packed;
+ 
+-struct ssam_tmp_profile_device {
++struct ssam_platform_profile_device {
+ 	struct ssam_device *sdev;
+ 	struct platform_profile_handler handler;
++	bool has_fan;
+ };
+ 
+ SSAM_DEFINE_SYNC_REQUEST_CL_R(__ssam_tmp_profile_get, struct ssam_tmp_profile_info, {
+@@ -42,6 +54,13 @@ SSAM_DEFINE_SYNC_REQUEST_CL_W(__ssam_tmp_profile_set, __le32, {
+ 	.command_id      = 0x03,
+ });
+ 
++SSAM_DEFINE_SYNC_REQUEST_W(__ssam_fan_profile_set, char, {
++	.target_category = SSAM_SSH_TC_FAN,
++	.target_id = SSAM_SSH_TID_SAM,
++	.command_id = 0x0e,
++	.instance_id = 0x01,
++});
++
+ static int ssam_tmp_profile_get(struct ssam_device *sdev, enum ssam_tmp_profile *p)
+ {
+ 	struct ssam_tmp_profile_info info;
+@@ -62,7 +81,14 @@ static int ssam_tmp_profile_set(struct ssam_device *sdev, enum ssam_tmp_profile
+ 	return ssam_retry(__ssam_tmp_profile_set, sdev, &profile_le);
+ }
+ 
+-static int convert_ssam_to_profile(struct ssam_device *sdev, enum ssam_tmp_profile p)
++static int ssam_fan_profile_set(struct ssam_device *sdev, enum ssam_fan_profile p)
++{
++	char profile = p;
++
++	return ssam_retry(__ssam_fan_profile_set, sdev->ctrl, &profile);
++}
++
++static int convert_ssam_tmp_to_profile(struct ssam_device *sdev, enum ssam_tmp_profile p)
+ {
+ 	switch (p) {
+ 	case SSAM_TMP_PROFILE_NORMAL:
+@@ -83,7 +109,8 @@ static int convert_ssam_to_profile(struct ssam_device *sdev, enum ssam_tmp_profi
+ 	}
+ }
+ 
+-static int convert_profile_to_ssam(struct ssam_device *sdev, enum platform_profile_option p)
++
++static int convert_profile_to_ssam_tmp(struct ssam_device *sdev, enum platform_profile_option p)
+ {
+ 	switch (p) {
+ 	case PLATFORM_PROFILE_LOW_POWER:
+@@ -105,20 +132,42 @@ static int convert_profile_to_ssam(struct ssam_device *sdev, enum platform_profi
+ 	}
+ }
+ 
++static int convert_profile_to_ssam_fan(struct ssam_device *sdev, enum platform_profile_option p)
++{
++	switch (p) {
++	case PLATFORM_PROFILE_LOW_POWER:
++		return SSAM_FAN_PROFILE_BATTERY_SAVER;
++
++	case PLATFORM_PROFILE_BALANCED:
++		return SSAM_FAN_PROFILE_NORMAL;
++
++	case PLATFORM_PROFILE_BALANCED_PERFORMANCE:
++		return SSAM_FAN_PROFILE_BETTER_PERFORMANCE;
++
++	case PLATFORM_PROFILE_PERFORMANCE:
++		return SSAM_FAN_PROFILE_BEST_PERFORMANCE;
++
++	default:
++		/* This should have already been caught by platform_profile_store(). */
++		WARN(true, "unsupported platform profile");
++		return -EOPNOTSUPP;
++	}
++}
++
+ static int ssam_platform_profile_get(struct platform_profile_handler *pprof,
+ 				     enum platform_profile_option *profile)
+ {
+-	struct ssam_tmp_profile_device *tpd;
++	struct ssam_platform_profile_device *tpd;
+ 	enum ssam_tmp_profile tp;
+ 	int status;
+ 
+-	tpd = container_of(pprof, struct ssam_tmp_profile_device, handler);
++	tpd = container_of(pprof, struct ssam_platform_profile_device, handler);
+ 
+ 	status = ssam_tmp_profile_get(tpd->sdev, &tp);
+ 	if (status)
+ 		return status;
+ 
+-	status = convert_ssam_to_profile(tpd->sdev, tp);
++	status = convert_ssam_tmp_to_profile(tpd->sdev, tp);
+ 	if (status < 0)
+ 		return status;
+ 
+@@ -129,21 +178,32 @@ static int ssam_platform_profile_get(struct platform_profile_handler *pprof,
+ static int ssam_platform_profile_set(struct platform_profile_handler *pprof,
+ 				     enum platform_profile_option profile)
+ {
+-	struct ssam_tmp_profile_device *tpd;
++	struct ssam_platform_profile_device *tpd;
+ 	int tp;
+ 
+-	tpd = container_of(pprof, struct ssam_tmp_profile_device, handler);
++	tpd = container_of(pprof, struct ssam_platform_profile_device, handler);
++
++	tp = convert_profile_to_ssam_tmp(tpd->sdev, profile);
++	if (tp < 0)
++		return tp;
+ 
+-	tp = convert_profile_to_ssam(tpd->sdev, profile);
++	tp = ssam_tmp_profile_set(tpd->sdev, tp);
+ 	if (tp < 0)
+ 		return tp;
+ 
+-	return ssam_tmp_profile_set(tpd->sdev, tp);
++	if (tpd->has_fan) {
++		tp = convert_profile_to_ssam_fan(tpd->sdev, profile);
++		if (tp < 0)
++			return tp;
++		tp = ssam_fan_profile_set(tpd->sdev, tp);
++	}
++
++	return tp;
+ }
+ 
+ static int surface_platform_profile_probe(struct ssam_device *sdev)
+ {
+-	struct ssam_tmp_profile_device *tpd;
++	struct ssam_platform_profile_device *tpd;
+ 
+ 	tpd = devm_kzalloc(&sdev->dev, sizeof(*tpd), GFP_KERNEL);
+ 	if (!tpd)
+@@ -154,6 +214,8 @@ static int surface_platform_profile_probe(struct ssam_device *sdev)
+ 	tpd->handler.profile_get = ssam_platform_profile_get;
+ 	tpd->handler.profile_set = ssam_platform_profile_set;
+ 
++	tpd->has_fan = device_property_read_bool(&sdev->dev, "has_fan");
++
+ 	set_bit(PLATFORM_PROFILE_LOW_POWER, tpd->handler.choices);
+ 	set_bit(PLATFORM_PROFILE_BALANCED, tpd->handler.choices);
+ 	set_bit(PLATFORM_PROFILE_BALANCED_PERFORMANCE, tpd->handler.choices);
+-- 
+2.44.0
+
+From 95b66fb97652988a7b4be5bb1deaa625e1bb3c3f Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jul 2020 17:19:53 +0200
 Subject: [PATCH] i2c: acpi: Implement RawBytes read access
@@ -6617,9 +6952,9 @@ index d6037a328669..a290ebc77aea 100644
  		dev_warn(&adapter->dev, "protocol 0x%02x not supported for client 0x%02x\n",
  			 accessor_type, client->addr);
 -- 
-2.43.0
+2.44.0
 
-From f4ad3e5c368c11503d8b7af6a703f3972ebd5e98 Mon Sep 17 00:00:00 2001
+From 2b86ac312b956799265cdd1411d305cd2dcaf6db Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 13 Feb 2021 16:41:18 +0100
 Subject: [PATCH] platform/surface: Add driver for Surface Book 1 dGPU switch
@@ -6840,9 +7175,9 @@ index 000000000000..8b816ed8f35c
 +MODULE_DESCRIPTION("Discrete GPU Power-Switch for Surface Book 1");
 +MODULE_LICENSE("GPL");
 -- 
-2.43.0
+2.44.0
 
-From 96cb53fd556f88f97d61b237c6015cec946865d5 Mon Sep 17 00:00:00 2001
+From 3584a6c1791dc9c9b9c3ee846621571cbfabe37e Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:05:09 +1100
 Subject: [PATCH] Input: soc_button_array - support AMD variant Surface devices
@@ -6917,9 +7252,9 @@ index f6d060377d18..b8603f74eb28 100644
  
  /*
 -- 
-2.43.0
+2.44.0
 
-From 7909f30b15796e8df43a6d4ea32cbbd40627c410 Mon Sep 17 00:00:00 2001
+From c26bb1d0af0fe40be270d203d6aaeab28dd04a10 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:22:57 +1100
 Subject: [PATCH] platform/surface: surfacepro3_button: don't load on amd
@@ -6989,9 +7324,9 @@ index 2755601f979c..4240c98ca226 100644
  
  
 -- 
-2.43.0
+2.44.0
 
-From 28ea3660b6680bfd528ca05c543e69b8a2ad412c Mon Sep 17 00:00:00 2001
+From b3fac417611f5bb4ae2a9bc9e828dacfe4418fbf Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 18 Feb 2023 01:02:49 +0100
 Subject: [PATCH] USB: quirks: Add USB_QUIRK_DELAY_INIT for Surface Go 3
@@ -7016,10 +7351,10 @@ Patchset: surface-typecover
  1 file changed, 3 insertions(+)
 
 diff --git a/drivers/usb/core/quirks.c b/drivers/usb/core/quirks.c
-index 15e9bd180a1d..0d70461d01e1 100644
+index b4783574b8e6..360970620589 100644
 --- a/drivers/usb/core/quirks.c
 +++ b/drivers/usb/core/quirks.c
-@@ -220,6 +220,9 @@ static const struct usb_device_id usb_quirk_list[] = {
+@@ -223,6 +223,9 @@ static const struct usb_device_id usb_quirk_list[] = {
  	/* Microsoft Surface Dock Ethernet (RTL8153 GigE) */
  	{ USB_DEVICE(0x045e, 0x07c6), .driver_info = USB_QUIRK_NO_LPM },
  
@@ -7030,9 +7365,9 @@ index 15e9bd180a1d..0d70461d01e1 100644
  	{ USB_DEVICE(0x046a, 0x0023), .driver_info = USB_QUIRK_RESET_RESUME },
  
 -- 
-2.43.0
+2.44.0
 
-From 039ed906cfe0578e78c40d786433e9b144c56785 Mon Sep 17 00:00:00 2001
+From bf5167d418b660e321368222505a97d9f1ed68b4 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 5 Nov 2020 13:09:45 +0100
 Subject: [PATCH] hid/multitouch: Turn off Type Cover keyboard backlight when
@@ -7068,7 +7403,7 @@ Patchset: surface-typecover
  1 file changed, 98 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
-index fd5b0637dad6..0f49d8fa6333 100644
+index 3e91e4d6ba6f..45b7884c97f0 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
 @@ -34,7 +34,10 @@
@@ -7250,7 +7585,7 @@ index fd5b0637dad6..0f49d8fa6333 100644
  	del_timer_sync(&td->release_timer);
  
  	sysfs_remove_group(&hdev->dev.kobj, &mt_attribute_group);
-@@ -2226,6 +2317,11 @@ static const struct hid_device_id mt_devices[] = {
+@@ -2230,6 +2321,11 @@ static const struct hid_device_id mt_devices[] = {
  		MT_USB_DEVICE(USB_VENDOR_ID_XIROKU,
  			USB_DEVICE_ID_XIROKU_CSR2) },
  
@@ -7263,9 +7598,9 @@ index fd5b0637dad6..0f49d8fa6333 100644
  	{ .driver_data = MT_CLS_GOOGLE,
  		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY, USB_VENDOR_ID_GOOGLE,
 -- 
-2.43.0
+2.44.0
 
-From 97419c9be08b7b3e4311aa989fa8f91d0549a469 Mon Sep 17 00:00:00 2001
+From dda4ca6e0248ae5acf3aaf78ee00e613f4e04bad Mon Sep 17 00:00:00 2001
 From: PJungkamp <p.jungkamp@gmail.com>
 Date: Fri, 25 Feb 2022 12:04:25 +0100
 Subject: [PATCH] hid/multitouch: Add support for surface pro type cover tablet
@@ -7294,7 +7629,7 @@ Patchset: surface-typecover
  1 file changed, 122 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
-index 0f49d8fa6333..1fad1199775b 100644
+index 45b7884c97f0..f8978b405aca 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
 @@ -77,6 +77,7 @@ MODULE_LICENSE("GPL");
@@ -7562,9 +7897,9 @@ index 0f49d8fa6333..1fad1199775b 100644
  	unregister_pm_notifier(&td->pm_notifier);
  	del_timer_sync(&td->release_timer);
 -- 
-2.43.0
+2.44.0
 
-From 3854d7e575b1091a994c58ef8ee2a89f4efced12 Mon Sep 17 00:00:00 2001
+From aa49dc59b192cc038ca789ac70215d7492f043cb Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sun, 19 Feb 2023 22:12:24 +0100
 Subject: [PATCH] PCI: Add quirk to prevent calling shutdown mehtod
@@ -7603,10 +7938,10 @@ index 51ec9e7e784f..40554890d721 100644
  
  	if (drv && drv->shutdown)
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index d55a3ffae4b8..e8614d8476fe 100644
+index d797df6e5f3e..c674ee496a0b 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
-@@ -6227,3 +6227,39 @@ static void pci_fixup_d3cold_delay_1sec(struct pci_dev *pdev)
+@@ -6250,3 +6250,39 @@ static void pci_fixup_d3cold_delay_1sec(struct pci_dev *pdev)
  	pdev->d3cold_delay = 1000;
  }
  DECLARE_PCI_FIXUP_FINAL(0x5555, 0x0004, pci_fixup_d3cold_delay_1sec);
@@ -7647,7 +7982,7 @@ index d55a3ffae4b8..e8614d8476fe 100644
 +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x466d, quirk_no_shutdown);  // Thunderbolt 4 NHI
 +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x46a8, quirk_no_shutdown);  // GPU
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index bc80960fad7c..eec5704d1000 100644
+index 7ab0d13672da..8d8d9225e0db 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
 @@ -465,6 +465,7 @@ struct pci_dev {
@@ -7659,9 +7994,9 @@ index bc80960fad7c..eec5704d1000 100644
  	atomic_t	enable_cnt;	/* pci_enable_device has been called */
  
 -- 
-2.43.0
+2.44.0
 
-From d9ddc9ae99c11ebc912a1a8dde46d783e873508b Mon Sep 17 00:00:00 2001
+From 36cf5399fd0f16f10f97c21131d29ebda13607f5 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sun, 12 Mar 2023 01:41:57 +0100
 Subject: [PATCH] platform/surface: gpe: Add support for Surface Pro 9
@@ -7710,9 +8045,9 @@ index 62fd4004db31..103fc4468262 100644
  		.ident = "Surface Book 1",
  		.matches = {
 -- 
-2.43.0
+2.44.0
 
-From 5fdcd780891777ef73585adf610593e6e097e6d6 Mon Sep 17 00:00:00 2001
+From 526bea529e4befa282fcfd01bbadbed7325faf01 Mon Sep 17 00:00:00 2001
 From: Hans de Goede <hdegoede@redhat.com>
 Date: Sun, 10 Oct 2021 20:56:57 +0200
 Subject: [PATCH] ACPI: delay enumeration of devices with a _DEP pointing to an
@@ -7772,10 +8107,10 @@ Patchset: cameras
  1 file changed, 3 insertions(+)
 
 diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 02bb2cce423f..b123138d3dc0 100644
+index e6ed1ba91e5c..b367890b7438 100644
 --- a/drivers/acpi/scan.c
 +++ b/drivers/acpi/scan.c
-@@ -2114,6 +2114,9 @@ static acpi_status acpi_bus_check_add_2(acpi_handle handle, u32 lvl_not_used,
+@@ -2138,6 +2138,9 @@ static acpi_status acpi_bus_check_add_2(acpi_handle handle, u32 lvl_not_used,
  
  static void acpi_default_enumeration(struct acpi_device *device)
  {
@@ -7786,9 +8121,9 @@ index 02bb2cce423f..b123138d3dc0 100644
  	 * Do not enumerate devices with enumeration_by_parent flag set as
  	 * they will be enumerated by their respective parents.
 -- 
-2.43.0
+2.44.0
 
-From eb19f5e13f14a8973920d406125f205945558fb9 Mon Sep 17 00:00:00 2001
+From d41ef92974135b1c22c2f46cbaba926701e0d4af Mon Sep 17 00:00:00 2001
 From: zouxiaoh <xiaohong.zou@intel.com>
 Date: Fri, 25 Jun 2021 08:52:59 +0800
 Subject: [PATCH] iommu: intel-ipu: use IOMMU passthrough mode for Intel IPUs
@@ -7814,23 +8149,24 @@ Patchset: cameras
  1 file changed, 30 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index cc6569613255..8a532d32efdd 100644
+index 6c01b1aebf27..ceed043464b1 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
-@@ -38,6 +38,12 @@
- #define IS_GFX_DEVICE(pdev) ((pdev->class >> 16) == PCI_BASE_CLASS_DISPLAY)
- #define IS_USB_DEVICE(pdev) ((pdev->class >> 8) == PCI_CLASS_SERIAL_USB)
- #define IS_ISA_DEVICE(pdev) ((pdev->class >> 8) == PCI_CLASS_BRIDGE_ISA)
+@@ -45,6 +45,13 @@
+ 		((pdev)->vendor == PCI_VENDOR_ID_INTEL && (pdev)->device == 0x34E4) \
+ 	)
+ 
 +#define IS_INTEL_IPU(pdev) ((pdev)->vendor == PCI_VENDOR_ID_INTEL &&	\
 +			   ((pdev)->device == 0x9a19 ||		\
 +			    (pdev)->device == 0x9a39 ||		\
 +			    (pdev)->device == 0x4e19 ||		\
 +			    (pdev)->device == 0x465d ||		\
 +			    (pdev)->device == 0x1919))
- #define IS_IPTS(pdev) ((pdev)->vendor == PCI_VENDOR_ID_INTEL &&	\
- 			    ((pdev)->device == 0x9d3e))
- #define IS_AZALIA(pdev) ((pdev)->vendor == 0x8086 && (pdev)->device == 0x3a3e)
-@@ -294,12 +300,14 @@ EXPORT_SYMBOL_GPL(intel_iommu_enabled);
++
+ #define IOAPIC_RANGE_START	(0xfee00000)
+ #define IOAPIC_RANGE_END	(0xfeefffff)
+ #define IOVA_START_ADDR		(0x1000)
+@@ -154,12 +161,14 @@ EXPORT_SYMBOL_GPL(intel_iommu_enabled);
  
  static int dmar_map_gfx = 1;
  static int dmar_map_ipts = 1;
@@ -7845,7 +8181,7 @@ index cc6569613255..8a532d32efdd 100644
  #define IDENTMAP_IPTS		16
  
  const struct iommu_ops intel_iommu_ops;
-@@ -2553,6 +2561,9 @@ static int device_def_domain_type(struct device *dev)
+@@ -2420,6 +2429,9 @@ static int device_def_domain_type(struct device *dev)
  		if ((iommu_identity_mapping & IDENTMAP_GFX) && IS_GFX_DEVICE(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
  
@@ -7855,7 +8191,7 @@ index cc6569613255..8a532d32efdd 100644
  		if ((iommu_identity_mapping & IDENTMAP_IPTS) && IS_IPTS(pdev))
  			return IOMMU_DOMAIN_IDENTITY;
  	}
-@@ -2862,6 +2873,9 @@ static int __init init_dmars(void)
+@@ -2729,6 +2741,9 @@ static int __init init_dmars(void)
  	if (!dmar_map_gfx)
  		iommu_identity_mapping |= IDENTMAP_GFX;
  
@@ -7865,7 +8201,7 @@ index cc6569613255..8a532d32efdd 100644
  	if (!dmar_map_ipts)
  		iommu_identity_mapping |= IDENTMAP_IPTS;
  
-@@ -4987,6 +5001,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
+@@ -4909,6 +4924,18 @@ static void quirk_iommu_igfx(struct pci_dev *dev)
  	dmar_map_gfx = 0;
  }
  
@@ -7884,15 +8220,7 @@ index cc6569613255..8a532d32efdd 100644
  static void quirk_iommu_ipts(struct pci_dev *dev)
  {
  	if (!IS_IPTS(dev))
-@@ -4998,6 +5024,7 @@ static void quirk_iommu_ipts(struct pci_dev *dev)
- 	pci_info(dev, "Passthrough IOMMU for IPTS\n");
- 	dmar_map_ipts = 0;
- }
-+
- /* G4x/GM45 integrated gfx dmar support is totally busted. */
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2a40, quirk_iommu_igfx);
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x2e00, quirk_iommu_igfx);
-@@ -5033,6 +5060,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
+@@ -4956,6 +4983,9 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x1632, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163A, quirk_iommu_igfx);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x163D, quirk_iommu_igfx);
  
@@ -7901,11 +8229,11 @@ index cc6569613255..8a532d32efdd 100644
 +
  /* disable IPTS dmar support */
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9D3E, quirk_iommu_ipts);
- 
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x34E4, quirk_iommu_ipts);
 -- 
-2.43.0
+2.44.0
 
-From 1b16e7cbcbf699e4d841424568e0de1cee048d93 Mon Sep 17 00:00:00 2001
+From 214600c4c0c3039ba0d0a5e522a2eb162da3857b Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Sun, 10 Oct 2021 20:57:02 +0200
 Subject: [PATCH] platform/x86: int3472: Enable I2c daisy chain
@@ -7940,9 +8268,9 @@ index 1e107fd49f82..e3e1696e7f0e 100644
  
  	return 0;
 -- 
-2.43.0
+2.44.0
 
-From a856e6ec1aa1ce0e88abdd423a151f2bbddb8134 Mon Sep 17 00:00:00 2001
+From f5c4f5e1de99e04416ddffca65246a7769a202e3 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Thu, 2 Mar 2023 12:59:39 +0000
 Subject: [PATCH] platform/x86: int3472: Remap reset GPIO for INT347E
@@ -7995,9 +8323,9 @@ index 07b302e09340..1d3097bc7e48 100644
  					    agpio, func, polarity);
  	if (ret)
 -- 
-2.43.0
+2.44.0
 
-From a7a10c4493fe0a381f12fd6a20a024e7797bd37c Mon Sep 17 00:00:00 2001
+From 216df183e0ad29051b42fcb856d0818a6094f16d Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Tue, 21 Mar 2023 13:45:26 +0000
 Subject: [PATCH] media: i2c: Clarify that gain is Analogue gain in OV7251
@@ -8012,7 +8340,7 @@ Patchset: cameras
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/media/i2c/ov7251.c b/drivers/media/i2c/ov7251.c
-index 6582cc0e2384..fd0796b6e07e 100644
+index 30f61e04ecaf..9c1292ca8552 100644
 --- a/drivers/media/i2c/ov7251.c
 +++ b/drivers/media/i2c/ov7251.c
 @@ -1051,7 +1051,7 @@ static int ov7251_s_ctrl(struct v4l2_ctrl *ctrl)
@@ -8024,7 +8352,7 @@ index 6582cc0e2384..fd0796b6e07e 100644
  		ret = ov7251_set_gain(ov7251, ctrl->val);
  		break;
  	case V4L2_CID_TEST_PATTERN:
-@@ -1553,7 +1553,7 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
+@@ -1572,7 +1572,7 @@ static int ov7251_init_ctrls(struct ov7251 *ov7251)
  	ov7251->exposure = v4l2_ctrl_new_std(&ov7251->ctrls, &ov7251_ctrl_ops,
  					     V4L2_CID_EXPOSURE, 1, 32, 1, 32);
  	ov7251->gain = v4l2_ctrl_new_std(&ov7251->ctrls, &ov7251_ctrl_ops,
@@ -8034,9 +8362,9 @@ index 6582cc0e2384..fd0796b6e07e 100644
  				     V4L2_CID_TEST_PATTERN,
  				     ARRAY_SIZE(ov7251_test_pattern_menu) - 1,
 -- 
-2.43.0
+2.44.0
 
-From e96fa67c9172fac9aa6e68199cf7e29d074c21e6 Mon Sep 17 00:00:00 2001
+From 0573bb8c22ed0f0476a2ca6c5df2a7f09c6a1b66 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Wed, 22 Mar 2023 11:01:42 +0000
 Subject: [PATCH] media: v4l2-core: Acquire privacy led in
@@ -8055,7 +8383,7 @@ Patchset: cameras
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/media/v4l2-core/v4l2-async.c b/drivers/media/v4l2-core/v4l2-async.c
-index 8cfd593d293d..c32f0d1b29d4 100644
+index 3ec323bd528b..b55570a0142c 100644
 --- a/drivers/media/v4l2-core/v4l2-async.c
 +++ b/drivers/media/v4l2-core/v4l2-async.c
 @@ -796,6 +796,10 @@ int v4l2_async_register_subdev(struct v4l2_subdev *sd)
@@ -8070,10 +8398,10 @@ index 8cfd593d293d..c32f0d1b29d4 100644
  	 * No reference taken. The reference is held by the device (struct
  	 * v4l2_subdev.dev), and async sub-device does not exist independently
 diff --git a/drivers/media/v4l2-core/v4l2-fwnode.c b/drivers/media/v4l2-core/v4l2-fwnode.c
-index 7f181fbbb140..1c0347de4e21 100644
+index 89c7192148df..44eca113e772 100644
 --- a/drivers/media/v4l2-core/v4l2-fwnode.c
 +++ b/drivers/media/v4l2-core/v4l2-fwnode.c
-@@ -1217,10 +1217,6 @@ int v4l2_async_register_subdev_sensor(struct v4l2_subdev *sd)
+@@ -1219,10 +1219,6 @@ int v4l2_async_register_subdev_sensor(struct v4l2_subdev *sd)
  
  	v4l2_async_subdev_nf_init(notifier, sd);
  
@@ -8085,9 +8413,9 @@ index 7f181fbbb140..1c0347de4e21 100644
  	if (ret < 0)
  		goto out_cleanup;
 -- 
-2.43.0
+2.44.0
 
-From 68dac72bec1c99890d35d6bfd1b1f66e0cf8789c Mon Sep 17 00:00:00 2001
+From 84d70102a7892f720a11a0b3d313f3932c859798 Mon Sep 17 00:00:00 2001
 From: Kate Hsuan <hpa@redhat.com>
 Date: Tue, 21 Mar 2023 23:37:16 +0800
 Subject: [PATCH] platform: x86: int3472: Add MFD cell for tps68470 LED
@@ -8126,9 +8454,9 @@ index e3e1696e7f0e..423dc555093f 100644
  		for (i = 0; i < board_data->n_gpiod_lookups; i++)
  			gpiod_add_lookup_table(board_data->tps68470_gpio_lookup_tables[i]);
 -- 
-2.43.0
+2.44.0
 
-From 3f446f24aecaba808693f0173e28972e651fa87d Mon Sep 17 00:00:00 2001
+From 183f7e4da9cacc2a0f9cb3549adad9a3c95f1b94 Mon Sep 17 00:00:00 2001
 From: Kate Hsuan <hpa@redhat.com>
 Date: Tue, 21 Mar 2023 23:37:17 +0800
 Subject: [PATCH] include: mfd: tps68470: Add masks for LEDA and LEDB
@@ -8167,9 +8495,9 @@ index 7807fa329db0..2d2abb25b944 100644
 +
  #endif /* __LINUX_MFD_TPS68470_H */
 -- 
-2.43.0
+2.44.0
 
-From a0fe4ec438c5edb9f4360c8a2a5f5269d05c44ef Mon Sep 17 00:00:00 2001
+From 0f3811853f436eed853d7d226eb811f65137d03a Mon Sep 17 00:00:00 2001
 From: Kate Hsuan <hpa@redhat.com>
 Date: Tue, 21 Mar 2023 23:37:18 +0800
 Subject: [PATCH] leds: tps68470: Add LED control for tps68470
@@ -8192,10 +8520,10 @@ Patchset: cameras
  create mode 100644 drivers/leds/leds-tps68470.c
 
 diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index a3a9ac5b5338..0bc6845b5d29 100644
+index d721b254e1e4..1717f94d1491 100644
 --- a/drivers/leds/Kconfig
 +++ b/drivers/leds/Kconfig
-@@ -875,6 +875,18 @@ config LEDS_TPS6105X
+@@ -899,6 +899,18 @@ config LEDS_TPS6105X
  	  It is a single boost converter primarily for white LEDs and
  	  audio amplifiers.
  
@@ -8215,10 +8543,10 @@ index a3a9ac5b5338..0bc6845b5d29 100644
  	tristate "LED support for SGI Octane machines"
  	depends on LEDS_CLASS
 diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index d7348e8bc019..10caea4e7c61 100644
+index ce07dc295ff0..0ebf6a9f9f7f 100644
 --- a/drivers/leds/Makefile
 +++ b/drivers/leds/Makefile
-@@ -84,6 +84,7 @@ obj-$(CONFIG_LEDS_TCA6507)		+= leds-tca6507.o
+@@ -86,6 +86,7 @@ obj-$(CONFIG_LEDS_TCA6507)		+= leds-tca6507.o
  obj-$(CONFIG_LEDS_TI_LMU_COMMON)	+= leds-ti-lmu-common.o
  obj-$(CONFIG_LEDS_TLC591XX)		+= leds-tlc591xx.o
  obj-$(CONFIG_LEDS_TPS6105X)		+= leds-tps6105x.o
@@ -8418,9 +8746,556 @@ index 000000000000..35aeb5db89c8
 +MODULE_DESCRIPTION("LED driver for TPS68470 PMIC");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.43.0
+2.44.0
 
-From 04069751b144350632ec45b5b25c2cc01d5f34ef Mon Sep 17 00:00:00 2001
+From b7e66758c1bd493c7140c17d0f00f727f8fefb32 Mon Sep 17 00:00:00 2001
+From: Hidenori Kobayashi <hidenorik@chromium.org>
+Date: Tue, 9 Jan 2024 17:09:09 +0900
+Subject: [PATCH] media: staging: ipu3-imgu: Set fields before
+ media_entity_pads_init()
+
+The imgu driver fails to probe with the following message because it
+does not set the pad's flags before calling media_entity_pads_init().
+
+[   14.596315] ipu3-imgu 0000:00:05.0: failed initialize subdev media entity (-22)
+[   14.596322] ipu3-imgu 0000:00:05.0: failed to register subdev0 ret (-22)
+[   14.596327] ipu3-imgu 0000:00:05.0: failed to register pipes (-22)
+[   14.596331] ipu3-imgu 0000:00:05.0: failed to create V4L2 devices (-22)
+
+Fix the initialization order so that the driver probe succeeds. The ops
+initialization is also moved together for readability.
+
+Fixes: a0ca1627b450 ("media: staging/intel-ipu3: Add v4l2 driver based on media framework")
+Cc: <stable@vger.kernel.org> # 6.7
+Cc: Dan Carpenter <dan.carpenter@linaro.org>
+Signed-off-by: Hidenori Kobayashi <hidenorik@chromium.org>
+Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Patchset: cameras
+---
+ drivers/staging/media/ipu3/ipu3-v4l2.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/media/ipu3/ipu3-v4l2.c b/drivers/staging/media/ipu3/ipu3-v4l2.c
+index a66f034380c0..3df58eb3e882 100644
+--- a/drivers/staging/media/ipu3/ipu3-v4l2.c
++++ b/drivers/staging/media/ipu3/ipu3-v4l2.c
+@@ -1069,6 +1069,11 @@ static int imgu_v4l2_subdev_register(struct imgu_device *imgu,
+ 	struct imgu_media_pipe *imgu_pipe = &imgu->imgu_pipe[pipe];
+ 
+ 	/* Initialize subdev media entity */
++	imgu_sd->subdev.entity.ops = &imgu_media_ops;
++	for (i = 0; i < IMGU_NODE_NUM; i++) {
++		imgu_sd->subdev_pads[i].flags = imgu_pipe->nodes[i].output ?
++			MEDIA_PAD_FL_SINK : MEDIA_PAD_FL_SOURCE;
++	}
+ 	r = media_entity_pads_init(&imgu_sd->subdev.entity, IMGU_NODE_NUM,
+ 				   imgu_sd->subdev_pads);
+ 	if (r) {
+@@ -1076,11 +1081,6 @@ static int imgu_v4l2_subdev_register(struct imgu_device *imgu,
+ 			"failed initialize subdev media entity (%d)\n", r);
+ 		return r;
+ 	}
+-	imgu_sd->subdev.entity.ops = &imgu_media_ops;
+-	for (i = 0; i < IMGU_NODE_NUM; i++) {
+-		imgu_sd->subdev_pads[i].flags = imgu_pipe->nodes[i].output ?
+-			MEDIA_PAD_FL_SINK : MEDIA_PAD_FL_SOURCE;
+-	}
+ 
+ 	/* Initialize subdev */
+ 	v4l2_subdev_init(&imgu_sd->subdev, &imgu_subdev_ops);
+@@ -1177,15 +1177,15 @@ static int imgu_v4l2_node_setup(struct imgu_device *imgu, unsigned int pipe,
+ 	}
+ 
+ 	/* Initialize media entities */
++	node->vdev_pad.flags = node->output ?
++		MEDIA_PAD_FL_SOURCE : MEDIA_PAD_FL_SINK;
++	vdev->entity.ops = NULL;
+ 	r = media_entity_pads_init(&vdev->entity, 1, &node->vdev_pad);
+ 	if (r) {
+ 		dev_err(dev, "failed initialize media entity (%d)\n", r);
+ 		mutex_destroy(&node->lock);
+ 		return r;
+ 	}
+-	node->vdev_pad.flags = node->output ?
+-		MEDIA_PAD_FL_SOURCE : MEDIA_PAD_FL_SINK;
+-	vdev->entity.ops = NULL;
+ 
+ 	/* Initialize vbq */
+ 	vbq->type = node->vdev_fmt.type;
+-- 
+2.44.0
+
+From 87ebc160cb35a068acfaf59847c84656cb52b1b7 Mon Sep 17 00:00:00 2001
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+Date: Thu, 25 May 2023 14:12:04 +0300
+Subject: [PATCH] media: ipu3-cio2: Further clean up async subdev link creation
+
+Use v4l2_create_fwnode_links_to_pad() to create links from async
+sub-devices to the CSI-2 receiver subdevs.
+
+Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+Reviewed-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+Signed-off-by: Hans Verkuil <hverkuil-cisco@xs4all.nl>
+Patchset: cameras
+---
+ drivers/media/pci/intel/ipu3/ipu3-cio2.c | 22 +++++-----------------
+ 1 file changed, 5 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/media/pci/intel/ipu3/ipu3-cio2.c b/drivers/media/pci/intel/ipu3/ipu3-cio2.c
+index ed08bf4178f0..83e29c56fe33 100644
+--- a/drivers/media/pci/intel/ipu3/ipu3-cio2.c
++++ b/drivers/media/pci/intel/ipu3/ipu3-cio2.c
+@@ -28,6 +28,7 @@
+ #include <media/v4l2-device.h>
+ #include <media/v4l2-event.h>
+ #include <media/v4l2-fwnode.h>
++#include <media/v4l2-mc.h>
+ #include <media/v4l2-ioctl.h>
+ #include <media/videobuf2-dma-sg.h>
+ 
+@@ -1407,7 +1408,6 @@ static void cio2_notifier_unbind(struct v4l2_async_notifier *notifier,
+ static int cio2_notifier_complete(struct v4l2_async_notifier *notifier)
+ {
+ 	struct cio2_device *cio2 = to_cio2_device(notifier);
+-	struct device *dev = &cio2->pci_dev->dev;
+ 	struct sensor_async_subdev *s_asd;
+ 	struct v4l2_async_connection *asd;
+ 	struct cio2_queue *q;
+@@ -1417,23 +1417,10 @@ static int cio2_notifier_complete(struct v4l2_async_notifier *notifier)
+ 		s_asd = to_sensor_asd(asd);
+ 		q = &cio2->queue[s_asd->csi2.port];
+ 
+-		ret = media_entity_get_fwnode_pad(&q->sensor->entity,
+-						  s_asd->asd.match.fwnode,
+-						  MEDIA_PAD_FL_SOURCE);
+-		if (ret < 0) {
+-			dev_err(dev, "no pad for endpoint %pfw (%d)\n",
+-				s_asd->asd.match.fwnode, ret);
+-			return ret;
+-		}
+-
+-		ret = media_create_pad_link(&q->sensor->entity, ret,
+-					    &q->subdev.entity, CIO2_PAD_SINK,
+-					    0);
+-		if (ret) {
+-			dev_err(dev, "failed to create link for %s (endpoint %pfw, error %d)\n",
+-				q->sensor->name, s_asd->asd.match.fwnode, ret);
++		ret = v4l2_create_fwnode_links_to_pad(asd->sd,
++						      &q->subdev_pads[CIO2_PAD_SINK], 0);
++		if (ret)
+ 			return ret;
+-		}
+ 	}
+ 
+ 	return v4l2_device_register_subdev_nodes(&cio2->v4l2_dev);
+@@ -1572,6 +1559,7 @@ static int cio2_queue_init(struct cio2_device *cio2, struct cio2_queue *q)
+ 	v4l2_subdev_init(subdev, &cio2_subdev_ops);
+ 	subdev->flags = V4L2_SUBDEV_FL_HAS_DEVNODE | V4L2_SUBDEV_FL_HAS_EVENTS;
+ 	subdev->owner = THIS_MODULE;
++	subdev->dev = dev;
+ 	snprintf(subdev->name, sizeof(subdev->name),
+ 		 CIO2_ENTITY_NAME " %td", q - cio2->queue);
+ 	subdev->entity.function = MEDIA_ENT_F_VID_IF_BRIDGE;
+-- 
+2.44.0
+
+From a9681c29588d67321733877e11f9588ed9e54861 Mon Sep 17 00:00:00 2001
+From: mojyack <mojyack@gmail.com>
+Date: Sat, 3 Feb 2024 12:53:33 +0900
+Subject: [PATCH] media: i2c: Revert DW9719 driver
+
+Patchset: cameras
+---
+ drivers/media/i2c/dw9719.c | 199 +++++++++++++++++++++++++------------
+ 1 file changed, 137 insertions(+), 62 deletions(-)
+
+diff --git a/drivers/media/i2c/dw9719.c b/drivers/media/i2c/dw9719.c
+index c626ed845928..d5f585dabb60 100644
+--- a/drivers/media/i2c/dw9719.c
++++ b/drivers/media/i2c/dw9719.c
+@@ -6,13 +6,14 @@
+  * https://github.com/ZenfoneArea/android_kernel_asus_zenfone5
+  */
+ 
++#include <asm/unaligned.h>
++
+ #include <linux/delay.h>
+ #include <linux/i2c.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/types.h>
+ 
+-#include <media/v4l2-cci.h>
+ #include <media/v4l2-common.h>
+ #include <media/v4l2-ctrls.h>
+ #include <media/v4l2-subdev.h>
+@@ -20,31 +21,29 @@
+ #define DW9719_MAX_FOCUS_POS	1023
+ #define DW9719_CTRL_STEPS	16
+ #define DW9719_CTRL_DELAY_US	1000
++#define DELAY_MAX_PER_STEP_NS	(1000000 * 1023)
+ 
+-#define DW9719_INFO			CCI_REG8(0)
++#define DW9719_INFO			0
+ #define DW9719_ID			0xF1
++#define DW9719_CONTROL			2
++#define DW9719_VCM_CURRENT		3
+ 
+-#define DW9719_CONTROL			CCI_REG8(2)
+-#define DW9719_ENABLE_RINGING		0x02
+-
+-#define DW9719_VCM_CURRENT		CCI_REG16(3)
+-
+-#define DW9719_MODE			CCI_REG8(6)
+-#define DW9719_MODE_SAC_SHIFT		4
+-#define DW9719_MODE_SAC3		4
++#define DW9719_MODE			6
++#define DW9719_VCM_FREQ			7
+ 
+-#define DW9719_VCM_FREQ			CCI_REG8(7)
++#define DW9719_MODE_SAC3		0x40
+ #define DW9719_DEFAULT_VCM_FREQ		0x60
++#define DW9719_ENABLE_RINGING		0x02
++
++#define NUM_REGULATORS			2
+ 
+ #define to_dw9719_device(x) container_of(x, struct dw9719_device, sd)
+ 
+ struct dw9719_device {
+-	struct v4l2_subdev sd;
+ 	struct device *dev;
+-	struct regmap *regmap;
+-	struct regulator *regulator;
+-	u32 sac_mode;
+-	u32 vcm_freq;
++	struct i2c_client *client;
++	struct regulator_bulk_data regulators[NUM_REGULATORS];
++	struct v4l2_subdev sd;
+ 
+ 	struct dw9719_v4l2_ctrls {
+ 		struct v4l2_ctrl_handler handler;
+@@ -52,18 +51,79 @@ struct dw9719_device {
+ 	} ctrls;
+ };
+ 
++static int dw9719_i2c_rd8(struct i2c_client *client, u8 reg, u8 *val)
++{
++	struct i2c_msg msg[2];
++	u8 buf[2] = { reg };
++	int ret;
++
++	msg[0].addr = client->addr;
++	msg[0].flags = 0;
++	msg[0].len = 1;
++	msg[0].buf = buf;
++
++	msg[1].addr = client->addr;
++	msg[1].flags = I2C_M_RD;
++	msg[1].len = 1;
++	msg[1].buf = &buf[1];
++	*val = 0;
++
++	ret = i2c_transfer(client->adapter, msg, 2);
++	if (ret < 0)
++		return ret;
++
++	*val = buf[1];
++
++	return 0;
++}
++
++static int dw9719_i2c_wr8(struct i2c_client *client, u8 reg, u8 val)
++{
++	struct i2c_msg msg;
++	int ret;
++
++	u8 buf[2] = { reg, val };
++
++	msg.addr = client->addr;
++	msg.flags = 0;
++	msg.len = sizeof(buf);
++	msg.buf = buf;
++
++	ret = i2c_transfer(client->adapter, &msg, 1);
++
++	return ret < 0 ? ret : 0;
++}
++
++static int dw9719_i2c_wr16(struct i2c_client *client, u8 reg, u16 val)
++{
++	struct i2c_msg msg;
++	u8 buf[3] = { reg };
++	int ret;
++
++	put_unaligned_be16(val, buf + 1);
++
++	msg.addr = client->addr;
++	msg.flags = 0;
++	msg.len = sizeof(buf);
++	msg.buf = buf;
++
++	ret = i2c_transfer(client->adapter, &msg, 1);
++
++	return ret < 0 ? ret : 0;
++}
++
+ static int dw9719_detect(struct dw9719_device *dw9719)
+ {
+ 	int ret;
+-	u64 val;
++	u8 val;
+ 
+-	ret = cci_read(dw9719->regmap, DW9719_INFO, &val, NULL);
++	ret = dw9719_i2c_rd8(dw9719->client, DW9719_INFO, &val);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	if (val != DW9719_ID) {
+ 		dev_err(dw9719->dev, "Failed to detect correct id\n");
+-		return -ENXIO;
++		ret = -ENXIO;
+ 	}
+ 
+ 	return 0;
+@@ -71,37 +131,54 @@ static int dw9719_detect(struct dw9719_device *dw9719)
+ 
+ static int dw9719_power_down(struct dw9719_device *dw9719)
+ {
+-	return regulator_disable(dw9719->regulator);
++	return regulator_bulk_disable(NUM_REGULATORS, dw9719->regulators);
+ }
+ 
+ static int dw9719_power_up(struct dw9719_device *dw9719)
+ {
+ 	int ret;
+ 
+-	ret = regulator_enable(dw9719->regulator);
++	ret = regulator_bulk_enable(NUM_REGULATORS, dw9719->regulators);
+ 	if (ret)
+ 		return ret;
+ 
+ 	/* Jiggle SCL pin to wake up device */
+-	cci_write(dw9719->regmap, DW9719_CONTROL, 1, &ret);
++	ret = dw9719_i2c_wr8(dw9719->client, DW9719_CONTROL, 1);
+ 
+-	/* Need 100us to transit from SHUTDOWN to STANDBY */
+-	fsleep(100);
++	/* Need 100us to transit from SHUTDOWN to STANDBY*/
++	usleep_range(100, 1000);
+ 
+-	cci_write(dw9719->regmap, DW9719_CONTROL, DW9719_ENABLE_RINGING, &ret);
+-	cci_write(dw9719->regmap, DW9719_MODE,
+-		  dw9719->sac_mode << DW9719_MODE_SAC_SHIFT, &ret);
+-	cci_write(dw9719->regmap, DW9719_VCM_FREQ, dw9719->vcm_freq, &ret);
++	ret = dw9719_i2c_wr8(dw9719->client, DW9719_CONTROL,
++			     DW9719_ENABLE_RINGING);
++	if (ret < 0)
++		goto fail_powerdown;
+ 
+-	if (ret)
+-		dw9719_power_down(dw9719);
++	ret = dw9719_i2c_wr8(dw9719->client, DW9719_MODE, DW9719_MODE_SAC3);
++	if (ret < 0)
++		goto fail_powerdown;
++
++	ret = dw9719_i2c_wr8(dw9719->client, DW9719_VCM_FREQ,
++			     DW9719_DEFAULT_VCM_FREQ);
++	if (ret < 0)
++		goto fail_powerdown;
++
++	return 0;
+ 
++fail_powerdown:
++	dw9719_power_down(dw9719);
+ 	return ret;
+ }
+ 
+ static int dw9719_t_focus_abs(struct dw9719_device *dw9719, s32 value)
+ {
+-	return cci_write(dw9719->regmap, DW9719_VCM_CURRENT, value, NULL);
++	int ret;
++
++	value = clamp(value, 0, DW9719_MAX_FOCUS_POS);
++	ret = dw9719_i2c_wr16(dw9719->client, DW9719_VCM_CURRENT, value);
++	if (ret < 0)
++		return ret;
++
++	return 0;
+ }
+ 
+ static int dw9719_set_ctrl(struct v4l2_ctrl *ctrl)
+@@ -132,7 +209,7 @@ static const struct v4l2_ctrl_ops dw9719_ctrl_ops = {
+ 	.s_ctrl = dw9719_set_ctrl,
+ };
+ 
+-static int dw9719_suspend(struct device *dev)
++static int __maybe_unused dw9719_suspend(struct device *dev)
+ {
+ 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
+ 	struct dw9719_device *dw9719 = to_dw9719_device(sd);
+@@ -151,7 +228,7 @@ static int dw9719_suspend(struct device *dev)
+ 	return dw9719_power_down(dw9719);
+ }
+ 
+-static int dw9719_resume(struct device *dev)
++static int __maybe_unused dw9719_resume(struct device *dev)
+ {
+ 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
+ 	struct dw9719_device *dw9719 = to_dw9719_device(sd);
+@@ -201,7 +278,9 @@ static int dw9719_init_controls(struct dw9719_device *dw9719)
+ 	const struct v4l2_ctrl_ops *ops = &dw9719_ctrl_ops;
+ 	int ret;
+ 
+-	v4l2_ctrl_handler_init(&dw9719->ctrls.handler, 1);
++	ret = v4l2_ctrl_handler_init(&dw9719->ctrls.handler, 1);
++	if (ret)
++		return ret;
+ 
+ 	dw9719->ctrls.focus = v4l2_ctrl_new_std(&dw9719->ctrls.handler, ops,
+ 						V4L2_CID_FOCUS_ABSOLUTE, 0,
+@@ -214,7 +293,8 @@ static int dw9719_init_controls(struct dw9719_device *dw9719)
+ 	}
+ 
+ 	dw9719->sd.ctrl_handler = &dw9719->ctrls.handler;
+-	return 0;
++
++	return ret;
+ 
+ err_free_handler:
+ 	v4l2_ctrl_handler_free(&dw9719->ctrls.handler);
+@@ -232,26 +312,24 @@ static int dw9719_probe(struct i2c_client *client)
+ 	if (!dw9719)
+ 		return -ENOMEM;
+ 
+-	dw9719->regmap = devm_cci_regmap_init_i2c(client, 8);
+-	if (IS_ERR(dw9719->regmap))
+-		return PTR_ERR(dw9719->regmap);
+-
++	dw9719->client = client;
+ 	dw9719->dev = &client->dev;
+-	dw9719->sac_mode = DW9719_MODE_SAC3;
+-	dw9719->vcm_freq = DW9719_DEFAULT_VCM_FREQ;
+ 
+-	/* Optional indication of SAC mode select */
+-	device_property_read_u32(&client->dev, "dongwoon,sac-mode",
+-				 &dw9719->sac_mode);
+-
+-	/* Optional indication of VCM frequency */
+-	device_property_read_u32(&client->dev, "dongwoon,vcm-freq",
+-				 &dw9719->vcm_freq);
++	dw9719->regulators[0].supply = "vdd";
++	/*
++	 * The DW9719 has only the 1 VDD voltage input, but some PMICs such as
++	 * the TPS68470 PMIC have I2C passthrough capability, to disconnect the
++	 * sensor's I2C pins from the I2C bus when the sensors VSIO (Sensor-IO)
++	 * is off, because some sensors then short these pins to ground;
++	 * and the DW9719 might sit behind this passthrough, this it needs to
++	 * enable VSIO as that will also enable the I2C passthrough.
++	 */
++	dw9719->regulators[1].supply = "vsio";
+ 
+-	dw9719->regulator = devm_regulator_get(&client->dev, "vdd");
+-	if (IS_ERR(dw9719->regulator))
+-		return dev_err_probe(&client->dev, PTR_ERR(dw9719->regulator),
+-				     "getting regulator\n");
++	ret = devm_regulator_bulk_get(&client->dev, NUM_REGULATORS,
++				      dw9719->regulators);
++	if (ret)
++		return dev_err_probe(&client->dev, ret, "getting regulators\n");
+ 
+ 	v4l2_i2c_subdev_init(&dw9719->sd, client, &dw9719_ops);
+ 	dw9719->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
+@@ -312,17 +390,13 @@ static int dw9719_probe(struct i2c_client *client)
+ static void dw9719_remove(struct i2c_client *client)
+ {
+ 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
+-	struct dw9719_device *dw9719 =
+-		container_of(sd, struct dw9719_device, sd);
++	struct dw9719_device *dw9719 = container_of(sd, struct dw9719_device,
++						    sd);
+ 
++	pm_runtime_disable(&client->dev);
+ 	v4l2_async_unregister_subdev(sd);
+ 	v4l2_ctrl_handler_free(&dw9719->ctrls.handler);
+ 	media_entity_cleanup(&dw9719->sd.entity);
+-
+-	pm_runtime_disable(&client->dev);
+-	if (!pm_runtime_status_suspended(&client->dev))
+-		dw9719_power_down(dw9719);
+-	pm_runtime_set_suspended(&client->dev);
+ }
+ 
+ static const struct i2c_device_id dw9719_id_table[] = {
+@@ -331,13 +405,14 @@ static const struct i2c_device_id dw9719_id_table[] = {
+ };
+ MODULE_DEVICE_TABLE(i2c, dw9719_id_table);
+ 
+-static DEFINE_RUNTIME_DEV_PM_OPS(dw9719_pm_ops, dw9719_suspend, dw9719_resume,
+-				 NULL);
++static const struct dev_pm_ops dw9719_pm_ops = {
++	SET_RUNTIME_PM_OPS(dw9719_suspend, dw9719_resume, NULL)
++};
+ 
+ static struct i2c_driver dw9719_i2c_driver = {
+ 	.driver = {
+ 		.name = "dw9719",
+-		.pm = pm_sleep_ptr(&dw9719_pm_ops),
++		.pm = &dw9719_pm_ops,
+ 	},
+ 	.probe = dw9719_probe,
+ 	.remove = dw9719_remove,
+-- 
+2.44.0
+
+From c5d6c95fd5cefbd4ba9779fc965bce0a36bdbe5e Mon Sep 17 00:00:00 2001
+From: mojyack <mojyack@gmail.com>
+Date: Sat, 3 Feb 2024 12:59:53 +0900
+Subject: [PATCH] media: staging: ipu3-imgu: Fix multiple calls of s_stream on
+ stream stop
+
+Adapt to 009905e "media: v4l2-subdev: Document and enforce .s_stream() requirements"
+
+Patchset: cameras
+---
+ drivers/staging/media/ipu3/ipu3-v4l2.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/media/ipu3/ipu3-v4l2.c b/drivers/staging/media/ipu3/ipu3-v4l2.c
+index 3df58eb3e882..81aff2d5d898 100644
+--- a/drivers/staging/media/ipu3/ipu3-v4l2.c
++++ b/drivers/staging/media/ipu3/ipu3-v4l2.c
+@@ -538,18 +538,18 @@ static void imgu_vb2_stop_streaming(struct vb2_queue *vq)
+ 
+ 	WARN_ON(!node->enabled);
+ 
+-	pipe = node->pipe;
+-	dev_dbg(dev, "Try to stream off node [%u][%u]", pipe, node->id);
+-	imgu_pipe = &imgu->imgu_pipe[pipe];
+-	r = v4l2_subdev_call(&imgu_pipe->imgu_sd.subdev, video, s_stream, 0);
+-	if (r)
+-		dev_err(&imgu->pci_dev->dev,
+-			"failed to stop subdev streaming\n");
+-
+ 	mutex_lock(&imgu->streaming_lock);
+ 	/* Was this the first node with streaming disabled? */
+ 	if (imgu->streaming && imgu_all_nodes_streaming(imgu, node)) {
+ 		/* Yes, really stop streaming now */
++		pipe = node->pipe;
++		dev_dbg(dev, "Try to stream off node [%u][%u]", pipe, node->id);
++		imgu_pipe = &imgu->imgu_pipe[pipe];
++		r = v4l2_subdev_call(&imgu_pipe->imgu_sd.subdev, video, s_stream, 0);
++		if (r)
++			dev_err(&imgu->pci_dev->dev,
++				"failed to stop subdev streaming\n");
++
+ 		dev_dbg(dev, "IMGU streaming is ready to stop");
+ 		r = imgu_s_stream(imgu, false);
+ 		if (!r)
+-- 
+2.44.0
+
+From 302d8dc26283bc10ba22bc549c41292d00125e60 Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Sat, 29 May 2021 17:47:38 +1000
 Subject: [PATCH] ACPI: Add quirk for Surface Laptop 4 AMD missing irq 7
@@ -8485,9 +9360,9 @@ index 85a3ce2a3666..2c0e04a3a697 100644
  	mp_config_acpi_legacy_irqs();
  
 -- 
-2.43.0
+2.44.0
 
-From 8e2f2b852776fca1dd0ab8728be2303051cb19e1 Mon Sep 17 00:00:00 2001
+From d2a793e4fd47cd1cba2847915e7078671d9e9ea5 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Thu, 3 Jun 2021 14:04:26 +0200
 Subject: [PATCH] ACPI: Add AMD 13" Surface Laptop 4 model to irq 7 override
@@ -8527,9 +9402,9 @@ index 2c0e04a3a697..b0e1dab3d2ec 100644
  };
  
 -- 
-2.43.0
+2.44.0
 
-From 4e36132e272de3d84833b799be56c2b460db08b6 Mon Sep 17 00:00:00 2001
+From 34ad5b493b00c944ed68d2436cad96785fe37a33 Mon Sep 17 00:00:00 2001
 From: "Bart Groeneveld | GPX Solutions B.V" <bart@gpxbv.nl>
 Date: Mon, 5 Dec 2022 16:08:46 +0100
 Subject: [PATCH] acpi: allow usage of acpi_tad on HW-reduced platforms
@@ -8637,5 +9512,5 @@ index 33c3b16af556..900445d06623 100644
  		ret = sysfs_create_group(&dev->kobj, &acpi_tad_dc_attr_group);
  		if (ret)
 -- 
-2.43.0
+2.44.0
 

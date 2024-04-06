@@ -15,8 +15,8 @@ diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/adm
 index dbd26fde4..c9b8b80af 100644
 --- a/Documentation/admin-guide/kernel-parameters.txt
 +++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -6552,6 +6552,14 @@
- 					delay after resetting its port);
+@@ -6971,6 +6971,14 @@
+ 					request from 5000 ms to 500 ms);
  			Example: quirks=0781:5580:bk,0a5c:5834:gij
  
 +	usbcore.interrupt_interval_override=

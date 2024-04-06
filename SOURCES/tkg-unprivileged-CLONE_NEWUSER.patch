@@ -66,9 +66,9 @@ diff --git a/kernel/fork.c b/kernel/fork.c
 index 08969f5aa38d59..ff601cb7a1fae0 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
-@@ -100,6 +100,10 @@
- #include <linux/user_events.h>
+@@ -102,6 +102,10 @@
  #include <linux/iommu.h>
+ #include <linux/rseq.h>
  
 +#ifdef CONFIG_USER_NS
 +#include <linux/user_namespace.h>

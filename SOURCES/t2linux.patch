@@ -1,6 +1,6 @@
-From 80093f92d42d77f27de6b204550baf4622070732 Mon Sep 17 00:00:00 2001
+From fb72b7575a091284a3e2bd0a955aa2c61a6f5bc4 Mon Sep 17 00:00:00 2001
 From: Aditya Garg <gargaditya08@live.com>
-Date: Tue, 12 Sep 2023 12:26:12 +0530
+Date: Thu, 14 Mar 2024 06:51:34 +0000
 Subject: [PATCH] Add apple-bce driver
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] Add apple-bce driver
  drivers/staging/apple-bce/apple_bce.c         | 443 ++++++++++
  drivers/staging/apple-bce/apple_bce.h         |  38 +
  drivers/staging/apple-bce/audio/audio.c       | 711 ++++++++++++++++
- drivers/staging/apple-bce/audio/audio.h       | 123 +++
+ drivers/staging/apple-bce/audio/audio.h       | 125 +++
  drivers/staging/apple-bce/audio/description.h |  42 +
  drivers/staging/apple-bce/audio/pcm.c         | 308 +++++++
  drivers/staging/apple-bce/audio/pcm.h         |  16 +
@@ -26,10 +26,10 @@ Subject: [PATCH] Add apple-bce driver
  drivers/staging/apple-bce/vhci/queue.c        | 268 +++++++
  drivers/staging/apple-bce/vhci/queue.h        |  76 ++
  drivers/staging/apple-bce/vhci/transfer.c     | 661 +++++++++++++++
- drivers/staging/apple-bce/vhci/transfer.h     |  71 ++
+ drivers/staging/apple-bce/vhci/transfer.h     |  73 ++
  drivers/staging/apple-bce/vhci/vhci.c         | 759 ++++++++++++++++++
- drivers/staging/apple-bce/vhci/vhci.h         |  48 ++
- 25 files changed, 5629 insertions(+)
+ drivers/staging/apple-bce/vhci/vhci.h         |  52 ++
+ 25 files changed, 5637 insertions(+)
  create mode 100644 drivers/staging/apple-bce/Makefile
  create mode 100644 drivers/staging/apple-bce/apple_bce.c
  create mode 100644 drivers/staging/apple-bce/apple_bce.h
@@ -1303,10 +1303,10 @@ index 000000000..bd16ddd16
 +MODULE_PARM_DESC(id, "ID string for Apple Internal Audio soundcard.");
 diff --git a/drivers/staging/apple-bce/audio/audio.h b/drivers/staging/apple-bce/audio/audio.h
 new file mode 100644
-index 000000000..693006e93
+index 000000000..004bc1e22
 --- /dev/null
 +++ b/drivers/staging/apple-bce/audio/audio.h
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,125 @@
 +#ifndef AAUDIO_H
 +#define AAUDIO_H
 +
@@ -1422,6 +1422,8 @@ index 000000000..693006e93
 +};
 +
 +void aaudio_handle_notification(struct aaudio_device *a, struct aaudio_msg *msg);
++void aaudio_handle_prop_change_work(struct work_struct *ws);
++void aaudio_handle_cmd_timestamp(struct aaudio_device *a, struct aaudio_msg *msg);
 +void aaudio_handle_command(struct aaudio_device *a, struct aaudio_msg *msg);
 +
 +int aaudio_module_init(void);
@@ -4946,10 +4948,10 @@ index 000000000..8226363d6
 +}
 diff --git a/drivers/staging/apple-bce/vhci/transfer.h b/drivers/staging/apple-bce/vhci/transfer.h
 new file mode 100644
-index 000000000..6a62a00b2
+index 000000000..89ecad6bc
 --- /dev/null
 +++ b/drivers/staging/apple-bce/vhci/transfer.h
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,73 @@
 +#ifndef BCEDRIVER_TRANSFER_H
 +#define BCEDRIVER_TRANSFER_H
 +
@@ -5013,6 +5015,8 @@ index 000000000..6a62a00b2
 +        struct usb_host_endpoint *endp, bce_vhci_device_t dev_addr, enum dma_data_direction dir);
 +void bce_vhci_destroy_transfer_queue(struct bce_vhci *vhci, struct bce_vhci_transfer_queue *q);
 +void bce_vhci_transfer_queue_event(struct bce_vhci_transfer_queue *q, struct bce_vhci_message *msg);
++int bce_vhci_transfer_queue_do_pause(struct bce_vhci_transfer_queue *q);
++int bce_vhci_transfer_queue_do_resume(struct bce_vhci_transfer_queue *q);
 +int bce_vhci_transfer_queue_pause(struct bce_vhci_transfer_queue *q, enum bce_vhci_pause_source src);
 +int bce_vhci_transfer_queue_resume(struct bce_vhci_transfer_queue *q, enum bce_vhci_pause_source src);
 +void bce_vhci_transfer_queue_request_reset(struct bce_vhci_transfer_queue *q);
@@ -5023,7 +5027,7 @@ index 000000000..6a62a00b2
 +#endif //BCEDRIVER_TRANSFER_H
 diff --git a/drivers/staging/apple-bce/vhci/vhci.c b/drivers/staging/apple-bce/vhci/vhci.c
 new file mode 100644
-index 000000000..053a9f39e
+index 000000000..eb26f5500
 --- /dev/null
 +++ b/drivers/staging/apple-bce/vhci/vhci.c
 @@ -0,0 +1,759 @@
@@ -5269,7 +5273,7 @@ index 000000000..053a9f39e
 +    return 0;
 +}
 +
-+static int bce_vhci_address_device(struct usb_hcd *hcd, struct usb_device *udev)
++static int bce_vhci_address_device(struct usb_hcd *hcd, struct usb_device *udev, unsigned int timeout_ms) //TODO: follow timeout
 +{
 +    /* This is the same as enable_device, but instead in the old scheme */
 +    return bce_vhci_enable_device(hcd, udev);
@@ -5788,10 +5792,10 @@ index 000000000..053a9f39e
 +MODULE_PARM_DESC(vhci_port_mask, "Specifies which VHCI ports are enabled");
 diff --git a/drivers/staging/apple-bce/vhci/vhci.h b/drivers/staging/apple-bce/vhci/vhci.h
 new file mode 100644
-index 000000000..90641d1ba
+index 000000000..6c2e22622
 --- /dev/null
 +++ b/drivers/staging/apple-bce/vhci/vhci.h
-@@ -0,0 +1,48 @@
+@@ -0,0 +1,52 @@
 +#ifndef BCE_VHCI_H
 +#define BCE_VHCI_H
 +
@@ -5838,10 +5842,14 @@ index 000000000..90641d1ba
 +
 +int bce_vhci_create(struct apple_bce_device *dev, struct bce_vhci *vhci);
 +void bce_vhci_destroy(struct bce_vhci *vhci);
++int bce_vhci_start(struct usb_hcd *hcd);
++void bce_vhci_stop(struct usb_hcd *hcd);
++
++struct bce_vhci *bce_vhci_from_hcd(struct usb_hcd *hcd);
 +
 +#endif //BCE_VHCI_H
 -- 
-2.39.2
+2.43.2
 
 From dc27d4db5787546ae5eacf3483f3b87f2d4fb1c1 Mon Sep 17 00:00:00 2001
 From: Redecorating <69827514+Redecorating@users.noreply.github.com>
@@ -7003,25 +7011,23 @@ index f98fb36ff..f881b19db 100644
  	{ }
  };
  
-@@ -1883,6 +1883,17 @@
+@@ -1755,6 +1763,15 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
  		}
  	}
  
 +	ret = hid_parse(hdev);
-+	if (ret != 0) {
-+		unregister_pm_notifier(&td->pm_notifier);
++	if (ret != 0)
 +		return ret;
-+	}
 +
 +	if (mtclass->name == MT_CLS_APPLE_TOUCHBAR &&
-+		!hid_find_field(hdev, HID_INPUT_REPORT,
-+				HID_DG_TOUCHPAD, HID_DG_TRANSDUCER_INDEX))
++	    !hid_find_field(hdev, HID_INPUT_REPORT,
++			    HID_DG_TOUCHPAD, HID_DG_TRANSDUCER_INDEX))
 +		return -ENODEV;
 +
  	td = devm_kzalloc(&hdev->dev, sizeof(struct mt_device), GFP_KERNEL);
  	if (!td) {
  		dev_err(&hdev->dev, "cannot allocate multitouch data\n");
-@@ -1933,12 +1944,6 @@
+@@ -1933,12 +1933,6 @@
  
  	timer_setup(&td->release_timer, mt_expired_timeout, 0);
  
@@ -7034,18 +7040,18 @@ index f98fb36ff..f881b19db 100644
  	if (mtclass->quirks & MT_QUIRK_FIX_CONST_CONTACT_ID)
  		mt_fix_const_fields(hdev, HID_DG_CONTACTID);
  
-@@ -2423,6 +2423,11 @@
- 		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY,
- 			USB_VENDOR_ID_MICROSOFT, 0x09c0) },
+@@ -2417,6 +2417,11 @@
+ 		MT_USB_DEVICE(USB_VENDOR_ID_XIROKU,
+ 			USB_DEVICE_ID_XIROKU_CSR2) },
  
 +	/* Apple Touch Bars */
 +	{ .driver_data = MT_CLS_APPLE_TOUCHBAR,
 +		HID_USB_DEVICE(USB_VENDOR_ID_APPLE,
-+			USB_DEVICE_ID_APPLE_TOUCHBAR_DISPLAY) },
++			       USB_DEVICE_ID_APPLE_TOUCHBAR_DISPLAY) },
 +
- 	/* Google MT devices */
- 	{ .driver_data = MT_CLS_GOOGLE,
- 		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY, USB_VENDOR_ID_GOOGLE,
+ 	/* Microsoft Surface type cover */
+ 	{ .driver_data = MT_CLS_WIN_8_MS_SURFACE_TYPE_COVER,
+ 		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY,
 -- 
 2.42.0
 
@@ -7285,13 +7291,13 @@ index f58a0299f..dc0f86376 100644
   * usb_driver_claim_interface - bind a driver to an interface
   * @driver: the driver to be bound
 @@ -1053,6 +1066,7 @@ int usb_register_driver(struct usb_driver *new_driver, struct module *owner,
- 	new_driver->drvwrap.driver.bus = &usb_bus_type;
- 	new_driver->drvwrap.driver.probe = usb_probe_interface;
- 	new_driver->drvwrap.driver.remove = usb_unbind_interface;
-+	new_driver->drvwrap.driver.shutdown = usb_shutdown_interface;
- 	new_driver->drvwrap.driver.owner = owner;
- 	new_driver->drvwrap.driver.mod_name = mod_name;
- 	new_driver->drvwrap.driver.dev_groups = new_driver->dev_groups;
+ 	new_driver->driver.bus = &usb_bus_type;
+ 	new_driver->driver.probe = usb_probe_interface;
+ 	new_driver->driver.remove = usb_unbind_interface;
++	new_driver->driver.shutdown = usb_shutdown_interface;
+ 	new_driver->driver.owner = owner;
+ 	new_driver->driver.mod_name = mod_name;
+ 	new_driver->driver.dev_groups = new_driver->dev_groups;
 diff --git a/drivers/usb/storage/uas.c b/drivers/usb/storage/uas.c
 index 2583ee981..591fa0379 100644
 --- a/drivers/usb/storage/uas.c
@@ -7311,7 +7317,7 @@ index 2583ee981..591fa0379 100644
  	.suspend = uas_suspend,
  	.resume = uas_resume,
  	.reset_resume = uas_reset_resume,
--	.drvwrap.driver.shutdown = uas_shutdown,
+-	.driver.shutdown = uas_shutdown,
 +	.shutdown = uas_shutdown,
  	.id_table = uas_usb_ids,
  };
@@ -7356,10 +7362,10 @@ Signed-off-by: Kerem Karabay <kekrby@gmail.com>
  3 files changed, 125 insertions(+)
 
 diff --git a/drivers/gpu/drm/drm_format_helper.c b/drivers/gpu/drm/drm_format_helper.c
-index f93a4efce..5508fbde1 100644
+index b1be458ed4dda5..24836384554a47 100644
 --- a/drivers/gpu/drm/drm_format_helper.c
 +++ b/drivers/gpu/drm/drm_format_helper.c
-@@ -601,6 +601,56 @@ void drm_fb_xrgb8888_to_rgb888(struct iosys_map *dst, const unsigned int *dst_pi
+@@ -702,6 +702,58 @@ void drm_fb_xrgb8888_to_rgb888(struct iosys_map *dst, const unsigned int *dst_pi
  }
  EXPORT_SYMBOL(drm_fb_xrgb8888_to_rgb888);
  
@@ -7387,6 +7393,7 @@ index f93a4efce..5508fbde1 100644
 + * @src: Array of XRGB8888 source buffers
 + * @fb: DRM framebuffer
 + * @clip: Clip rectangle area to copy
++ * @state: Transform and conversion state
 + *
 + * This function copies parts of a framebuffer to display memory and converts the
 + * color format during the process. Destination and framebuffer formats must match. The
@@ -7402,29 +7409,30 @@ index f93a4efce..5508fbde1 100644
 + */
 +void drm_fb_xrgb8888_to_bgr888(struct iosys_map *dst, const unsigned int *dst_pitch,
 +			       const struct iosys_map *src, const struct drm_framebuffer *fb,
-+			       const struct drm_rect *clip)
++			       const struct drm_rect *clip,
++			       struct drm_format_conv_state *state)
 +{
 +	static const u8 dst_pixsize[DRM_FORMAT_MAX_PLANES] = {
 +		3,
 +	};
 +
 +	drm_fb_xfrm(dst, dst_pitch, dst_pixsize, src, fb, clip, false,
-+		    drm_fb_xrgb8888_to_bgr888_line);
++		    state, drm_fb_xrgb8888_to_bgr888_line);
 +}
 +EXPORT_SYMBOL(drm_fb_xrgb8888_to_bgr888);
 +
  static void drm_fb_xrgb8888_to_argb8888_line(void *dbuf, const void *sbuf, unsigned int pixels)
  {
  	__le32 *dbuf32 = dbuf;
-@@ -925,6 +975,9 @@ int drm_fb_blit(struct iosys_map *dst, const unsigned int *dst_pitch, uint32_t d
+@@ -1035,6 +1087,9 @@ int drm_fb_blit(struct iosys_map *dst, const unsigned int *dst_pitch, uint32_t d
  		} else if (dst_format == DRM_FORMAT_RGB888) {
- 			drm_fb_xrgb8888_to_rgb888(dst, dst_pitch, src, fb, clip);
+ 			drm_fb_xrgb8888_to_rgb888(dst, dst_pitch, src, fb, clip, state);
  			return 0;
 +		} else if (dst_format == DRM_FORMAT_BGR888) {
-+			drm_fb_xrgb8888_to_bgr888(dst, dst_pitch, src, fb, clip);
++			drm_fb_xrgb8888_to_bgr888(dst, dst_pitch, src, fb, clip, state);
 +			return 0;
  		} else if (dst_format == DRM_FORMAT_ARGB8888) {
- 			drm_fb_xrgb8888_to_argb8888(dst, dst_pitch, src, fb, clip);
+ 			drm_fb_xrgb8888_to_argb8888(dst, dst_pitch, src, fb, clip, state);
  			return 0;
 diff --git a/drivers/gpu/drm/tests/drm_format_helper_test.c b/drivers/gpu/drm/tests/drm_format_helper_test.c
 index 474bb7a1c..dff7fabd9 100644
@@ -7506,55 +7514,6 @@ index 474bb7a1c..dff7fabd9 100644
  		.argb8888_result = {
  			.dst_pitch = 20,
  			.expected = {
-@@ -727,6 +761,40 @@ static void drm_test_fb_xrgb8888_to_rgb888(struct kunit *test)
- 	KUNIT_EXPECT_MEMEQ(test, buf, result->expected, dst_size);
- }
- 
-+static void drm_test_fb_xrgb8888_to_bgr888(struct kunit *test)
-+{
-+	const struct convert_xrgb8888_case *params = test->param_value;
-+	const struct convert_to_bgr888_result *result = &params->bgr888_result;
-+	size_t dst_size;
-+	u8 *buf = NULL;
-+	__le32 *xrgb8888 = NULL;
-+	struct iosys_map dst, src;
-+
-+	struct drm_framebuffer fb = {
-+		.format = drm_format_info(DRM_FORMAT_XRGB8888),
-+		.pitches = { params->pitch, 0, 0 },
-+	};
-+
-+	dst_size = conversion_buf_size(DRM_FORMAT_BGR888, result->dst_pitch,
-+				       &params->clip, 0);
-+	KUNIT_ASSERT_GT(test, dst_size, 0);
-+
-+	buf = kunit_kzalloc(test, dst_size, GFP_KERNEL);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, buf);
-+	iosys_map_set_vaddr(&dst, buf);
-+
-+	xrgb8888 = cpubuf_to_le32(test, params->xrgb8888, TEST_BUF_SIZE);
-+	KUNIT_ASSERT_NOT_ERR_OR_NULL(test, xrgb8888);
-+	iosys_map_set_vaddr(&src, xrgb8888);
-+
-+	/*
-+	 * BGR888 expected results are already in little-endian
-+	 * order, so there's no need to convert the test output.
-+	 */
-+	drm_fb_xrgb8888_to_bgr888(&dst, &result->dst_pitch, &src, &fb, &params->clip);
-+	KUNIT_EXPECT_MEMEQ(test, buf, result->expected, dst_size);
-+}
-+
- static void drm_test_fb_xrgb8888_to_argb8888(struct kunit *test)
- {
- 	const struct convert_xrgb8888_case *params = test->param_value;
-@@ -858,6 +926,7 @@ static struct kunit_case drm_format_helper_test_cases[] = {
- 	KUNIT_CASE_PARAM(drm_test_fb_xrgb8888_to_argb1555, convert_xrgb8888_gen_params),
- 	KUNIT_CASE_PARAM(drm_test_fb_xrgb8888_to_rgba5551, convert_xrgb8888_gen_params),
- 	KUNIT_CASE_PARAM(drm_test_fb_xrgb8888_to_rgb888, convert_xrgb8888_gen_params),
-+	KUNIT_CASE_PARAM(drm_test_fb_xrgb8888_to_bgr888, convert_xrgb8888_gen_params),
- 	KUNIT_CASE_PARAM(drm_test_fb_xrgb8888_to_argb8888, convert_xrgb8888_gen_params),
- 	KUNIT_CASE_PARAM(drm_test_fb_xrgb8888_to_xrgb2101010, convert_xrgb8888_gen_params),
- 	KUNIT_CASE_PARAM(drm_test_fb_xrgb8888_to_argb2101010, convert_xrgb8888_gen_params),
 diff --git a/include/drm/drm_format_helper.h b/include/drm/drm_format_helper.h
 index 291deb094..7fc553318 100644
 --- a/include/drm/drm_format_helper.h
@@ -7562,13 +7521,13 @@ index 291deb094..7fc553318 100644
 @@ -42,6 +42,9 @@ void drm_fb_xrgb8888_to_rgba5551(struct iosys_map *dst, const unsigned int *dst_
  void drm_fb_xrgb8888_to_rgb888(struct iosys_map *dst, const unsigned int *dst_pitch,
  			       const struct iosys_map *src, const struct drm_framebuffer *fb,
- 			       const struct drm_rect *clip);
+ 			       const struct drm_rect *clip, struct drm_format_conv_state *state);
 +void drm_fb_xrgb8888_to_bgr888(struct iosys_map *dst, const unsigned int *dst_pitch,
 +			       const struct iosys_map *src, const struct drm_framebuffer *fb,
-+			       const struct drm_rect *clip);
++			       const struct drm_rect *clip, struct drm_format_conv_state *state);
  void drm_fb_xrgb8888_to_argb8888(struct iosys_map *dst, const unsigned int *dst_pitch,
  				 const struct iosys_map *src, const struct drm_framebuffer *fb,
- 				 const struct drm_rect *clip);
+ 				 const struct drm_rect *clip, struct drm_format_conv_state *state);
 -- 
 2.42.0
 
@@ -7603,7 +7562,7 @@ diff --git a/MAINTAINERS b/MAINTAINERS
 index 519b3b736..dfc63d257 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -6372,6 +6372,12 @@ S:	Supported
+@@ -6545,6 +6545,12 @@
  T:	git git://anongit.freedesktop.org/drm/drm-misc
  F:	drivers/gpu/drm/sun4i/sun8i*
  
@@ -7614,8 +7573,8 @@ index 519b3b736..dfc63d257 100644
 +F:	drivers/gpu/drm/tiny/appletbdrm.c
 +
  DRM DRIVER FOR ARM PL111 CLCD
- M:	Emma Anholt <emma@anholt.net>
- S:	Supported
+ S:	Orphan
+ T:	git git://anongit.freedesktop.org/drm/drm-misc
 diff --git a/drivers/gpu/drm/tiny/Kconfig b/drivers/gpu/drm/tiny/Kconfig
 index f6889f649..559a97bce 100644
 --- a/drivers/gpu/drm/tiny/Kconfig
@@ -8009,7 +7968,7 @@ index 000000000..33a99436b
 +		frame->buf_size = cpu_to_le32(buf_size);
 +
 +		ret = drm_fb_blit(&dst, NULL, DRM_FORMAT_BGR888,
-+				  &shadow_plane_state->data[0], fb, &damage);
++				  &shadow_plane_state->data[0], fb, &damage, &shadow_plane_state->fmtcnv_state);
 +		if (ret) {
 +			drm_err(drm, "Failed to copy damage clip (%pe)\n", ERR_PTR(ret));
 +			goto end_fb_cpu_access;
@@ -12048,3 +12007,4 @@ index 792adaf88..3ba90878c 100644
  /**
 -- 
 2.37.2
+
