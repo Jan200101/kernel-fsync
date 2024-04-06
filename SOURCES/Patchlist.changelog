@@ -1,5 +1,8 @@
-"https://gitlab.com/cki-project/kernel-ark/-/commit"/c7fb6711c80096b45afa7c974abfc5bee31eb1a3
- c7fb6711c80096b45afa7c974abfc5bee31eb1a3 Revert "cpupower: Bump soname version"
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/83dae02150c829b67e0f34ac7b2988030be53b0c
+ 83dae02150c829b67e0f34ac7b2988030be53b0c Revert "cpupower: Bump soname version"
+
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/9ba38d5f5c49d3f4a9e429d05aa73cb397db5071
+ 9ba38d5f5c49d3f4a9e429d05aa73cb397db5071 Revert "Bluetooth: hci_qca: Set BDA quirk bit if fwnode exists in DT"
 
 "https://gitlab.com/cki-project/kernel-ark/-/commit"/fccd579ad79c032dd402f674fd94e80ad52519f6
  fccd579ad79c032dd402f674fd94e80ad52519f6 xfs: fix SEEK_HOLE/DATA for regions with active COW extents

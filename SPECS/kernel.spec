@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.8.2
-%define specversion 6.8.2
+%define specrpmversion 6.8.4
+%define specversion 6.8.4
 %define patchversion 6.8
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.8.2
+%define tarfile_release 6.8.4
 # This is needed to do merge window version magic
 %define patchlevel 8
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 210%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.8.2
+%define kabiversion 6.8.4
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -2192,7 +2192,7 @@ InitBuildVars() {
     Arch=`head -1 .config | cut -b 3-`
     %{log_msg "InitBuildVars: USING ARCH=$Arch"}
 
-    KCFLAGS="%{?kcflags} -DAMD_PRIVATE_COLOR"
+    KCFLAGS="%{?kcflags}"
 
     # add kpatch flags for base kernel
     %{log_msg "InitBuildVars: Configure KCFLAGS"}
@@ -4106,13 +4106,23 @@ fi\
 #
 #
 %changelog
-* Sat Apr 06 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.2-210.fsync
-- kernel-fsync v6.8.2
+* Sat Apr 06 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.4-201.fsync
+- kernel-fsync v6.8.4
 
-* Tue Mar 26 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.2-200]
+* Thu Apr 04 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.4-200]
 - Revert "cpupower: Bump soname version" (Justin M. Forbes)
 - Drop soname for libcpupower.so since we reverted the bump (Justin M. Forbes)
+
+* Thu Apr 04 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.4-0]
+- Linux v6.8.4
+
+* Wed Apr 03 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.3-0]
+- Fix up redhat directory for stable reabses (Justin M. Forbes)
+- Add some CVE fixes for 6.8.3 (Justin M. Forbes)
+- Add bug to BugsFixed (Justin M. Forbes)
+- Revert "Bluetooth: hci_qca: Set BDA quirk bit if fwnode exists in DT" (Johan Hovold)
 - Config updates for stable (Justin M. Forbes)
+- Linux v6.8.3
 
 * Tue Mar 26 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.2-0]
 - xfs: fix SEEK_HOLE/DATA for regions with active COW extents (Dave Chinner)
