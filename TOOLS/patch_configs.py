@@ -22,9 +22,7 @@ GENERIC_PATCHES = [
     ["TCP_CONG_BBR2", None, MODULE],
     ["SECURITY_LOCKDOWN_LSM_EARLY", None, UNSET],
     #  scheduler stuff
-    ["SCHED_ALT", None, ENABLE],
-    ["SCHED_BMQ", None, ENABLE],
-    ["SCHED_PDS", None, UNSET],
+    ["SCHED_BORE", None, ENABLE],
 
 
     # device specific config

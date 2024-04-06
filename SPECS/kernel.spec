@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.7.11
 
@@ -1000,7 +1000,7 @@ Patch206: amdgpu-si-cik-default.patch
 Patch207: nouveau-gsp-default.patch
 Patch211: tkg-misc-additions.patch
 Patch212: tkg-unprivileged-CLONE_NEWUSER.patch
-Patch213: tkg-prjc_v6.7-r2.patch
+Patch213: cachy-bore.patch
 
 # device specific patches
 Patch300: linux-surface.patch
@@ -1020,7 +1020,6 @@ Patch318: v14.8-0001-HID-asus-fix-more-n-key-report-descriptors-if-.patch
 Patch319: v14.8-0002-HID-asus-make-asus_kbd_init-generic-remove-rog.patch
 Patch320: v14.8-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
 Patch321: v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
-Patch323: rog-ally-bmc150.patch
 Patch404: rog-ally-gyro-fix.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
@@ -1871,7 +1870,7 @@ ApplyOptionalPatch amdgpu-si-cik-default.patch
 ApplyOptionalPatch nouveau-gsp-default.patch
 ApplyOptionalPatch tkg-misc-additions.patch
 ApplyOptionalPatch tkg-unprivileged-CLONE_NEWUSER.patch
-ApplyOptionalPatch tkg-prjc_v6.7-r2.patch
+ApplyOptionalPatch cachy-bore.patch
 
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
@@ -1891,7 +1890,6 @@ ApplyOptionalPatch v14.8-0001-HID-asus-fix-more-n-key-report-descriptors-if-.pat
 ApplyOptionalPatch v14.8-0002-HID-asus-make-asus_kbd_init-generic-remove-rog.patch
 ApplyOptionalPatch v14.8-0003-HID-asus-add-ROG-Ally-N-Key-ID-and-keycodes.patch
 ApplyOptionalPatch v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
-ApplyOptionalPatch rog-ally-bmc150.patch
 ApplyOptionalPatch rog-ally-gyro-fix.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
@@ -4000,6 +3998,9 @@ fi\
 #
 #
 %changelog
+* Sat Apr 06 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.11-202.fsync.1
+- kernel-fsync v6.7.11 BORE migration
+
 * Fri Mar 29 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.11-201.fsync
 - kernel-fsync v6.7.11
 
