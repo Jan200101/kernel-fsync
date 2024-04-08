@@ -1,14 +1,14 @@
-From 26357c5255f687bc2c1b24f36daabf0e2c93c1ee Mon Sep 17 00:00:00 2001
+From 26077d270f462eaf3da592ed047956df3436ed36 Mon Sep 17 00:00:00 2001
 From: John Martens <john.martens4@proton.me>
-Date: Mon, 4 Dec 2023 19:30:07 +0000
-Subject: [PATCH] Add legion-laptop v0.0.9
+Date: Fri, 29 Mar 2024 20:18:47 +0000
+Subject: [PATCH] Add legion-laptop v0.0.12
 
 Add extra support for Lenovo Legion laptops.
 ---
  drivers/platform/x86/Kconfig         |   10 +
  drivers/platform/x86/Makefile        |    1 +
- drivers/platform/x86/legion-laptop.c | 5942 ++++++++++++++++++++++++++
- 3 files changed, 5953 insertions(+)
+ drivers/platform/x86/legion-laptop.c | 6089 ++++++++++++++++++++++++++
+ 3 files changed, 6100 insertions(+)
  create mode 100644 drivers/platform/x86/legion-laptop.c
 
 diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
@@ -18,7 +18,7 @@ index 49c2c4cd8..b7d70c20e 100644
 @@ -643,6 +643,16 @@ config THINKPAD_LMI
  	  To compile this driver as a module, choose M here: the module will
  	  be called think-lmi.
- 
+
 +config LEGION_LAPTOP
 +	tristate "Lenovo Legion Laptop Extras"
 +	depends on ACPI
@@ -30,7 +30,7 @@ index 49c2c4cd8..b7d70c20e 100644
 +	  hotkey, fan control, and power mode.
 +
  source "drivers/platform/x86/intel/Kconfig"
- 
+
  config MSI_EC
 diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
 index 52dfdf574..5f32dd9df 100644
@@ -42,14 +42,14 @@ index 52dfdf574..5f32dd9df 100644
  obj-$(CONFIG_THINKPAD_LMI)	+= think-lmi.o
 +obj-$(CONFIG_LEGION_LAPTOP)	+= legion-laptop.o
  obj-$(CONFIG_YOGABOOK)		+= lenovo-yogabook.o
- 
+
  # Intel
 diff --git a/drivers/platform/x86/legion-laptop.c b/drivers/platform/x86/legion-laptop.c
 new file mode 100644
-index 000000000..086045dec
+index 000000000..5ec0a518f
 --- /dev/null
 +++ b/drivers/platform/x86/legion-laptop.c
-@@ -0,0 +1,5942 @@
+@@ -0,0 +1,6089 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + *  legion-laptop.c - Extra Lenovo Legion laptop support, in
@@ -245,6 +245,7 @@ index 000000000..086045dec
 +	ACCESS_METHOD_WMI2 = 4,
 +	ACCESS_METHOD_WMI3 = 5,
 +	ACCESS_METHOD_EC2 = 10, // ideapad fancurve method
++	ACCESS_METHOD_EC3 = 11, // loq
 +};
 +
 +struct model_config {
@@ -407,6 +408,39 @@ index 000000000..086045dec
 +	.EXT_GPU_TEMP_INPUT = 0xC5a0, // not found yet
 +	.EXT_IC_TEMP_INPUT = 0xC5a0, // not found yet
 +	.EXT_POWERMODE = 0xC5a0, // not found yet
++	.EXT_FAN1_TARGET_RPM = 0xC5a0, // not found yet
++	.EXT_FAN2_TARGET_RPM = 0xC5a0, // not found yet
++	.EXT_MAXIMUMFANSPEED = 0xC5a0, // not found yet
++	.EXT_WHITE_KEYBOARD_BACKLIGHT = 0xC5a0 // not found yet
++};
++
++static const struct ec_register_offsets ec_register_offsets_loq_v0 = {
++	.ECHIPID1 = 0x2000,
++	.ECHIPID2 = 0x2001,
++	.ECHIPVER = 0x2002,
++	.ECDEBUG = 0x2003,
++	.EXT_FAN_CUR_POINT = 0xC5a0,
++	.EXT_FAN_POINTS_SIZE = 0xC5a0, // constant 0
++	.EXT_FAN1_BASE = 0xC530,
++	.EXT_FAN2_BASE = 0xC530, // same rpm as cpu
++	.EXT_FAN_ACC_BASE = 0xC5a0, // not found yet
++	.EXT_FAN_DEC_BASE = 0xC5a0, // not found yet
++	.EXT_CPU_TEMP = 0xC52F,
++	.EXT_CPU_TEMP_HYST = 0xC5a0, // not found yet
++	.EXT_GPU_TEMP = 0xC531,
++	.EXT_GPU_TEMP_HYST = 0xC5a0, // not found yet
++	.EXT_VRM_TEMP = 0xC5a0, // not found yet
++	.EXT_VRM_TEMP_HYST = 0xC5a0, // not found yet
++	.EXT_FAN1_RPM_LSB = 0xC5a0, // not found yet
++	.EXT_FAN1_RPM_MSB = 0xC5a0, // not found yet
++	.EXT_FAN2_RPM_LSB = 0xC5a0, // not found yet
++	.EXT_FAN2_RPM_MSB = 0xC5a0, // not found yet
++	.EXT_MINIFANCURVE_ON_COOL = 0xC5a0, // not found yet
++	.EXT_LOCKFANCONTROLLER = 0xC5a0, // not found yet
++	.EXT_CPU_TEMP_INPUT = 0xC5a0, // not found yet
++	.EXT_GPU_TEMP_INPUT = 0xC5a0, // not found yet
++	.EXT_IC_TEMP_INPUT = 0xC5a0, // not found yet
++	.EXT_POWERMODE = 0xc41D,
 +	.EXT_FAN1_TARGET_RPM = 0xC5a0, // not found yet
 +	.EXT_FAN2_TARGET_RPM = 0xC5a0, // not found yet
 +	.EXT_MAXIMUMFANSPEED = 0xC5a0, // not found yet
@@ -920,6 +954,25 @@ index 000000000..086045dec
 +	.ramio_size = 0x600
 +};
 +
++// LOQ Model
++static const struct model_config model_lzcn = {
++	.registers = &ec_register_offsets_loq_v0,
++	.check_embedded_controller_id = true,
++	.embedded_controller_id = 0x8227,
++	.memoryio_physical_ec_start = 0xC400,
++	.memoryio_size = 0x300,
++	.has_minifancurve = true,
++	.has_custom_powermode = true,
++	.access_method_powermode = ACCESS_METHOD_WMI,
++	.access_method_keyboard = ACCESS_METHOD_WMI2,
++	.access_method_fanspeed = ACCESS_METHOD_WMI3,
++	.access_method_temperature = ACCESS_METHOD_WMI3,
++	.access_method_fancurve = ACCESS_METHOD_EC3,
++	.access_method_fanfullspeed = ACCESS_METHOD_WMI3,
++	.acpi_check_dev = false,
++	.ramio_physical_start = 0xFE0B0400,
++	.ramio_size = 0x600
++};
 +
 +static const struct dmi_system_id denylist[] = { {} };
 +
@@ -1041,6 +1094,15 @@ index 000000000..086045dec
 +		.matches = {
 +			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
 +			DMI_MATCH(DMI_BIOS_VERSION, "FCCN"),
++		},
++		.driver_data = (void *)&model_fccn
++	},
++	{
++		// e.g. IdeaPad Gaming 3 15ARH05 (8K21)
++		.ident = "H4CN",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++			DMI_MATCH(DMI_BIOS_VERSION, "H4CN"),
 +		},
 +		.driver_data = (void *)&model_fccn
 +	},
@@ -1233,6 +1295,15 @@ index 000000000..086045dec
 +		},
 +		.driver_data = (void *)&model_khcn
 +	},
++	{
++		// e.g. LOQ 15IRH8
++		.ident = "LZCN",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++			DMI_MATCH(DMI_BIOS_VERSION, "LZCN"),
++		},
++		.driver_data = (void *)&model_lzcn
++	},
 +	{}
 +};
 +
@@ -1319,8 +1390,10 @@ index 000000000..086045dec
 +		error = -AE_ERROR;
 +		goto err;
 +	}
-+	pr_info("ACPI result for %s:%d: ACPI buffer length: %u\n", id_name,
-+		id_nr, out->buffer.length);
++
++// Reduced verbosity (only printing when ACPI result have bad parameters)
++//	pr_info("ACPI result for %s:%d: ACPI buffer length: %u\n", id_name,
++//		id_nr, out->buffer.length);
 +
 +	for (i = 0; i < ressize; ++i)
 +		res[i] = out->buffer.pointer[i];
@@ -2815,9 +2888,6 @@ index 000000000..086045dec
 +{
 +	size_t i;
 +
-+	//TODO: remove again
-+	pr_info("Set fancurve\n");
-+
 +	// Reset fan update counters (try to avoid any race conditions)
 +	ecram_write(ecram, 0xC5FE, 0);
 +	ecram_write(ecram, 0xC5FF, 0);
@@ -2976,6 +3046,77 @@ index 000000000..086045dec
 +	return 0;
 +}
 +
++#define FANCURVESIZE_LOQ 10
++
++static int ec_read_fancurve_loq(struct ecram *ecram,
++				    const struct model_config *model,
++				    struct fancurve *fancurve)
++{
++	size_t i = 0;
++	size_t struct_offset = 3; // {cpu_temp: u8, rpm: u8, gpu_temp?: u8}
++
++	for (i = 0; i < FANCURVESIZE_LOQ; ++i) {
++		struct fancurve_point *point = &fancurve->points[i];
++
++		point->rpm1_raw =
++			ecram_read(ecram, model->registers->EXT_FAN1_BASE + (i * struct_offset));
++		point->rpm2_raw =
++			ecram_read(ecram, model->registers->EXT_FAN2_BASE + (i * struct_offset));
++
++		point->accel = 0;
++		point->decel = 0;
++		point->cpu_max_temp_celsius =
++			ecram_read(ecram, model->registers->EXT_CPU_TEMP + (i * struct_offset));
++		point->gpu_max_temp_celsius =
++			ecram_read(ecram, model->registers->EXT_GPU_TEMP + (i * struct_offset));
++		point->cpu_min_temp_celsius = 0;
++		point->gpu_min_temp_celsius = 0;
++		point->ic_max_temp_celsius = 0;
++		point->ic_min_temp_celsius = 0;
++	}
++
++	fancurve->size = FANCURVESIZE_LOQ;
++	fancurve->current_point_i =
++		ecram_read(ecram, model->registers->EXT_FAN_CUR_POINT);
++	fancurve->current_point_i =
++		min(fancurve->current_point_i, fancurve->size);
++	return 0;
++}
++
++static int ec_write_fancurve_loq(struct ecram *ecram,
++				     const struct model_config *model,
++				     const struct fancurve *fancurve)
++{
++	size_t i;
++	int valr1;
++	int valr2;
++	size_t struct_offset = 3; // {cpu_temp: u8, rpm: u8, gpu_temp?: u8}
++
++	for (i = 0; i < FANCURVESIZE_LOQ; ++i) {
++		const struct fancurve_point *point = &fancurve->points[i];
++
++		ecram_write(ecram, model->registers->EXT_FAN1_BASE + (i * struct_offset),
++			    point->rpm1_raw);
++		valr1 = ecram_read(ecram, model->registers->EXT_FAN1_BASE + (i * struct_offset));
++		ecram_write(ecram, model->registers->EXT_FAN2_BASE + (i * struct_offset),
++			    point->rpm2_raw);
++		valr2 = ecram_read(ecram, model->registers->EXT_FAN2_BASE + (i * struct_offset));
++		pr_info("Writing fan1: %d; reading fan1: %d\n", point->rpm1_raw,
++			valr1);
++		pr_info("Writing fan2: %d; reading fan2: %d\n", point->rpm2_raw,
++			valr2);
++
++		// write to memory and repeat 8 bytes later again
++		ecram_write(ecram, model->registers->EXT_CPU_TEMP + (i * struct_offset),
++			    point->cpu_max_temp_celsius);
++		// write to memory and repeat 8 bytes later again
++		ecram_write(ecram, model->registers->EXT_GPU_TEMP + (i * struct_offset),
++			    point->gpu_max_temp_celsius);
++	}
++
++	return 0;
++}
++
 +static int read_fancurve(struct legion_private *priv, struct fancurve *fancurve)
 +{
 +	// TODO: use enums or function pointers?
@@ -2985,6 +3126,9 @@ index 000000000..086045dec
 +					       fancurve);
 +	case ACCESS_METHOD_EC2:
 +		return ec_read_fancurve_ideapad(&priv->ecram, priv->conf,
++						fancurve);
++	case ACCESS_METHOD_EC3:
++		return ec_read_fancurve_loq(&priv->ecram, priv->conf,
 +						fancurve);
 +	case ACCESS_METHOD_WMI3:
 +		return wmi_read_fancurve_custom(priv->conf, fancurve);
@@ -3005,6 +3149,9 @@ index 000000000..086045dec
 +						fancurve, write_size);
 +	case ACCESS_METHOD_EC2:
 +		return ec_write_fancurve_ideapad(&priv->ecram, priv->conf,
++						 fancurve);
++	case ACCESS_METHOD_EC3:
++		return ec_write_fancurve_loq(&priv->ecram, priv->conf,
 +						 fancurve);
 +	case ACCESS_METHOD_WMI3:
 +		return wmi_write_fancurve_custom(priv->conf, fancurve);
@@ -5992,6 +6139,6 @@ index 000000000..086045dec
 +}
 +
 +module_exit(legion_exit);
--- 
-2.43.0
+--
+2.43.2
 
