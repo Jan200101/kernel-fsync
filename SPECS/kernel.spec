@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 8
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 203%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.8.4
 
@@ -4100,6 +4100,9 @@ fi\
 #
 #
 %changelog
+* Wed Apr 10 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.4-203.fsync.1
+- kernel-fsync v6.8.4 steamdeck-oled fixes
+
 * Mon Apr 08 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.4-202.fsync.1
 - kernel-fsync v6.8.4 asus-linux upgrade
 

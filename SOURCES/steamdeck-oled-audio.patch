@@ -97,36 +97,22 @@ index 293ec172e0a71..4c495e0e33f90 100644
 --
 GitLab
 
-From 4855323691ea7dd2288c51cd11f00561f9ba22df Mon Sep 17 00:00:00 2001
-From: Thomas Crider <gloriouseggroll@gmail.com>
-Date: Tue, 5 Dec 2023 05:13:41 -0500
-Subject: [PATCH] cs35l41 fixup
-
----
- sound/soc/amd/acp/acp-mach-common.c | 107 ++++++++++++++++++++++++++++
- sound/soc/amd/acp/acp-mach.h        |   4 ++
- sound/soc/amd/acp/acp-sof-mach.c    |   2 +
- sound/soc/sof/ipc3-topology.c       |  11 +--
- sound/soc/sof/topology.c            |   3 +-
- 5 files changed, 122 insertions(+), 5 deletions(-)
-
 diff --git a/sound/soc/amd/acp/acp-mach-common.c b/sound/soc/amd/acp/acp-mach-common.c
-index a06af82b8..ae32748a5 100644
+index 504d1b8c4..3411e8d9a 100644
 --- a/sound/soc/amd/acp/acp-mach-common.c
 +++ b/sound/soc/amd/acp/acp-mach-common.c
-@@ -26,6 +26,8 @@
+@@ -26,6 +26,7 @@
  #include "../../codecs/rt5682s.h"
  #include "../../codecs/nau8825.h"
  #include "../../codecs/nau8821.h"
 +#include "../../codecs/cs35l41.h"
-+
  #include "acp-mach.h"
- 
+
  #define PCO_PLAT_CLK 48000000
-@@ -1282,6 +1282,78 @@
+@@ -1282,6 +1283,78 @@ SND_SOC_DAILINK_DEF(nau8821,
  		    DAILINK_COMP_ARRAY(COMP_CODEC("i2c-NVTN2020:00",
  						  "nau8821-hifi")));
- 
+
 +static int acp_cs35l41_init(struct snd_soc_pcm_runtime *rtd)
 +{
 +	return 0;
@@ -202,7 +188,32 @@ index a06af82b8..ae32748a5 100644
  /* Declare DMIC codec components */
  SND_SOC_DAILINK_DEF(dmic_codec,
  		DAILINK_COMP_ARRAY(COMP_CODEC("dmic-codec", "dmic-hifi")));
-@@ -1543,6 +1543,14 @@
+@@ -1481,6 +1554,7 @@ int acp_sofdsp_dai_links_create(struct snd_soc_card *card)
+ 		links[i].platforms = sof_component;
+ 		links[i].num_platforms = ARRAY_SIZE(sof_component);
+ 		links[i].dpcm_playback = 1;
++		links[i].dpcm_capture = 1;
+ 		links[i].nonatomic = true;
+ 		links[i].no_pcm = 1;
+ 		if (!drv_data->amp_codec_id) {
+@@ -1513,6 +1587,7 @@ int acp_sofdsp_dai_links_create(struct snd_soc_card *card)
+ 		links[i].platforms = sof_component;
+ 		links[i].num_platforms = ARRAY_SIZE(sof_component);
+ 		links[i].dpcm_playback = 1;
++		links[i].dpcm_capture = 1;
+ 		links[i].nonatomic = true;
+ 		links[i].no_pcm = 1;
+ 		if (!drv_data->amp_codec_id) {
+@@ -1597,6 +1672,8 @@ int acp_legacy_dai_links_create(struct snd_soc_card *card)
+
+ 	if (drv_data->hs_cpu_id)
+ 		num_links++;
++	if (drv_data->bt_cpu_id)
++		num_links++;
+ 	if (drv_data->amp_cpu_id)
+ 		num_links++;
+ 	if (drv_data->dmic_cpu_id)
+@@ -1744,6 +1821,33 @@ int acp_legacy_dai_links_create(struct snd_soc_card *card)
  			card->codec_conf = rt1019_conf;
  			card->num_configs = ARRAY_SIZE(rt1019_conf);
  		}
@@ -214,22 +225,55 @@ index a06af82b8..ae32748a5 100644
 +			card->num_configs = ARRAY_SIZE(cs35l41_conf);
 +			links[i].ops = &acp_cs35l41_ops;
 +		}
++		i++;
++	}
++
++	if (drv_data->bt_cpu_id == I2S_BT) {
++		links[i].name = "acp-bt-codec";
++		links[i].id = BT_BE_ID;
++		links[i].cpus = sof_bt;
++		links[i].num_cpus = ARRAY_SIZE(sof_bt);
++		links[i].platforms = sof_component;
++		links[i].num_platforms = ARRAY_SIZE(sof_component);
++		links[i].dpcm_playback = 1;
++		links[i].dpcm_capture = 1;
++		links[i].nonatomic = true;
++		links[i].no_pcm = 1;
++		if (!drv_data->bt_codec_id) {
++			/* Use dummy codec if codec id not specified */
++			links[i].codecs = &snd_soc_dummy_dlc;
++			links[i].num_codecs = 1;
++		}
  		i++;
  	}
- 
 
 diff --git a/sound/soc/amd/acp/acp-mach.h b/sound/soc/amd/acp/acp-mach.h
-index 2b3ec6594..6feef5a93 100644
+index a48546d8d..3b69dfa80 100644
 --- a/sound/soc/amd/acp/acp-mach.h
 +++ b/sound/soc/amd/acp/acp-mach.h
-@@ -49,6 +49,7 @@
+@@ -46,6 +46,7 @@ enum codec_endpoints {
+ 	MAX98360A,
+ 	RT5682S,
+ 	NAU8825,
++	CS35L41,
  	NAU8821,
  	MAX98388,
  	ES83XX,
-+	CS35L41,
- };
- 
- enum platform_end_point {
--- 
+
+--
 2.43.0
 
+diff --git a/sound/soc/amd/acp/acp-mach.h b/sound/soc/amd/acp/acp-mach.h
+index a48546d8d407..0c18ccd29305 100644
+--- a/sound/soc/amd/acp/acp-mach.h
++++ b/sound/soc/amd/acp/acp-mach.h
+@@ -27,8 +27,8 @@
+ enum be_id {
+ 	HEADSET_BE_ID = 0,
+ 	AMP_BE_ID,
+-	DMIC_BE_ID,
+ 	BT_BE_ID,
++	DMIC_BE_ID,
+ };
+
+ enum cpu_endpoints {
