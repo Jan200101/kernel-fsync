@@ -1166,58 +1166,6 @@ index a6b648457908..7163cce7079c 100644
 -- 
 2.44.0
 
-From 2a0f3df9ff354ba441aeeb31560a8e0152d7533f Mon Sep 17 00:00:00 2001
-From: "Luke D. Jones" <luke@ljones.dev>
-Date: Tue, 2 Apr 2024 14:46:42 +1300
-Subject: [PATCH] ALSA: hda/realtek: cs35l41: Support ASUS ROG G634JYR
-
-Fixes the realtek quirk to initialise the Cirrus amp correctly and adds
-related quirk for missing DSD properties. This model laptop has slightly
-updated internals compared to the previous version with Realtek Codec
-ID of 0x1caf.
-
-Signed-off-by: Luke D. Jones <luke@ljones.dev>
----
- sound/pci/hda/cs35l41_hda_property.c | 2 ++
- sound/pci/hda/patch_realtek.c        | 2 +-
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/sound/pci/hda/cs35l41_hda_property.c b/sound/pci/hda/cs35l41_hda_property.c
-index 72ec872afb8d..25c117db3317 100644
---- a/sound/pci/hda/cs35l41_hda_property.c
-+++ b/sound/pci/hda/cs35l41_hda_property.c
-@@ -108,6 +108,7 @@ static const struct cs35l41_config cs35l41_config_table[] = {
- 	{ "10431F12", 2, INTERNAL, { CS35L41_LEFT, CS35L41_RIGHT, 0, 0 }, 0, 1, -1, 1000, 4500, 24 },
- 	{ "10431F1F", 2, EXTERNAL, { CS35L41_LEFT, CS35L41_RIGHT, 0, 0 }, 1, -1, 0, 0, 0, 0 },
- 	{ "10431F62", 2, EXTERNAL, { CS35L41_LEFT, CS35L41_RIGHT, 0, 0 }, 1, 2, 0, 0, 0, 0 },
-+	{ "10433A60", 2, INTERNAL, { CS35L41_LEFT, CS35L41_RIGHT, 0, 0 }, 1, 2, 0, 1000, 4500, 24 },
- 	{ "17AA386F", 2, EXTERNAL, { CS35L41_LEFT, CS35L41_RIGHT, 0, 0 }, 0, -1, -1, 0, 0, 0 },
- 	{ "17AA38A9", 2, EXTERNAL, { CS35L41_LEFT, CS35L41_RIGHT, 0, 0 }, 0, 2, -1, 0, 0, 0 },
- 	{ "17AA38AB", 2, EXTERNAL, { CS35L41_LEFT, CS35L41_RIGHT, 0, 0 }, 0, 2, -1, 0, 0, 0 },
-@@ -496,6 +497,7 @@ static const struct cs35l41_prop_model cs35l41_prop_model_table[] = {
- 	{ "CSC3551", "10431F12", generic_dsd_config },
- 	{ "CSC3551", "10431F1F", generic_dsd_config },
- 	{ "CSC3551", "10431F62", generic_dsd_config },
-+	{ "CSC3551", "10433A60", generic_dsd_config },
- 	{ "CSC3551", "17AA386F", generic_dsd_config },
- 	{ "CSC3551", "17AA38A9", generic_dsd_config },
- 	{ "CSC3551", "17AA38AB", generic_dsd_config },
-diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
-index a17c36a36aa5..8da2827bb3c3 100644
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -10133,7 +10133,7 @@ static const struct snd_pci_quirk alc269_fixup_tbl[] = {
- 	SND_PCI_QUIRK(0x1043, 0x3a30, "ASUS G814JVR/JIR", ALC245_FIXUP_CS35L41_SPI_2),
- 	SND_PCI_QUIRK(0x1043, 0x3a40, "ASUS G814JZR", ALC245_FIXUP_CS35L41_SPI_2),
- 	SND_PCI_QUIRK(0x1043, 0x3a50, "ASUS G834JYR/JZR", ALC245_FIXUP_CS35L41_SPI_2),
--	SND_PCI_QUIRK(0x1043, 0x3a60, "ASUS G634JYR/JZR", ALC245_FIXUP_CS35L41_SPI_2),
-+	SND_PCI_QUIRK(0x1043, 0x3a60, "ASUS G634JYR/JZR", ALC285_FIXUP_ASUS_SPI_REAR_SPEAKERS),
- 	SND_PCI_QUIRK(0x1043, 0x831a, "ASUS P901", ALC269_FIXUP_STEREO_DMIC),
- 	SND_PCI_QUIRK(0x1043, 0x834a, "ASUS S101", ALC269_FIXUP_STEREO_DMIC),
- 	SND_PCI_QUIRK(0x1043, 0x8398, "ASUS P1005", ALC269_FIXUP_STEREO_DMIC),
--- 
-2.44.0
-
 From 7c2c8cca4989bc7803aef60a4aeb3efe1d211a4b Mon Sep 17 00:00:00 2001
 From: "Luke D. Jones" <luke@ljones.dev>
 Date: Sat, 2 Dec 2023 17:27:23 +1300
