@@ -1,5 +1,11 @@
-"https://gitlab.com/cki-project/kernel-ark/-/commit"/17c279233795edf80d29431dc144c7ac0bdbabf3
- 17c279233795edf80d29431dc144c7ac0bdbabf3 Revert "cpupower: Bump soname version"
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/429ecd1add008c0f027e68eb958276b2dc60417f
+ 429ecd1add008c0f027e68eb958276b2dc60417f Revert "cpupower: Bump soname version"
+
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/e56840b5f971b4d0f4032f6f5ab95c0c5ba40f8e
+ e56840b5f971b4d0f4032f6f5ab95c0c5ba40f8e nouveau: fix devinit paths to only handle display on GSP.
+
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/252ea3336f8ee7551675d82e1899125aa6e730b6
+ 252ea3336f8ee7551675d82e1899125aa6e730b6 Bluetooth: l2cap: Don't double set the HCI_CONN_MGMT_CONNECTED bit
 
 "https://gitlab.com/cki-project/kernel-ark/-/commit"/9ba38d5f5c49d3f4a9e429d05aa73cb397db5071
  9ba38d5f5c49d3f4a9e429d05aa73cb397db5071 Revert "Bluetooth: hci_qca: Set BDA quirk bit if fwnode exists in DT"
