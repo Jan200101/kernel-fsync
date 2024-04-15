@@ -68,7 +68,7 @@ index 98d304010170..7f674a6cfa8a 100644
  
  0x1020	0x1F	unknown
 diff --git a/Makefile b/Makefile
-index 6e3182cdf016..9cc543a90f97 100644
+index 190ed2b2e0ac..9a8c288493d1 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -153,10 +153,10 @@ index 5701356f4f33..cf3593dc271e 100644
  	/* boot_command_line has been already set up in early.c */
  	*cmdline_p = boot_command_line;
 diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 1526747bedf2..c482cbf0ccaf 100644
+index b002ebf024d3..721889aff4c0 100644
 --- a/arch/x86/kernel/setup.c
 +++ b/arch/x86/kernel/setup.c
-@@ -21,6 +21,7 @@
+@@ -20,6 +20,7 @@
  #include <linux/root_dev.h>
  #include <linux/hugetlb.h>
  #include <linux/tboot.h>
@@ -164,7 +164,7 @@ index 1526747bedf2..c482cbf0ccaf 100644
  #include <linux/usb/xhci-dbgp.h>
  #include <linux/static_call.h>
  #include <linux/swiotlb.h>
-@@ -903,6 +904,13 @@ void __init setup_arch(char **cmdline_p)
+@@ -902,6 +903,13 @@ void __init setup_arch(char **cmdline_p)
  	if (efi_enabled(EFI_BOOT))
  		efi_init();
  
@@ -176,9 +176,9 @@ index 1526747bedf2..c482cbf0ccaf 100644
 +#endif
 +
  	reserve_ibft_region();
- 	dmi_setup();
+ 	x86_init.resources.dmi_setup();
  
-@@ -1064,19 +1072,7 @@ void __init setup_arch(char **cmdline_p)
+@@ -1063,19 +1071,7 @@ void __init setup_arch(char **cmdline_p)
  	/* Allocate bigger log buffer */
  	setup_log_buf(1);
  
@@ -384,7 +384,7 @@ index e489fefd23da..f2dfae764fb5 100644
  obj-$(CONFIG_EFI_RCI2_TABLE)		+= rci2-table.o
  obj-$(CONFIG_EFI_EMBEDDED_FIRMWARE)	+= embedded-firmware.o
 diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
-index 9d3910d1abe1..f73b3ba6ef0b 100644
+index abdfcb5aa470..8f11b9a8f73c 100644
 --- a/drivers/firmware/efi/efi.c
 +++ b/drivers/firmware/efi/efi.c
 @@ -32,6 +32,7 @@
@@ -395,7 +395,7 @@ index 9d3910d1abe1..f73b3ba6ef0b 100644
  
  #include <asm/early_ioremap.h>
  
-@@ -972,40 +973,101 @@ int efi_mem_type(unsigned long phys_addr)
+@@ -974,40 +975,101 @@ int efi_mem_type(unsigned long phys_addr)
  	return -EINVAL;
  }
  
@@ -1028,7 +1028,7 @@ index 33e2a9b5d339..6ae1abc3f11c 100644
   * iommu_setup_default_domain - Set the default_domain for the group
   * @group: Group to change
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 528044237bf9..c50375d40fa0 100644
+index fa770601c655..85ec467cd75b 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
 @@ -4426,6 +4426,30 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM, 0x9000,
@@ -1108,7 +1108,7 @@ index 5ecd9d33250d..66be6eedb4ae 100644
  
  static void hotkey_driver_event(const unsigned int scancode)
 diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index a12ff43ac8fd..4940d18fd72d 100644
+index f76dbeade0c4..1d3d6e5a2eab 100644
 --- a/drivers/scsi/sd.c
 +++ b/drivers/scsi/sd.c
 @@ -118,6 +118,14 @@ static const char *sd_cache_types[] = {
@@ -1126,7 +1126,7 @@ index a12ff43ac8fd..4940d18fd72d 100644
  static void sd_set_flush_flag(struct scsi_disk *sdkp)
  {
  	bool wc = false, fua = false;
-@@ -4072,6 +4080,8 @@ static int __init init_sd(void)
+@@ -4087,6 +4095,8 @@ static int __init init_sd(void)
  		goto err_out_class;
  	}
  
@@ -1136,10 +1136,10 @@ index a12ff43ac8fd..4940d18fd72d 100644
  	if (err)
  		goto err_out_driver;
 diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 4854d883e601..e1ee781ca985 100644
+index 80145bd4b5c9..e76cf36194cc 100644
 --- a/drivers/usb/core/hub.c
 +++ b/drivers/usb/core/hub.c
-@@ -5795,6 +5795,13 @@ static void hub_event(struct work_struct *work)
+@@ -5804,6 +5804,13 @@ static void hub_event(struct work_struct *work)
  			(u16) hub->change_bits[0],
  			(u16) hub->event_bits[0]);
  
