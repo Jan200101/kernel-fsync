@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.7.12
 
@@ -1041,6 +1041,7 @@ Patch331: amdgpu-HAINAN-variant-fixup.patch
 Patch310: steamdeck-oled-wifi.patch
 Patch312: steamdeck-oled-audio.patch
 Patch313: steamdeck-oled-hw-quirks.patch
+Patch314: oled-deck-refresh-rate.patch
 
 # t2 macbook patches
 Patch332: t2linux.patch
@@ -1911,6 +1912,7 @@ ApplyOptionalPatch amdgpu-HAINAN-variant-fixup.patch
 ApplyOptionalPatch steamdeck-oled-wifi.patch
 ApplyOptionalPatch steamdeck-oled-audio.patch
 ApplyOptionalPatch steamdeck-oled-hw-quirks.patch
+ApplyOptionalPatch oled-deck-refresh-rate.patch
 
 # t2 macbook patches
 ApplyOptionalPatch t2linux.patch
@@ -3998,6 +4000,9 @@ fi\
 #
 #
 %changelog
+* Wed Apr 17 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-202.fsync.1
+- kernel-fsync v6.7.12 oled refresh rate patch
+
 * Mon Apr 15 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-201.fsync
 - kernel-fsync v6.7.12
 
