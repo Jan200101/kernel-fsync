@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.8.6
-%define specversion 6.8.6
+%define specrpmversion 6.8.7
+%define specversion 6.8.7
 %define patchversion 6.8
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.8.6
+%define tarfile_release 6.8.7
 # This is needed to do merge window version magic
 %define patchlevel 8
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.8.6
+%define kabiversion 6.8.7
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1025,7 +1025,7 @@ Patch301: steam-deck.patch
 Patch310: steamdeck-oled-wifi.patch
 Patch312: steamdeck-oled-audio.patch
 Patch313: steamdeck-oled-hw-quirks.patch
-Patch314: oled-deck-refresh-rate.patch
+Patch314: steamdeck-oled-refresh-rate.patch
 
 # t2 macbook patches
 Patch332: t2linux.patch
@@ -1914,7 +1914,7 @@ ApplyOptionalPatch steam-deck.patch
 ApplyOptionalPatch steamdeck-oled-wifi.patch
 ApplyOptionalPatch steamdeck-oled-audio.patch
 ApplyOptionalPatch steamdeck-oled-hw-quirks.patch
-ApplyOptionalPatch oled-deck-refresh-rate.patch
+ApplyOptionalPatch steamdeck-oled-refresh-rate.patch
 
 # t2 macbook patches
 ApplyOptionalPatch t2linux.patch
@@ -4102,15 +4102,17 @@ fi\
 #
 #
 %changelog
-* Tue Apr 16 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.6-202.fsync.1
-- kernel-fsync v6.8.6 oled refresh rate patch
+* Thu Apr 18 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-201.fsync
+- kernel-fsync v6.8.7
 
-* Sun Apr 14 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.6-201.fsync
-- kernel-fsync v6.8.6
-
-* Sat Apr 13 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.6-200]
+* Wed Apr 17 2024 Augusto Caringi <acaringi@redhat.com> [6.8.7-200]
 - Revert "cpupower: Bump soname version" (Justin M. Forbes)
 - Drop soname for libcpupower.so since we reverted the bump (Justin M. Forbes)
+
+* Wed Apr 17 2024 Augusto Caringi <acaringi@redhat.com> [6.8.7-0]
+- redhat/configs: Enable CONFIG_MITIGATION_SPECTRE_BHI (Augusto Caringi)
+- Turn on XEN_BALLOON_MEMORY_HOTPLUG for Fedora (Justin M. Forbes)
+- Linux v6.8.7
 
 * Sat Apr 13 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.6-0]
 - nouveau: fix devinit paths to only handle display on GSP. (Dave Airlie)

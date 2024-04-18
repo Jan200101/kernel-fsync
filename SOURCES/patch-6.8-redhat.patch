@@ -29,7 +29,6 @@
  include/linux/security.h                           |   5 +
  kernel/module/main.c                               |   2 +
  kernel/module/signing.c                            |   9 +-
- net/bluetooth/l2cap_core.c                         |   3 +-
  scripts/mod/modpost.c                              |   8 +
  scripts/tags.sh                                    |   2 +
  security/integrity/platform_certs/load_uefi.c      |   6 +-
@@ -37,10 +36,10 @@
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |  12 ++
  tools/power/cpupower/Makefile                      |   2 +-
- 39 files changed, 673 insertions(+), 180 deletions(-)
+ 38 files changed, 672 insertions(+), 178 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index c426d47f4b7b..9e0540aa3691 100644
+index e6c0a00722ea..ac70a1596394 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -234,7 +233,7 @@ index 1687483ff319..390b67f19181 100644
  	return ctx.rc;
  }
 diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 617f3e0e963d..92d9066ab4c2 100644
+index eb4ca85d16ff..be8278b39b22 100644
 --- a/drivers/acpi/scan.c
 +++ b/drivers/acpi/scan.c
 @@ -1757,6 +1757,15 @@ static bool acpi_device_enumeration_by_parent(struct acpi_device *device)
@@ -1417,20 +1416,6 @@ index a2ff4242e623..f0d2be1ee4f1 100644
  }
  
  int module_sig_check(struct load_info *info, int flags)
-diff --git a/net/bluetooth/l2cap_core.c b/net/bluetooth/l2cap_core.c
-index ab5a9d42fae7..706d2478ddb3 100644
---- a/net/bluetooth/l2cap_core.c
-+++ b/net/bluetooth/l2cap_core.c
-@@ -4054,8 +4054,7 @@ static int l2cap_connect_req(struct l2cap_conn *conn,
- 		return -EPROTO;
- 
- 	hci_dev_lock(hdev);
--	if (hci_dev_test_flag(hdev, HCI_MGMT) &&
--	    !test_and_set_bit(HCI_CONN_MGMT_CONNECTED, &hcon->flags))
-+	if (hci_dev_test_flag(hdev, HCI_MGMT))
- 		mgmt_device_connected(hdev, hcon, NULL, 0);
- 	hci_dev_unlock(hdev);
- 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
 index ce686ebf5591..0d28efddb253 100644
 --- a/scripts/mod/modpost.c
