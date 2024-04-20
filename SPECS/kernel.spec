@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 8
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.8.7
 
@@ -1000,7 +1000,7 @@ Patch309: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
 #  improve AMD SFH 1.1 gyro and accel sensitivity
 Patch324: 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally
-Patch315: rog-ally-audio-fix.patch
+Patch316: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
 Patch321: v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 Patch404: rog-ally-gyro-fix.patch
@@ -1026,6 +1026,7 @@ Patch310: steamdeck-oled-wifi.patch
 Patch312: steamdeck-oled-audio.patch
 Patch313: steamdeck-oled-hw-quirks.patch
 Patch314: steamdeck-oled-refresh-rate.patch
+Patch315: steamdeck-oled-legion-go-bluetooth-hang.patch
 
 # t2 macbook patches
 Patch332: t2linux.patch
@@ -1915,6 +1916,7 @@ ApplyOptionalPatch steamdeck-oled-wifi.patch
 ApplyOptionalPatch steamdeck-oled-audio.patch
 ApplyOptionalPatch steamdeck-oled-hw-quirks.patch
 ApplyOptionalPatch steamdeck-oled-refresh-rate.patch
+ApplyOptionalPatch steamdeck-oled-legion-go-bluetooth-hang.patch
 
 # t2 macbook patches
 ApplyOptionalPatch t2linux.patch
@@ -4102,6 +4104,9 @@ fi\
 #
 #
 %changelog
+* Sat Apr 20 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-202.fsync
+- kernel-fsync v6.8.7 bluetooth hang fix
+
 * Thu Apr 18 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-201.fsync
 - kernel-fsync v6.8.7
 
