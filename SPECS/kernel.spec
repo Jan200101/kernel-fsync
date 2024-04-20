@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 203%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.7.12
 
@@ -1014,7 +1014,7 @@ Patch309: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
 #  improve AMD SFH 1.1 gyro and accel sensitivity
 Patch324: 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally
-Patch315: rog-ally-audio-fix.patch
+Patch316: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
 Patch318: v14.8-0001-HID-asus-fix-more-n-key-report-descriptors-if-.patch
 Patch319: v14.8-0002-HID-asus-make-asus_kbd_init-generic-remove-rog.patch
@@ -1041,7 +1041,8 @@ Patch331: amdgpu-HAINAN-variant-fixup.patch
 Patch310: steamdeck-oled-wifi.patch
 Patch312: steamdeck-oled-audio.patch
 Patch313: steamdeck-oled-hw-quirks.patch
-Patch314: oled-deck-refresh-rate.patch
+Patch314: steamdeck-oled-refresh-rate.patch
+Patch315: steamdeck-oled-legion-go-bluetooth-hang.patch
 
 # t2 macbook patches
 Patch332: t2linux.patch
@@ -1912,7 +1913,8 @@ ApplyOptionalPatch amdgpu-HAINAN-variant-fixup.patch
 ApplyOptionalPatch steamdeck-oled-wifi.patch
 ApplyOptionalPatch steamdeck-oled-audio.patch
 ApplyOptionalPatch steamdeck-oled-hw-quirks.patch
-ApplyOptionalPatch oled-deck-refresh-rate.patch
+ApplyOptionalPatch steamdeck-oled-refresh-rate.patch
+ApplyOptionalPatch steamdeck-oled-legion-go-bluetooth-hang.patch
 
 # t2 macbook patches
 ApplyOptionalPatch t2linux.patch
@@ -4000,7 +4002,10 @@ fi\
 #
 #
 %changelog
-* Wed Apr 17 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-202.fsync.1
+* Sat Apr 20 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-203.fsync
+- kernel-fsync v6.7.12 update
+
+* Wed Apr 17 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-202.fsync
 - kernel-fsync v6.7.12 oled refresh rate patch
 
 * Mon Apr 15 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-201.fsync
