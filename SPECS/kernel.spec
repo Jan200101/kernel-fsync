@@ -163,13 +163,13 @@ Summary: The Linux kernel
 %define specrpmversion 6.8.7
 %define specversion 6.8.7
 %define patchversion 6.8
-%define pkgrelease 200
+%define pkgrelease 300
 %define kversion 6
 %define tarfile_release 6.8.7
 # This is needed to do merge window version magic
 %define patchlevel 8
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 301%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.8.7
 
@@ -3871,7 +3871,7 @@ fi\
 
 %ifarch %{cpupowerarchs}
 %files -n %{package_name}-tools-libs
-%{_libdir}/libcpupower.so.0
+%{_libdir}/libcpupower.so.1
 %{_libdir}/libcpupower.so.0.0.1
 
 %files -n %{package_name}-tools-libs-devel
@@ -4104,15 +4104,8 @@ fi\
 #
 #
 %changelog
-* Sat Apr 20 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-202.fsync
-- kernel-fsync v6.8.7 bluetooth hang fix
-
-* Thu Apr 18 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-201.fsync
+* Tue Apr 23 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-301.fsync
 - kernel-fsync v6.8.7
-
-* Wed Apr 17 2024 Augusto Caringi <acaringi@redhat.com> [6.8.7-200]
-- Revert "cpupower: Bump soname version" (Justin M. Forbes)
-- Drop soname for libcpupower.so since we reverted the bump (Justin M. Forbes)
 
 * Wed Apr 17 2024 Augusto Caringi <acaringi@redhat.com> [6.8.7-0]
 - redhat/configs: Enable CONFIG_MITIGATION_SPECTRE_BHI (Augusto Caringi)

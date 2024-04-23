@@ -35,8 +35,7 @@
  security/lockdown/Kconfig                          |  13 ++
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |  12 ++
- tools/power/cpupower/Makefile                      |   2 +-
- 38 files changed, 672 insertions(+), 178 deletions(-)
+ 37 files changed, 671 insertions(+), 177 deletions(-)
 
 diff --git a/Makefile b/Makefile
 index e6c0a00722ea..ac70a1596394 100644
@@ -1545,16 +1544,3 @@ index a344b8fa5530..51b5bea3b0c7 100644
  #ifdef CONFIG_PERF_EVENTS
  /**
   * security_perf_event_open() - Check if a perf event open is allowed
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index b53753dee02f..90701fc65aa2 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -53,7 +53,7 @@ DESTDIR ?=
- 
- VERSION:=			$(shell ./utils/version-gen.sh)
- LIB_MAJ=			0.0.1
--LIB_MIN=			1
-+LIB_MIN=			0
- 
- PACKAGE =			cpupower
- PACKAGE_BUGREPORT =		linux-pm@vger.kernel.org
