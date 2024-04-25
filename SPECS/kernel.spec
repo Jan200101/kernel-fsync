@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 203%{?buildid}%{?dist}
+%define specrelease 204%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.7.12
 
@@ -4002,6 +4002,9 @@ fi\
 #
 #
 %changelog
+* Thu Apr 25 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-204.fsync.1
+- kernel-fsync v6.7.12 hdr update
+
 * Sat Apr 20 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-203.fsync
 - kernel-fsync v6.7.12 update
 
