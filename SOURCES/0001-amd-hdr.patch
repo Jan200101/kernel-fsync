@@ -151,3 +151,58 @@ index 2ed20e6e439bb5..65ee8745e96540 100644
  	if (plane->funcs->reset)
 --
 2.43.0
+
+From: Joshua Ashton @ 2024-04-10 22:13 UTC (permalink / raw)
+  To: amd-gfx; +Cc: Joshua Ashton, Harry Wentland, Xaver Hugl, Melissa Wen, Ethan Lee
+
+The comment here states "no OGAM in DPP since DCN1", yet that is not
+true.
+
+Testing on an RX 7900XTX (dcn32), it actually does exist in hardware and
+works fine.
+My best guess is the comment is confused with OGAM ROM for DPP, rather
+than OGAM RAM.
+
+I did not test dcn35/351 as I do not have that hardware, but I assume
+the same follows there given the seemingly erroneous comment.
+Someone at AMD should check that before merging this commit.
+
+Signed-off-by: Joshua Ashton <joshua at froggi.es>
+
+Cc: Harry Wentland <harry.wentland at amd.com>
+Cc: Xaver Hugl <xaver.hugl at gmail.com>
+Cc: Melissa Wen <mwen at igalia.com>
+Cc: Ethan Lee <flibitijibibo at gmail.com>
+---
+ drivers/gpu/drm/amd/display/dc/resource/dcn32/dcn32_resource.c  | 2 +-
+ drivers/gpu/drm/amd/display/dc/resource/dcn35/dcn35_resource.c  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/amd/display/dc/resource/dcn32/dcn32_resource.c b/drivers/gpu/drm/amd/display/dc/resource/dcn32/dcn32_resource.c
+index 9aa39bd25be9..94f5d2b5aadf 100644
+--- a/drivers/gpu/drm/amd/display/dc/resource/dcn32/dcn32_resource.c
++++ b/drivers/gpu/drm/amd/display/dc/resource/dcn32/dcn32_resource.c
+@@ -2098,7 +2098,7 @@
+ 	dc->caps.color.dpp.dgam_rom_for_yuv = 0;
+ 
+ 	dc->caps.color.dpp.hw_3d_lut = 1;
+-	dc->caps.color.dpp.ogam_ram = 0;  // no OGAM in DPP since DCN1
++	dc->caps.color.dpp.ogam_ram = 1;
+ 	// no OGAM ROM on DCN2 and later ASICs
+ 	dc->caps.color.dpp.ogam_rom_caps.srgb = 0;
+ 	dc->caps.color.dpp.ogam_rom_caps.bt2020 = 0;
+diff --git a/drivers/gpu/drm/amd/display/dc/resource/dcn35/dcn35_resource.c b/drivers/gpu/drm/amd/display/dc/resource/dcn35/dcn35_resource.c
+index 25ac450944e7..708d63cc3f7f 100644
+--- a/drivers/gpu/drm/amd/display/dc/resource/dcn35/dcn35_resource.c
++++ b/drivers/gpu/drm/amd/display/dc/resource/dcn35/dcn35_resource.c
+@@ -1858,7 +1858,7 @@
+ 	dc->caps.color.dpp.dgam_rom_for_yuv = 0;
+ 
+ 	dc->caps.color.dpp.hw_3d_lut = 1;
+-	dc->caps.color.dpp.ogam_ram = 0;  // no OGAM in DPP since DCN1
++	dc->caps.color.dpp.ogam_ram = 1;
+ 	// no OGAM ROM on DCN301
+ 	dc->caps.color.dpp.ogam_rom_caps.srgb = 0;
+ 	dc->caps.color.dpp.ogam_rom_caps.bt2020 = 0;
+-- 
+2.44.0
