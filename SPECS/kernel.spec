@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 7
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 204%{?buildid}%{?dist}
+%define specrelease 205%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.7.12
 
@@ -1047,6 +1047,9 @@ Patch315: steamdeck-oled-legion-go-bluetooth-hang.patch
 # t2 macbook patches
 Patch332: t2linux.patch
 
+# Framework patches
+Patch334: platform-chrome-cros_ec_lpc-add-support-for-AMD-Framework-Laptops.patch
+
 # temporary patches
 Patch401: 0001-Remove-REBAR-size-quirk-for-Sapphire-RX-5600-XT-Puls.patch
 Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
@@ -1918,6 +1921,9 @@ ApplyOptionalPatch steamdeck-oled-legion-go-bluetooth-hang.patch
 
 # t2 macbook patches
 ApplyOptionalPatch t2linux.patch
+
+# Framework patches
+ApplyOptionalPatch platform-chrome-cros_ec_lpc-add-support-for-AMD-Framework-Laptops.patch
 
 # temporary patches
 ApplyOptionalPatch 0001-Remove-REBAR-size-quirk-for-Sapphire-RX-5600-XT-Puls.patch
@@ -4002,6 +4008,9 @@ fi\
 #
 #
 %changelog
+* Sat Apr 27 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-205.fsync.1
+- kernel-fsync v6.7.12 Framework CrOS EC
+
 * Thu Apr 25 2024 Jan200101 <sentrycraft123@gmail.com> - 6.7.12-204.fsync.1
 - kernel-fsync v6.7.12 hdr update
 
