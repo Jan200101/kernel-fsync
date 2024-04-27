@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 8
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 302%{?buildid}%{?dist}
+%define specrelease 303%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.8.7
 
@@ -1030,6 +1030,9 @@ Patch315: steamdeck-oled-legion-go-bluetooth-hang.patch
 
 # t2 macbook patches
 Patch332: t2linux.patch
+
+# Framework patches
+Patch334: platform-chrome-cros_ec_lpc-add-support-for-AMD-Framework-Laptops.patch
 
 # temporary patches
 Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
@@ -1920,6 +1923,9 @@ ApplyOptionalPatch steamdeck-oled-legion-go-bluetooth-hang.patch
 
 # t2 macbook patches
 ApplyOptionalPatch t2linux.patch
+
+# Framework patches
+ApplyOptionalPatch platform-chrome-cros_ec_lpc-add-support-for-AMD-Framework-Laptops.patch
 
 # temporary patches
 ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
@@ -4104,6 +4110,9 @@ fi\
 #
 #
 %changelog
+* Sat Apr 27 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-303.fsync.1
+- kernel-fsync v6.8.7 Framework CrOS EC
+
 * Thu Apr 25 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-302.fsync.1
 - kernel-fsync v6.8.7 hdr update
 
