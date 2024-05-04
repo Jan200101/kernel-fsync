@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.8.7
-%define specversion 6.8.7
+%define specrpmversion 6.8.8
+%define specversion 6.8.8
 %define patchversion 6.8
 %define pkgrelease 300
 %define kversion 6
-%define tarfile_release 6.8.7
+%define tarfile_release 6.8.8
 # This is needed to do merge window version magic
 %define patchlevel 8
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 303%{?buildid}%{?dist}
+%define specrelease 301%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.8.7
+%define kabiversion 6.8.8
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4110,14 +4110,16 @@ fi\
 #
 #
 %changelog
-* Sat Apr 27 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-303.fsync.1
-- kernel-fsync v6.8.7 Framework CrOS EC
+* Sat May 04 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.8-301.fsync
+- kernel-fsync v6.8.8
 
-* Thu Apr 25 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-302.fsync.1
-- kernel-fsync v6.8.7 hdr update
-
-* Tue Apr 23 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.7-301.fsync
-- kernel-fsync v6.8.7
+* Sat Apr 27 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.8-0]
+- Update BugsFixed for 6.8.8 (Justin M. Forbes)
+- Turn on ISM for Fedora (Justin M. Forbes)
+- Turn off some Fedora UBSAN options to avoid false positives (Justin M. Forbes)
+- fedora: aarch64: Enable a QCom Robotics platforms requirements (Peter Robinson)
+- Turn on UBSAN for Fedora (Justin M. Forbes)
+- Linux v6.8.8
 
 * Wed Apr 17 2024 Augusto Caringi <acaringi@redhat.com> [6.8.7-0]
 - redhat/configs: Enable CONFIG_MITIGATION_SPECTRE_BHI (Augusto Caringi)
