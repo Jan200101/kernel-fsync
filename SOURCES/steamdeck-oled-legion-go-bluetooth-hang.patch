@@ -300,16 +300,7 @@ diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
 index 8a60ad7acd70..edd2a81b4d5e 100644
 --- a/drivers/bluetooth/hci_qca.c
 +++ b/drivers/bluetooth/hci_qca.c
-@@ -2326,7 +2326,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 
- 		qcadev->bt_en = devm_gpiod_get_optional(&serdev->dev, "enable",
- 					       GPIOD_OUT_LOW);
--		if (IS_ERR(qcadev->bt_en) &&
-+		if (IS_ERR_OR_NULL(qcadev->bt_en) &&
- 		    (data->soc_type == QCA_WCN6750 ||
- 		     data->soc_type == QCA_WCN6855)) {
- 			dev_err(&serdev->dev, "failed to acquire BT_EN gpio\n");
-@@ -2335,7 +2335,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
+@@ -2342,7 +2342,7 @@
  
  		qcadev->sw_ctrl = devm_gpiod_get_optional(&serdev->dev, "swctrl",
  					       GPIOD_IN);
@@ -317,16 +308,7 @@ index 8a60ad7acd70..edd2a81b4d5e 100644
 +		if (IS_ERR_OR_NULL(qcadev->sw_ctrl) &&
  		    (data->soc_type == QCA_WCN6750 ||
  		     data->soc_type == QCA_WCN6855 ||
- 		     data->soc_type == QCA_WCN7850))
-@@ -2357,7 +2357,7 @@ static int qca_serdev_probe(struct serdev_device *serdev)
- 	default:
- 		qcadev->bt_en = devm_gpiod_get_optional(&serdev->dev, "enable",
- 					       GPIOD_OUT_LOW);
--		if (IS_ERR(qcadev->bt_en)) {
-+		if (IS_ERR_OR_NULL(qcadev->bt_en)) {
- 			dev_warn(&serdev->dev, "failed to acquire enable gpio\n");
- 			power_ctrl_enabled = false;
- 		}
+ 		     data->soc_type == QCA_WCN7850)) {
 -- 
 2.44.0
 
