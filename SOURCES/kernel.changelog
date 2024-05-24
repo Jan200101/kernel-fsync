@@ -1,3 +1,13 @@
+* Fri May 17 2024 Augusto Caringi <acaringi@redhat.com> [6.8.10-0]
+- redhat/configs: Enable CONFIG_DEBUG_INFO_BTF_MODULES (Augusto Caringi)
+- Add bugs to BugsFixed for 6.8.10 (Justin M. Forbes)
+- Turn on INIT_ON_ALLOC_DEFAULT_ON for Fedora (Justin M. Forbes)
+- Reapply "drm/qxl: simplify qxl_fence_wait" (Linus Torvalds)
+- BugsFixed updates for 6.8.10 (Justin M. Forbes)
+- e1000e: change usleep_range to udelay in PHY mdic access (Vitaly Lifshits)
+- Linux v6.8.10
+Resolves: 
+
 * Thu May 02 2024 Augusto Caringi <acaringi@redhat.com> [6.8.9-0]
 - redhat/configs: Enable CONFIG_CPU_MITIGATIONS (Augusto Caringi)
 - Turn on CONFIG_RANDOM_KMALLOC_CACHES for Fedora (Justin M. Forbes)

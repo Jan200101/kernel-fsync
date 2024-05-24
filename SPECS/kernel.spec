@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.8.9
-%define specversion 6.8.9
+%define specrpmversion 6.8.10
+%define specversion 6.8.10
 %define patchversion 6.8
 %define pkgrelease 300
 %define kversion 6
-%define tarfile_release 6.8.9
+%define tarfile_release 6.8.10
 # This is needed to do merge window version magic
 %define patchlevel 8
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 301%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.8.9
+%define kabiversion 6.8.10
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4110,8 +4110,17 @@ fi\
 #
 #
 %changelog
-* Sat May 04 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.9-301.fsync
-- kernel-fsync v6.8.9
+* Fri May 24 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.10-301.fsync
+- kernel-fsync v6.8.10
+
+* Fri May 17 2024 Augusto Caringi <acaringi@redhat.com> [6.8.10-0]
+- redhat/configs: Enable CONFIG_DEBUG_INFO_BTF_MODULES (Augusto Caringi)
+- Add bugs to BugsFixed for 6.8.10 (Justin M. Forbes)
+- Turn on INIT_ON_ALLOC_DEFAULT_ON for Fedora (Justin M. Forbes)
+- Reapply "drm/qxl: simplify qxl_fence_wait" (Linus Torvalds)
+- BugsFixed updates for 6.8.10 (Justin M. Forbes)
+- e1000e: change usleep_range to udelay in PHY mdic access (Vitaly Lifshits)
+- Linux v6.8.10
 
 * Thu May 02 2024 Augusto Caringi <acaringi@redhat.com> [6.8.9-0]
 - redhat/configs: Enable CONFIG_CPU_MITIGATIONS (Augusto Caringi)

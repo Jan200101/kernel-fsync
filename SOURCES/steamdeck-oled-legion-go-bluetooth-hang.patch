@@ -90,11 +90,10 @@ index ecbc52eaf101..4ecbcb1644cc 100644
  	const char *soc_name;
  
  	ret = qca_check_speeds(hu);
-@@ -1906,11 +1904,6 @@ static int qca_setup(struct hci_uart *hu)
+@@ -1908,10 +1908,6 @@
+ 	case QCA_WCN6750:
  	case QCA_WCN6855:
  	case QCA_WCN7850:
- 		set_bit(HCI_QUIRK_USE_BDADDR_PROPERTY, &hdev->quirks);
--
 -		qcadev = serdev_device_get_drvdata(hu->serdev);
 -		if (qcadev->bdaddr_property_broken)
 -			set_bit(HCI_QUIRK_BDADDR_PROPERTY_BROKEN, &hdev->quirks);
@@ -112,52 +111,6 @@ index ecbc52eaf101..4ecbcb1644cc 100644
  	if (data)
  		qcadev->btsoc_type = data->soc_type;
  	else
--- 
-2.44.0
-
-
-From 1d39bbf105f2240989b4d8c47c47b7adf9daffa7 Mon Sep 17 00:00:00 2001
-From: Matthew Schwartz <njtransit215@gmail.com>
-Date: Thu, 18 Apr 2024 11:30:33 -0700
-Subject: [PATCH 2/7] Reapply "Bluetooth: hci_qca: Set BDA quirk bit if fwnode
- exists in DT"
-
-This reverts commit 00aca62b7d2c5a071e2fcace00a30ea549e03c09.
----
- drivers/bluetooth/hci_qca.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-index 4ecbcb1644cc..8a60ad7acd70 100644
---- a/drivers/bluetooth/hci_qca.c
-+++ b/drivers/bluetooth/hci_qca.c
-@@ -7,6 +7,7 @@
-  *
-  *  Copyright (C) 2007 Texas Instruments, Inc.
-  *  Copyright (c) 2010, 2012, 2018 The Linux Foundation. All rights reserved.
-+ *  Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
-  *
-  *  Acknowledgements:
-  *  This file is based on hci_ll.c, which was...
-@@ -1903,7 +1904,17 @@ static int qca_setup(struct hci_uart *hu)
- 	case QCA_WCN6750:
- 	case QCA_WCN6855:
- 	case QCA_WCN7850:
--		set_bit(HCI_QUIRK_USE_BDADDR_PROPERTY, &hdev->quirks);
-+
-+		/* Set BDA quirk bit for reading BDA value from fwnode property
-+		 * only if that property exist in DT.
-+		 */
-+		if (fwnode_property_present(dev_fwnode(hdev->dev.parent), "local-bd-address")) {
-+			set_bit(HCI_QUIRK_USE_BDADDR_PROPERTY, &hdev->quirks);
-+			bt_dev_info(hdev, "setting quirk bit to read BDA from fwnode later");
-+		} else {
-+			bt_dev_dbg(hdev, "local-bd-address` is not present in the devicetree so not setting quirk bit for BDA");
-+		}
-+
- 		hci_set_aosp_capable(hdev);
- 
- 		ret = qca_read_soc_version(hdev, &ver, soc_type);
 -- 
 2.44.0
 
@@ -346,51 +299,5 @@ index edd2a81b4d5e..06193546ebb6 100644
  }
  
  static int qca_get_data_path_id(struct hci_dev *hdev, __u8 *data_path_id)
--- 
-2.44.0
-
-
-From dfc6025cea81507afd56689f99496b234c3e9816 Mon Sep 17 00:00:00 2001
-From: Matthew Schwartz <njtransit215@gmail.com>
-Date: Thu, 18 Apr 2024 11:30:58 -0700
-Subject: [PATCH 7/7] Revert "Bluetooth: hci_qca: Set BDA quirk bit if fwnode
- exists in DT"
-
-This reverts commit 7dcd3e014aa7faeeaf4047190b22d8a19a0db696.
----
- drivers/bluetooth/hci_qca.c | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
-
-diff --git a/drivers/bluetooth/hci_qca.c b/drivers/bluetooth/hci_qca.c
-index 06193546ebb6..94b8c406f0c0 100644
---- a/drivers/bluetooth/hci_qca.c
-+++ b/drivers/bluetooth/hci_qca.c
-@@ -7,7 +7,6 @@
-  *
-  *  Copyright (C) 2007 Texas Instruments, Inc.
-  *  Copyright (c) 2010, 2012, 2018 The Linux Foundation. All rights reserved.
-- *  Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
-  *
-  *  Acknowledgements:
-  *  This file is based on hci_ll.c, which was...
-@@ -1905,17 +1904,7 @@ static int qca_setup(struct hci_uart *hu)
- 	case QCA_WCN6750:
- 	case QCA_WCN6855:
- 	case QCA_WCN7850:
--
--		/* Set BDA quirk bit for reading BDA value from fwnode property
--		 * only if that property exist in DT.
--		 */
--		if (fwnode_property_present(dev_fwnode(hdev->dev.parent), "local-bd-address")) {
--			set_bit(HCI_QUIRK_USE_BDADDR_PROPERTY, &hdev->quirks);
--			bt_dev_info(hdev, "setting quirk bit to read BDA from fwnode later");
--		} else {
--			bt_dev_dbg(hdev, "local-bd-address` is not present in the devicetree so not setting quirk bit for BDA");
--		}
--
-+		set_bit(HCI_QUIRK_USE_BDADDR_PROPERTY, &hdev->quirks);
- 		hci_set_aosp_capable(hdev);
- 
- 		ret = qca_read_soc_version(hdev, &ver, soc_type);
 -- 
 2.44.0

@@ -1,3 +1,9 @@
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/bc8a66a7f9a128ef3c0c52c8ffbb1edfdc965a0c
+ bc8a66a7f9a128ef3c0c52c8ffbb1edfdc965a0c Reapply "drm/qxl: simplify qxl_fence_wait"
+
+"https://gitlab.com/cki-project/kernel-ark/-/commit"/18bb30c3fa125866e460064fcb8779ec08197a2b
+ 18bb30c3fa125866e460064fcb8779ec08197a2b e1000e: change usleep_range to udelay in PHY mdic access
+
 "https://gitlab.com/cki-project/kernel-ark/-/commit"/21b019ce62997d78fe5e42f4a04b64cd9d9b11b8
  21b019ce62997d78fe5e42f4a04b64cd9d9b11b8 drm/nouveau/dp: Don't probe eDP ports twice harder
 
