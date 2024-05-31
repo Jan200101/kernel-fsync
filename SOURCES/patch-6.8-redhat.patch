@@ -43,7 +43,7 @@
  42 files changed, 727 insertions(+), 177 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 01acaf667e789..e94e935f0acd9 100644
+index ce6b03cce386..a78bb4cba7fe 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -81,7 +81,7 @@ index 01acaf667e789..e94e935f0acd9 100644
  
  $(version_h): PATCHLEVEL := $(or $(PATCHLEVEL), 0)
 diff --git a/arch/s390/include/asm/ipl.h b/arch/s390/include/asm/ipl.h
-index b0d00032479d6..afb9544fb0074 100644
+index b0d00032479d..afb9544fb007 100644
 --- a/arch/s390/include/asm/ipl.h
 +++ b/arch/s390/include/asm/ipl.h
 @@ -139,6 +139,7 @@ int ipl_report_add_component(struct ipl_report *report, struct kexec_buf *kbuf,
@@ -93,7 +93,7 @@ index b0d00032479d6..afb9544fb0074 100644
  /*
   * DIAG 308 support
 diff --git a/arch/s390/kernel/ipl.c b/arch/s390/kernel/ipl.c
-index ba75f6bee7742..7d37ce1772f13 100644
+index ba75f6bee774..7d37ce1772f1 100644
 --- a/arch/s390/kernel/ipl.c
 +++ b/arch/s390/kernel/ipl.c
 @@ -2520,3 +2520,8 @@ int ipl_report_free(struct ipl_report *report)
@@ -106,7 +106,7 @@ index ba75f6bee7742..7d37ce1772f13 100644
 +	return !!ipl_secure_flag;
 +}
 diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
-index d1f3b56e7afc2..eaefd0d7cfff3 100644
+index d1f3b56e7afc..eaefd0d7cfff 100644
 --- a/arch/s390/kernel/setup.c
 +++ b/arch/s390/kernel/setup.c
 @@ -49,6 +49,7 @@
@@ -128,7 +128,7 @@ index d1f3b56e7afc2..eaefd0d7cfff3 100644
  	/* boot_command_line has been already set up in early.c */
  	*cmdline_p = boot_command_line;
 diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 3998109195dab..cedcd208de44d 100644
+index 3998109195da..cedcd208de44 100644
 --- a/arch/x86/kernel/setup.c
 +++ b/arch/x86/kernel/setup.c
 @@ -20,6 +20,7 @@
@@ -175,7 +175,7 @@ index 3998109195dab..cedcd208de44d 100644
  	reserve_initrd();
  
 diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
-index 6aef1ee5e1bdb..8f146b1b4972b 100644
+index 6aef1ee5e1bd..8f146b1b4972 100644
 --- a/drivers/acpi/apei/hest.c
 +++ b/drivers/acpi/apei/hest.c
 @@ -96,6 +96,14 @@ static int apei_hest_parse(apei_hest_func_t func, void *data)
@@ -194,7 +194,7 @@ index 6aef1ee5e1bdb..8f146b1b4972b 100644
  	for (i = 0; i < hest_tab->error_source_count; i++) {
  		len = hest_esrc_len(hest_hdr);
 diff --git a/drivers/acpi/irq.c b/drivers/acpi/irq.c
-index 1687483ff319e..390b67f19181a 100644
+index 1687483ff319..390b67f19181 100644
 --- a/drivers/acpi/irq.c
 +++ b/drivers/acpi/irq.c
 @@ -143,6 +143,7 @@ struct acpi_irq_parse_one_ctx {
@@ -237,7 +237,7 @@ index 1687483ff319e..390b67f19181a 100644
  	return ctx.rc;
  }
 diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index eb4ca85d16ffb..be8278b39b223 100644
+index eb4ca85d16ff..be8278b39b22 100644
 --- a/drivers/acpi/scan.c
 +++ b/drivers/acpi/scan.c
 @@ -1757,6 +1757,15 @@ static bool acpi_device_enumeration_by_parent(struct acpi_device *device)
@@ -257,7 +257,7 @@ index eb4ca85d16ffb..be8278b39b223 100644
  	acpi_dev_get_resources(device, &resource_list,
  			       acpi_check_serial_bus_slave,
 diff --git a/drivers/ata/libahci.c b/drivers/ata/libahci.c
-index 1a63200ea437b..a911e976a596e 100644
+index 1a63200ea437..a911e976a596 100644
 --- a/drivers/ata/libahci.c
 +++ b/drivers/ata/libahci.c
 @@ -729,6 +729,24 @@ int ahci_stop_engine(struct ata_port *ap)
@@ -286,7 +286,7 @@ index 1a63200ea437b..a911e976a596e 100644
  	tmp = ata_wait_register(ap, port_mmio + PORT_CMD,
  				PORT_CMD_LIST_ON, PORT_CMD_LIST_ON, 1, 500);
 diff --git a/drivers/char/ipmi/ipmi_dmi.c b/drivers/char/ipmi/ipmi_dmi.c
-index bbf7029e224be..cf7faa970dd65 100644
+index bbf7029e224b..cf7faa970dd6 100644
 --- a/drivers/char/ipmi/ipmi_dmi.c
 +++ b/drivers/char/ipmi/ipmi_dmi.c
 @@ -215,6 +215,21 @@ static int __init scan_for_dmi_ipmi(void)
@@ -312,7 +312,7 @@ index bbf7029e224be..cf7faa970dd65 100644
  		dmi_decode_ipmi((const struct dmi_header *) dev->device_data);
  
 diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
-index b0eedc4595b37..a9024c1dd68ab 100644
+index b0eedc4595b3..a9024c1dd68a 100644
 --- a/drivers/char/ipmi/ipmi_msghandler.c
 +++ b/drivers/char/ipmi/ipmi_msghandler.c
 @@ -35,6 +35,7 @@
@@ -347,7 +347,7 @@ index b0eedc4595b37..a9024c1dd68ab 100644
  	rv = ipmi_register_driver();
  	mutex_unlock(&ipmi_interfaces_mutex);
 diff --git a/drivers/firmware/efi/Makefile b/drivers/firmware/efi/Makefile
-index a2d0009560d0f..4f3486e6a84b2 100644
+index a2d0009560d0..4f3486e6a84b 100644
 --- a/drivers/firmware/efi/Makefile
 +++ b/drivers/firmware/efi/Makefile
 @@ -25,6 +25,7 @@ subdir-$(CONFIG_EFI_STUB)		+= libstub
@@ -359,7 +359,7 @@ index a2d0009560d0f..4f3486e6a84b2 100644
  obj-$(CONFIG_EFI_RCI2_TABLE)		+= rci2-table.o
  obj-$(CONFIG_EFI_EMBEDDED_FIRMWARE)	+= embedded-firmware.o
 diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
-index 1ea14e86a741b..ae3518be391e7 100644
+index 1ea14e86a741..ae3518be391e 100644
 --- a/drivers/firmware/efi/efi.c
 +++ b/drivers/firmware/efi/efi.c
 @@ -33,6 +33,7 @@
@@ -505,7 +505,7 @@ index 1ea14e86a741b..ae3518be391e7 100644
  
 diff --git a/drivers/firmware/efi/secureboot.c b/drivers/firmware/efi/secureboot.c
 new file mode 100644
-index 0000000000000..de0a3714a5d44
+index 000000000000..de0a3714a5d4
 --- /dev/null
 +++ b/drivers/firmware/efi/secureboot.c
 @@ -0,0 +1,38 @@
@@ -548,7 +548,7 @@ index 0000000000000..de0a3714a5d44
 +	}
 +}
 diff --git a/drivers/firmware/sysfb.c b/drivers/firmware/sysfb.c
-index 3c197db42c9d9..16e4a2e90fae2 100644
+index 3c197db42c9d..16e4a2e90fae 100644
 --- a/drivers/firmware/sysfb.c
 +++ b/drivers/firmware/sysfb.c
 @@ -34,6 +34,22 @@
@@ -584,7 +584,7 @@ index 3c197db42c9d9..16e4a2e90fae2 100644
  		if (!IS_ERR(pd))
  			goto unlock_mutex;
 diff --git a/drivers/gpu/drm/display/drm_dp_helper.c b/drivers/gpu/drm/display/drm_dp_helper.c
-index 26c188ce5f1c3..fb80843e7f2df 100644
+index 26c188ce5f1c..fb80843e7f2d 100644
 --- a/drivers/gpu/drm/display/drm_dp_helper.c
 +++ b/drivers/gpu/drm/display/drm_dp_helper.c
 @@ -532,6 +532,15 @@ static int drm_dp_dpcd_access(struct drm_dp_aux *aux, u8 request,
@@ -644,7 +644,7 @@ index 26c188ce5f1c3..fb80843e7f2df 100644
  
  	memset(&msg, 0, sizeof(msg));
 diff --git a/drivers/gpu/drm/nouveau/nouveau_dp.c b/drivers/gpu/drm/nouveau/nouveau_dp.c
-index 3f72bc38bd2c4..a72c45809484a 100644
+index 3f72bc38bd2c..a72c45809484 100644
 --- a/drivers/gpu/drm/nouveau/nouveau_dp.c
 +++ b/drivers/gpu/drm/nouveau/nouveau_dp.c
 @@ -235,6 +235,9 @@ nouveau_dp_detect(struct nouveau_connector *nv_connector,
@@ -672,7 +672,7 @@ index 3f72bc38bd2c4..a72c45809484a 100644
  	return ret;
  }
 diff --git a/drivers/gpu/drm/panel/panel-edp.c b/drivers/gpu/drm/panel/panel-edp.c
-index e5e3f0b9ca61d..49b8a2484d92b 100644
+index e5e3f0b9ca61..49b8a2484d92 100644
 --- a/drivers/gpu/drm/panel/panel-edp.c
 +++ b/drivers/gpu/drm/panel/panel-edp.c
 @@ -397,6 +397,7 @@ static int panel_edp_suspend(struct device *dev)
@@ -700,7 +700,7 @@ index e5e3f0b9ca61d..49b8a2484d92b 100644
  	regulator_disable(p->supply);
  	p->unprepared_time = ktime_get_boottime();
 diff --git a/drivers/gpu/drm/panel/panel-samsung-atna33xc20.c b/drivers/gpu/drm/panel/panel-samsung-atna33xc20.c
-index 5703f4712d96e..76c2a8f6718c8 100644
+index 5703f4712d96..76c2a8f6718c 100644
 --- a/drivers/gpu/drm/panel/panel-samsung-atna33xc20.c
 +++ b/drivers/gpu/drm/panel/panel-samsung-atna33xc20.c
 @@ -72,6 +72,7 @@ static int atana33xc20_suspend(struct device *dev)
@@ -720,7 +720,7 @@ index 5703f4712d96e..76c2a8f6718c8 100644
  
  	if (p->no_hpd) {
 diff --git a/drivers/hid/hid-rmi.c b/drivers/hid/hid-rmi.c
-index d4af17fdba467..154f0403cbf4c 100644
+index d4af17fdba46..154f0403cbf4 100644
 --- a/drivers/hid/hid-rmi.c
 +++ b/drivers/hid/hid-rmi.c
 @@ -321,21 +321,12 @@ static int rmi_input_event(struct hid_device *hdev, u8 *data, int size)
@@ -822,7 +822,7 @@ index d4af17fdba467..154f0403cbf4c 100644
  	data->xport.ops = &hid_rmi_ops;
  
 diff --git a/drivers/hwtracing/coresight/coresight-etm4x-core.c b/drivers/hwtracing/coresight/coresight-etm4x-core.c
-index 2e2cabc5f50ab..8b44d990f978e 100644
+index 2e2cabc5f50a..8b44d990f978 100644
 --- a/drivers/hwtracing/coresight/coresight-etm4x-core.c
 +++ b/drivers/hwtracing/coresight/coresight-etm4x-core.c
 @@ -10,6 +10,7 @@
@@ -873,7 +873,7 @@ index 2e2cabc5f50ab..8b44d990f978e 100644
  	platform_driver_unregister(&etm4_platform_driver);
  	etm4_pm_clear();
 diff --git a/drivers/input/rmi4/rmi_driver.c b/drivers/input/rmi4/rmi_driver.c
-index ef9ea295f9e03..0103334e8f32c 100644
+index ef9ea295f9e0..0103334e8f32 100644
 --- a/drivers/input/rmi4/rmi_driver.c
 +++ b/drivers/input/rmi4/rmi_driver.c
 @@ -182,34 +182,47 @@ void rmi_set_attn_data(struct rmi_device *rmi_dev, unsigned long irq_status,
@@ -1065,7 +1065,7 @@ index ef9ea295f9e03..0103334e8f32c 100644
  	if (data->f01_container->dev.driver) {
  		/* Driver already bound, so enable ATTN now. */
 diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index ad33161f2374b..a4bca95d83226 100644
+index ad33161f2374..a4bca95d8322 100644
 --- a/drivers/iommu/iommu.c
 +++ b/drivers/iommu/iommu.c
 @@ -8,6 +8,7 @@
@@ -1105,7 +1105,7 @@ index ad33161f2374b..a4bca95d83226 100644
   * iommu_setup_default_domain - Set the default_domain for the group
   * @group: Group to change
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index eff7f5df08e27..b58145ce7775c 100644
+index eff7f5df08e2..b58145ce7775 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
 @@ -4433,6 +4433,30 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM, 0x9000,
@@ -1140,7 +1140,7 @@ index eff7f5df08e27..b58145ce7775c 100644
   * Intersil/Techwell TW686[4589]-based video capture cards have an empty (zero)
   * class code.  Fix it.
 diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 35200a7a73553..738378291882e 100644
+index 35200a7a7355..738378291882 100644
 --- a/drivers/scsi/sd.c
 +++ b/drivers/scsi/sd.c
 @@ -118,6 +118,14 @@ static const char *sd_cache_types[] = {
@@ -1168,7 +1168,7 @@ index 35200a7a73553..738378291882e 100644
  	if (err)
  		goto err_out_driver;
 diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 48e1e43780eb8..e0d40a9e1101f 100644
+index 48e1e43780eb..e0d40a9e1101 100644
 --- a/drivers/usb/core/hub.c
 +++ b/drivers/usb/core/hub.c
 @@ -5816,6 +5816,13 @@ static void hub_event(struct work_struct *work)
@@ -1186,7 +1186,7 @@ index 48e1e43780eb8..e0d40a9e1101f 100644
  	 * disconnected while waiting for the lock to succeed. */
  	usb_lock_device(hdev);
 diff --git a/fs/xfs/xfs_iomap.c b/fs/xfs/xfs_iomap.c
-index 18c8f168b1532..055cdec2e9ad6 100644
+index 18c8f168b153..055cdec2e9ad 100644
 --- a/fs/xfs/xfs_iomap.c
 +++ b/fs/xfs/xfs_iomap.c
 @@ -1323,7 +1323,7 @@ xfs_seek_iomap_begin(
@@ -1208,7 +1208,7 @@ index 18c8f168b1532..055cdec2e9ad6 100644
  out_unlock:
  	xfs_iunlock(ip, lockmode);
 diff --git a/include/drm/display/drm_dp_helper.h b/include/drm/display/drm_dp_helper.h
-index 863b2e7add29e..472359a9d6756 100644
+index 863b2e7add29..472359a9d675 100644
 --- a/include/drm/display/drm_dp_helper.h
 +++ b/include/drm/display/drm_dp_helper.h
 @@ -463,9 +463,15 @@ struct drm_dp_aux {
@@ -1228,7 +1228,7 @@ index 863b2e7add29e..472359a9d6756 100644
  			 void *buffer, size_t size);
  ssize_t drm_dp_dpcd_write(struct drm_dp_aux *aux, unsigned int offset,
 diff --git a/include/linux/efi.h b/include/linux/efi.h
-index c74f47711f0bd..e7bbf3b7a9389 100644
+index c74f47711f0b..e7bbf3b7a938 100644
 --- a/include/linux/efi.h
 +++ b/include/linux/efi.h
 @@ -45,6 +45,8 @@ struct screen_info;
@@ -1296,7 +1296,7 @@ index c74f47711f0bd..e7bbf3b7a9389 100644
  enum efi_secureboot_mode efi_get_secureboot_mode(efi_get_variable_t *get_var)
  {
 diff --git a/include/linux/lsm_hook_defs.h b/include/linux/lsm_hook_defs.h
-index f9b5baf1b5f46..60df2a4b28154 100644
+index f9b5baf1b5f4..60df2a4b2815 100644
 --- a/include/linux/lsm_hook_defs.h
 +++ b/include/linux/lsm_hook_defs.h
 @@ -411,6 +411,8 @@ LSM_HOOK(void, LSM_RET_VOID, bpf_prog_free_security, struct bpf_prog_aux *aux)
@@ -1309,7 +1309,7 @@ index f9b5baf1b5f46..60df2a4b28154 100644
  #ifdef CONFIG_PERF_EVENTS
  LSM_HOOK(int, 0, perf_event_open, struct perf_event_attr *attr, int type)
 diff --git a/include/linux/module.h b/include/linux/module.h
-index 96bc462872c0c..3ce91ff5db5a4 100644
+index 96bc462872c0..3ce91ff5db5a 100644
 --- a/include/linux/module.h
 +++ b/include/linux/module.h
 @@ -418,6 +418,7 @@ struct module {
@@ -1322,7 +1322,7 @@ index 96bc462872c0c..3ce91ff5db5a4 100644
  	/* Exported symbols */
 diff --git a/include/linux/rh_kabi.h b/include/linux/rh_kabi.h
 new file mode 100644
-index 0000000000000..e0d3353802bbf
+index 000000000000..e0d3353802bb
 --- /dev/null
 +++ b/include/linux/rh_kabi.h
 @@ -0,0 +1,172 @@
@@ -1499,7 +1499,7 @@ index 0000000000000..e0d3353802bbf
 +
 +#endif /* _LINUX_RH_KABI_H */
 diff --git a/include/linux/rmi.h b/include/linux/rmi.h
-index ab7eea01ab427..fff7c5f737fc8 100644
+index ab7eea01ab42..fff7c5f737fc 100644
 --- a/include/linux/rmi.h
 +++ b/include/linux/rmi.h
 @@ -364,6 +364,7 @@ struct rmi_driver_data {
@@ -1511,7 +1511,7 @@ index ab7eea01ab427..fff7c5f737fc8 100644
  
  int rmi_register_transport_device(struct rmi_transport_dev *xport);
 diff --git a/include/linux/security.h b/include/linux/security.h
-index 3180d823e0233..110bca09a1c39 100644
+index 3180d823e023..110bca09a1c3 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
 @@ -494,6 +494,7 @@ int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen);
@@ -1534,7 +1534,7 @@ index 3180d823e0233..110bca09a1c39 100644
  				    u32 *uctx_len, void *val, size_t val_len,
  				    u64 id, u64 flags)
 diff --git a/kernel/module/main.c b/kernel/module/main.c
-index b0b99348e1a8b..c35cc48d782cb 100644
+index b0b99348e1a8..c35cc48d782c 100644
 --- a/kernel/module/main.c
 +++ b/kernel/module/main.c
 @@ -528,6 +528,7 @@ static struct module_attribute modinfo_##field = {                    \
@@ -1554,7 +1554,7 @@ index b0b99348e1a8b..c35cc48d782cb 100644
  	&modinfo_coresize,
  #ifdef CONFIG_ARCH_WANTS_MODULES_DATA_IN_VMALLOC
 diff --git a/kernel/module/signing.c b/kernel/module/signing.c
-index a2ff4242e623d..f0d2be1ee4f1c 100644
+index a2ff4242e623..f0d2be1ee4f1 100644
 --- a/kernel/module/signing.c
 +++ b/kernel/module/signing.c
 @@ -61,10 +61,17 @@ int mod_verify_sig(const void *mod, struct load_info *info)
@@ -1577,7 +1577,7 @@ index a2ff4242e623d..f0d2be1ee4f1c 100644
  
  int module_sig_check(struct load_info *info, int flags)
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index ce686ebf5591f..0d28efddb2533 100644
+index ce686ebf5591..0d28efddb253 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
 @@ -22,6 +22,7 @@
@@ -1610,7 +1610,7 @@ index ce686ebf5591f..0d28efddb2533 100644
  	ret = snprintf(fname, sizeof(fname), "%s.mod.c", mod->name);
  	if (ret >= sizeof(fname)) {
 diff --git a/scripts/tags.sh b/scripts/tags.sh
-index 191e0461d6d5b..e6f418b3e948b 100755
+index 191e0461d6d5..e6f418b3e948 100755
 --- a/scripts/tags.sh
 +++ b/scripts/tags.sh
 @@ -16,6 +16,8 @@ fi
@@ -1623,7 +1623,7 @@ index 191e0461d6d5b..e6f418b3e948b 100755
  # ignore arbitrary directories
  if [ -n "${IGNORE_DIRS}" ]; then
 diff --git a/security/integrity/platform_certs/load_uefi.c b/security/integrity/platform_certs/load_uefi.c
-index d1fdd113450a6..182e8090cfe85 100644
+index d1fdd113450a..182e8090cfe8 100644
 --- a/security/integrity/platform_certs/load_uefi.c
 +++ b/security/integrity/platform_certs/load_uefi.c
 @@ -74,7 +74,8 @@ static __init void *get_cert_list(efi_char16_t *name, efi_guid_t *guid,
@@ -1647,7 +1647,7 @@ index d1fdd113450a6..182e8090cfe85 100644
  	}
  
 diff --git a/security/lockdown/Kconfig b/security/lockdown/Kconfig
-index e84ddf4840101..d0501353a4b95 100644
+index e84ddf484010..d0501353a4b9 100644
 --- a/security/lockdown/Kconfig
 +++ b/security/lockdown/Kconfig
 @@ -16,6 +16,19 @@ config SECURITY_LOCKDOWN_LSM_EARLY
@@ -1671,7 +1671,7 @@ index e84ddf4840101..d0501353a4b95 100644
  	prompt "Kernel default lockdown mode"
  	default LOCK_DOWN_KERNEL_FORCE_NONE
 diff --git a/security/lockdown/lockdown.c b/security/lockdown/lockdown.c
-index cd84d8ea1dfbf..e4c70a0312bc8 100644
+index cd84d8ea1dfb..e4c70a0312bc 100644
 --- a/security/lockdown/lockdown.c
 +++ b/security/lockdown/lockdown.c
 @@ -74,6 +74,7 @@ static int lockdown_is_locked_down(enum lockdown_reason what)
@@ -1683,7 +1683,7 @@ index cd84d8ea1dfbf..e4c70a0312bc8 100644
  
  const struct lsm_id lockdown_lsmid = {
 diff --git a/security/security.c b/security/security.c
-index a344b8fa5530d..51b5bea3b0c71 100644
+index a344b8fa5530..51b5bea3b0c7 100644
 --- a/security/security.c
 +++ b/security/security.c
 @@ -5517,6 +5517,18 @@ int security_locked_down(enum lockdown_reason what)

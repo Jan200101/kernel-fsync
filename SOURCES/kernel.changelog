@@ -1,3 +1,10 @@
+* Sun May 26 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.11-0]
+- redhat/configs: fedora: aarch64: Re-enable CUSE (Neal Gompa)
+- Remove f38 from release_targets (Justin M. Forbes)
+- Add more Bugs addressed by 6.8.10 to BugsFixed (Justin M. Forbes)
+- Linux v6.8.11
+Resolves: 
+
 * Fri May 17 2024 Augusto Caringi <acaringi@redhat.com> [6.8.10-0]
 - redhat/configs: Enable CONFIG_DEBUG_INFO_BTF_MODULES (Augusto Caringi)
 - Add bugs to BugsFixed for 6.8.10 (Justin M. Forbes)
