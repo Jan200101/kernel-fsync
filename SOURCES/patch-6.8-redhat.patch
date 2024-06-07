@@ -13,10 +13,7 @@
  drivers/firmware/efi/efi.c                         | 124 +++++++++++----
  drivers/firmware/efi/secureboot.c                  |  38 +++++
  drivers/firmware/sysfb.c                           |  18 ++-
- drivers/gpu/drm/display/drm_dp_helper.c            |  35 +++++
  drivers/gpu/drm/nouveau/nouveau_dp.c               |  10 ++
- drivers/gpu/drm/panel/panel-edp.c                  |   3 +
- drivers/gpu/drm/panel/panel-samsung-atna33xc20.c   |   2 +
  drivers/hid/hid-rmi.c                              |  66 --------
  drivers/hwtracing/coresight/coresight-etm4x-core.c |  19 +++
  drivers/input/rmi4/rmi_driver.c                    | 124 +++++++++------
@@ -25,7 +22,6 @@
  drivers/scsi/sd.c                                  |  10 ++
  drivers/usb/core/hub.c                             |   7 +
  fs/xfs/xfs_iomap.c                                 |   4 +-
- include/drm/display/drm_dp_helper.h                |   6 +
  include/linux/efi.h                                |  22 ++-
  include/linux/lsm_hook_defs.h                      |   2 +
  include/linux/module.h                             |   1 +
@@ -40,10 +36,10 @@
  security/lockdown/Kconfig                          |  13 ++
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |  12 ++
- 42 files changed, 727 insertions(+), 177 deletions(-)
+ 38 files changed, 681 insertions(+), 177 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index ce6b03cce386..a78bb4cba7fe 100644
+index 5447d5041e42..7eb038dc13ec 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -583,66 +579,6 @@ index 3c197db42c9d..16e4a2e90fae 100644
  		pd = sysfb_create_simplefb(si, &mode);
  		if (!IS_ERR(pd))
  			goto unlock_mutex;
-diff --git a/drivers/gpu/drm/display/drm_dp_helper.c b/drivers/gpu/drm/display/drm_dp_helper.c
-index 26c188ce5f1c..fb80843e7f2d 100644
---- a/drivers/gpu/drm/display/drm_dp_helper.c
-+++ b/drivers/gpu/drm/display/drm_dp_helper.c
-@@ -532,6 +532,15 @@ static int drm_dp_dpcd_access(struct drm_dp_aux *aux, u8 request,
- 
- 	mutex_lock(&aux->hw_mutex);
- 
-+	/*
-+	 * If the device attached to the aux bus is powered down then there's
-+	 * no reason to attempt a transfer. Error out immediately.
-+	 */
-+	if (aux->powered_down) {
-+		ret = -EBUSY;
-+		goto unlock;
-+	}
-+
- 	/*
- 	 * The specification doesn't give any recommendation on how often to
- 	 * retry native transactions. We used to retry 7 times like for
-@@ -599,6 +608,29 @@ int drm_dp_dpcd_probe(struct drm_dp_aux *aux, unsigned int offset)
- }
- EXPORT_SYMBOL(drm_dp_dpcd_probe);
- 
-+/**
-+ * drm_dp_dpcd_set_powered() - Set whether the DP device is powered
-+ * @aux: DisplayPort AUX channel; for convenience it's OK to pass NULL here
-+ *       and the function will be a no-op.
-+ * @powered: true if powered; false if not
-+ *
-+ * If the endpoint device on the DP AUX bus is known to be powered down
-+ * then this function can be called to make future transfers fail immediately
-+ * instead of needing to time out.
-+ *
-+ * If this function is never called then a device defaults to being powered.
-+ */
-+void drm_dp_dpcd_set_powered(struct drm_dp_aux *aux, bool powered)
-+{
-+	if (!aux)
-+		return;
-+
-+	mutex_lock(&aux->hw_mutex);
-+	aux->powered_down = !powered;
-+	mutex_unlock(&aux->hw_mutex);
-+}
-+EXPORT_SYMBOL(drm_dp_dpcd_set_powered);
-+
- /**
-  * drm_dp_dpcd_read() - read a series of bytes from the DPCD
-  * @aux: DisplayPort AUX channel (SST or MST)
-@@ -1858,6 +1890,9 @@ static int drm_dp_i2c_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs,
- 	struct drm_dp_aux_msg msg;
- 	int err = 0;
- 
-+	if (aux->powered_down)
-+		return -EBUSY;
-+
- 	dp_aux_i2c_transfer_size = clamp(dp_aux_i2c_transfer_size, 1, DP_AUX_MAX_PAYLOAD_BYTES);
- 
- 	memset(&msg, 0, sizeof(msg));
 diff --git a/drivers/gpu/drm/nouveau/nouveau_dp.c b/drivers/gpu/drm/nouveau/nouveau_dp.c
 index 3f72bc38bd2c..a72c45809484 100644
 --- a/drivers/gpu/drm/nouveau/nouveau_dp.c
@@ -671,54 +607,6 @@ index 3f72bc38bd2c..a72c45809484 100644
  	mutex_unlock(&nv_encoder->dp.hpd_irq_lock);
  	return ret;
  }
-diff --git a/drivers/gpu/drm/panel/panel-edp.c b/drivers/gpu/drm/panel/panel-edp.c
-index e5e3f0b9ca61..49b8a2484d92 100644
---- a/drivers/gpu/drm/panel/panel-edp.c
-+++ b/drivers/gpu/drm/panel/panel-edp.c
-@@ -397,6 +397,7 @@ static int panel_edp_suspend(struct device *dev)
- {
- 	struct panel_edp *p = dev_get_drvdata(dev);
- 
-+	drm_dp_dpcd_set_powered(p->aux, false);
- 	gpiod_set_value_cansleep(p->enable_gpio, 0);
- 	regulator_disable(p->supply);
- 	p->unprepared_time = ktime_get_boottime();
-@@ -453,6 +454,7 @@ static int panel_edp_prepare_once(struct panel_edp *p)
- 	}
- 
- 	gpiod_set_value_cansleep(p->enable_gpio, 1);
-+	drm_dp_dpcd_set_powered(p->aux, true);
- 
- 	delay = p->desc->delay.hpd_reliable;
- 	if (p->no_hpd)
-@@ -489,6 +491,7 @@ static int panel_edp_prepare_once(struct panel_edp *p)
- 	return 0;
- 
- error:
-+	drm_dp_dpcd_set_powered(p->aux, false);
- 	gpiod_set_value_cansleep(p->enable_gpio, 0);
- 	regulator_disable(p->supply);
- 	p->unprepared_time = ktime_get_boottime();
-diff --git a/drivers/gpu/drm/panel/panel-samsung-atna33xc20.c b/drivers/gpu/drm/panel/panel-samsung-atna33xc20.c
-index 5703f4712d96..76c2a8f6718c 100644
---- a/drivers/gpu/drm/panel/panel-samsung-atna33xc20.c
-+++ b/drivers/gpu/drm/panel/panel-samsung-atna33xc20.c
-@@ -72,6 +72,7 @@ static int atana33xc20_suspend(struct device *dev)
- 	if (p->el3_was_on)
- 		atana33xc20_wait(p->el_on3_off_time, 150);
- 
-+	drm_dp_dpcd_set_powered(p->aux, false);
- 	ret = regulator_disable(p->supply);
- 	if (ret)
- 		return ret;
-@@ -93,6 +94,7 @@ static int atana33xc20_resume(struct device *dev)
- 	ret = regulator_enable(p->supply);
- 	if (ret)
- 		return ret;
-+	drm_dp_dpcd_set_powered(p->aux, true);
- 	p->powered_on_time = ktime_get_boottime();
- 
- 	if (p->no_hpd) {
 diff --git a/drivers/hid/hid-rmi.c b/drivers/hid/hid-rmi.c
 index d4af17fdba46..154f0403cbf4 100644
 --- a/drivers/hid/hid-rmi.c
@@ -1065,7 +953,7 @@ index ef9ea295f9e0..0103334e8f32 100644
  	if (data->f01_container->dev.driver) {
  		/* Driver already bound, so enable ATTN now. */
 diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index ad33161f2374..a4bca95d8322 100644
+index e606d250d1d5..26a50a344ab2 100644
 --- a/drivers/iommu/iommu.c
 +++ b/drivers/iommu/iommu.c
 @@ -8,6 +8,7 @@
@@ -1207,26 +1095,6 @@ index 18c8f168b153..055cdec2e9ad 100644
  	error = xfs_bmbt_to_iomap(ip, iomap, &imap, flags, 0, seq);
  out_unlock:
  	xfs_iunlock(ip, lockmode);
-diff --git a/include/drm/display/drm_dp_helper.h b/include/drm/display/drm_dp_helper.h
-index 863b2e7add29..472359a9d675 100644
---- a/include/drm/display/drm_dp_helper.h
-+++ b/include/drm/display/drm_dp_helper.h
-@@ -463,9 +463,15 @@ struct drm_dp_aux {
- 	 * @is_remote: Is this AUX CH actually using sideband messaging.
- 	 */
- 	bool is_remote;
-+
-+	/**
-+	 * @powered_down: If true then the remote endpoint is powered down.
-+	 */
-+	bool powered_down;
- };
- 
- int drm_dp_dpcd_probe(struct drm_dp_aux *aux, unsigned int offset);
-+void drm_dp_dpcd_set_powered(struct drm_dp_aux *aux, bool powered);
- ssize_t drm_dp_dpcd_read(struct drm_dp_aux *aux, unsigned int offset,
- 			 void *buffer, size_t size);
- ssize_t drm_dp_dpcd_write(struct drm_dp_aux *aux, unsigned int offset,
 diff --git a/include/linux/efi.h b/include/linux/efi.h
 index c74f47711f0b..e7bbf3b7a938 100644
 --- a/include/linux/efi.h

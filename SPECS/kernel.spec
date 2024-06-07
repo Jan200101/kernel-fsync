@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.8.11
-%define specversion 6.8.11
+%define specrpmversion 6.8.12
+%define specversion 6.8.12
 %define patchversion 6.8
 %define pkgrelease 300
 %define kversion 6
-%define tarfile_release 6.8.11
+%define tarfile_release 6.8.12
 # This is needed to do merge window version magic
 %define patchlevel 8
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 301%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.8.11
+%define kabiversion 6.8.12
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4110,8 +4110,12 @@ fi\
 #
 #
 %changelog
-* Fri May 31 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.11-301.fsync
-- kernel-fsync v6.8.11
+* Fri Jun 07 2024 Jan200101 <sentrycraft123@gmail.com> - 6.8.12-301.fsync
+- kernel-fsync v6.8.12
+
+* Thu May 30 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.12-0]
+- sunrpc: use the struct net as the svc proc private (Josef Bacik)
+- Linux v6.8.12
 
 * Sun May 26 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.8.11-0]
 - redhat/configs: fedora: aarch64: Re-enable CUSE (Neal Gompa)
