@@ -1,3 +1,16 @@
+From 2fd82fbebecfe8afbfb76cf918039ef1aa9fd494 Mon Sep 17 00:00:00 2001
+From: Steven Barrett <steven@liquorix.net>
+Date: Fri, 15 Mar 2024 12:36:51 -0500
+Subject: [PATCH] Cachy: drm/amdgpu/pm: Allow override of min_power_limit with
+ ignore_min_pcap
+
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu.h       |  1 +
+ drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c   | 10 ++++++++++
+ drivers/gpu/drm/amd/pm/amdgpu_pm.c        |  3 +++
+ drivers/gpu/drm/amd/pm/swsmu/amdgpu_smu.c | 14 ++++++++++++--
+ 4 files changed, 26 insertions(+), 2 deletions(-)
+
 diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu.h b/drivers/gpu/drm/amd/amdgpu/amdgpu.h
 index 50f57d4dfd8f..b83697b75221 100644
 --- a/drivers/gpu/drm/amd/amdgpu/amdgpu.h

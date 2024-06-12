@@ -24,7 +24,6 @@ GENERIC_PATCHES = [
     #  scheduler stuff
     ["SCHED_BORE", None, ENABLE],
 
-
     # device specific config
     # Microsoft Surface
     ["HID_IPTS", None, MODULE],
@@ -53,6 +52,9 @@ GENERIC_PATCHES = [
 
 ARCH_PATCHES = {
     "x86_64": [
+        # Temporary Fedora fix
+        ["CONFIG_IO_URING", None, ENABLE, "fedora"],
+
         # Lenovo Legion
         ["LEGION_LAPTOP", None, MODULE],
         ["ACPI_CALL", None, MODULE],

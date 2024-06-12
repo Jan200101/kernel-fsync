@@ -6076,7 +6076,6 @@ This driver is based on previous work done by Ronald Tschalär
 
 Signed-off-by: Kerem Karabay <kekrby@gmail.com>
 ---
- MAINTAINERS                  |   6 ++
  drivers/hid/Kconfig          |  10 ++
  drivers/hid/Makefile         |   1 +
  drivers/hid/hid-appletb-bl.c | 193 +++++++++++++++++++++++++++++++++++
@@ -6084,23 +6083,6 @@ Signed-off-by: Kerem Karabay <kekrby@gmail.com>
  5 files changed, 213 insertions(+), 1 deletion(-)
  create mode 100644 drivers/hid/hid-appletb-bl.c
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4cc6bf79f..519b3b736 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9157,6 +9157,12 @@ F:	include/linux/pm.h
- F:	include/linux/suspend.h
- F:	kernel/power/
- 
-+HID APPLE TOUCH BAR DRIVERS
-+M:	Kerem Karabay <kekrby@gmail.com>
-+L:	linux-input@vger.kernel.org
-+S:	Maintained
-+F:	drivers/hid/hid-appletb-*
-+
- HID CORE LAYER
- M:	Jiri Kosina <jikos@kernel.org>
- M:	Benjamin Tissoires <benjamin.tissoires@redhat.com>
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
 index e11c1c803..cf19a3b33 100644
 --- a/drivers/hid/Kconfig
@@ -6822,10 +6804,10 @@ diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
 index 902a59928..dd5509eeb 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
-@@ -78,6 +78,7 @@
+@@ -72,6 +72,7 @@
+ #define MT_QUIRK_FORCE_MULTI_INPUT	BIT(20)
+ #define MT_QUIRK_DISABLE_WAKEUP		BIT(21)
  #define MT_QUIRK_ORIENTATION_INVERT	BIT(22)
- #define MT_QUIRK_HAS_TYPE_COVER_BACKLIGHT	BIT(23)
- #define MT_QUIRK_HAS_TYPE_COVER_TABLET_MODE_SWITCH	BIT(24)
 +#define MT_QUIRK_TOUCH_IS_TIPSTATE	BIT(25)
  
  #define MT_INPUTMODE_TOUCHSCREEN	0x02
@@ -6989,17 +6971,17 @@ diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
 index f98fb36ff..f881b19db 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
-@@ -226,6 +226,7 @@
+@@ -212,6 +212,7 @@
+ #define MT_CLS_GOOGLE				0x0111
  #define MT_CLS_RAZER_BLADE_STEALTH		0x0112
  #define MT_CLS_SMART_TECH			0x0113
- #define MT_CLS_WIN_8_MS_SURFACE_TYPE_COVER	0x0114
 +#define MT_CLS_APPLE_TOUCHBAR			0x0115
  
  #define MT_DEFAULT_MAXCONTACT	10
  #define MT_MAX_MAXCONTACT	250
-@@ -421,6 +421,13 @@
- 			MT_QUIRK_WIN8_PTP_BUTTONS,
- 		.export_all_inputs = true
+@@ -396,6 +396,13 @@
+ 			MT_QUIRK_CONTACT_CNT_ACCURATE |
+ 			MT_QUIRK_SEPARATE_APP_REPORT,
  	},
 +	{ .name = MT_CLS_APPLE_TOUCHBAR,
 +		.quirks = MT_QUIRK_HOVERING |
@@ -7010,7 +6992,7 @@ index f98fb36ff..f881b19db 100644
 +	},
  	{ }
  };
- 
+
 @@ -1755,6 +1763,15 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
  		}
  	}
@@ -7027,31 +7009,29 @@ index f98fb36ff..f881b19db 100644
  	td = devm_kzalloc(&hdev->dev, sizeof(struct mt_device), GFP_KERNEL);
  	if (!td) {
  		dev_err(&hdev->dev, "cannot allocate multitouch data\n");
-@@ -1933,12 +1933,6 @@
+@@ -1780,10 +1780,6 @@
  
  	timer_setup(&td->release_timer, mt_expired_timeout, 0);
  
 -	ret = hid_parse(hdev);
--	if (ret != 0) {
--		unregister_pm_notifier(&td->pm_notifier);
+-	if (ret != 0)
 -		return ret;
--	}
 -
  	if (mtclass->quirks & MT_QUIRK_FIX_CONST_CONTACT_ID)
  		mt_fix_const_fields(hdev, HID_DG_CONTACTID);
  
-@@ -2417,6 +2417,11 @@
+@@ -2229,6 +2229,11 @@
  		MT_USB_DEVICE(USB_VENDOR_ID_XIROKU,
  			USB_DEVICE_ID_XIROKU_CSR2) },
  
 +	/* Apple Touch Bars */
 +	{ .driver_data = MT_CLS_APPLE_TOUCHBAR,
 +		HID_USB_DEVICE(USB_VENDOR_ID_APPLE,
-+			       USB_DEVICE_ID_APPLE_TOUCHBAR_DISPLAY) },
++			USB_DEVICE_ID_APPLE_TOUCHBAR_DISPLAY) },
 +
- 	/* Microsoft Surface type cover */
- 	{ .driver_data = MT_CLS_WIN_8_MS_SURFACE_TYPE_COVER,
- 		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY,
+ 	/* Google MT devices */
+ 	{ .driver_data = MT_CLS_GOOGLE,
+ 		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY, USB_VENDOR_ID_GOOGLE,
 -- 
 2.42.0
 
@@ -7551,30 +7531,12 @@ protocol.
 
 Signed-off-by: Kerem Karabay <kekrby@gmail.com>
 ---
- MAINTAINERS                       |   6 +
  drivers/gpu/drm/tiny/Kconfig      |  12 +
  drivers/gpu/drm/tiny/Makefile     |   1 +
  drivers/gpu/drm/tiny/appletbdrm.c | 624 ++++++++++++++++++++++++++++++
  4 files changed, 643 insertions(+)
  create mode 100644 drivers/gpu/drm/tiny/appletbdrm.c
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 519b3b736..dfc63d257 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6545,6 +6545,12 @@
- T:	git git://anongit.freedesktop.org/drm/drm-misc
- F:	drivers/gpu/drm/sun4i/sun8i*
- 
-+DRM DRIVER FOR APPLE TOUCH BARS
-+M:	Kerem Karabay <kekrby@gmail.com>
-+L:	dri-devel@lists.freedesktop.org
-+S:	Maintained
-+F:	drivers/gpu/drm/tiny/appletbdrm.c
-+
- DRM DRIVER FOR ARM PL111 CLCD
- S:	Orphan
- T:	git git://anongit.freedesktop.org/drm/drm-misc
 diff --git a/drivers/gpu/drm/tiny/Kconfig b/drivers/gpu/drm/tiny/Kconfig
 index f6889f649..559a97bce 100644
 --- a/drivers/gpu/drm/tiny/Kconfig
@@ -8297,30 +8259,12 @@ Signed-off-by: Orlando Chamberlain <orlandoch.dev@gmail.com>
 Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 Reviewed-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- MAINTAINERS                             |   6 ++
  drivers/hid/Kconfig                     |  13 +++
  drivers/hid/Makefile                    |   1 +
  drivers/hid/hid-apple-magic-backlight.c | 120 ++++++++++++++++++++++++
  4 files changed, 140 insertions(+)
  create mode 100644 drivers/hid/hid-apple-magic-backlight.c
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index dfc63d257..9148bda0a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9169,6 +9169,12 @@ L:	linux-input@vger.kernel.org
- S:	Maintained
- F:	drivers/hid/hid-appletb-*
- 
-+HID APPLE MAGIC BACKLIGHT DRIVER
-+M:	Orlando Chamberlain <orlandoch.dev@gmail.com>
-+L:	linux-input@vger.kernel.org
-+S:	Maintained
-+F:	drivers/hid/apple-magic-backlight.c
-+
- HID CORE LAYER
- M:	Jiri Kosina <jikos@kernel.org>
- M:	Benjamin Tissoires <benjamin.tissoires@redhat.com>
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
 index 4e238df87..83fbab6d4 100644
 --- a/drivers/hid/Kconfig
@@ -8804,14 +8748,14 @@ diff --git a/include/linux/efi.h b/include/linux/efi.h
 index 80b21d1c6..f1e58e027 100644
 --- a/include/linux/efi.h
 +++ b/include/linux/efi.h
-@@ -387,6 +387,7 @@ void efi_native_runtime_setup(void);
+@@ -387,6 +387,7 @@
  #define EFI_MEMORY_ATTRIBUTES_TABLE_GUID	EFI_GUID(0xdcfa911d, 0x26eb, 0x469f,  0xa2, 0x20, 0x38, 0xb7, 0xdc, 0x46, 0x12, 0x20)
  #define EFI_CONSOLE_OUT_DEVICE_GUID		EFI_GUID(0xd3b36f2c, 0xd551, 0x11d4,  0x9a, 0x46, 0x00, 0x90, 0x27, 0x3f, 0xc1, 0x4d)
  #define APPLE_PROPERTIES_PROTOCOL_GUID		EFI_GUID(0x91bd12fe, 0xf6c3, 0x44fb,  0xa5, 0xb7, 0x51, 0x22, 0xab, 0x30, 0x3a, 0xe0)
 +#define APPLE_SET_OS_PROTOCOL_GUID		EFI_GUID(0xc5c5da95, 0x7d5c, 0x45e6,  0xb2, 0xf1, 0x3f, 0xd5, 0x2b, 0xb1, 0x00, 0x77)
  #define EFI_TCG2_PROTOCOL_GUID			EFI_GUID(0x607f766c, 0x7455, 0x42be,  0x93, 0x0b, 0xe4, 0xd7, 0x6d, 0xb2, 0x72, 0x0f)
+ #define EFI_TCG2_FINAL_EVENTS_TABLE_GUID	EFI_GUID(0x1e2ed096, 0x30e2, 0x4254,  0xbd, 0x89, 0x86, 0x3b, 0xbe, 0xf8, 0x23, 0x25)
  #define EFI_LOAD_FILE_PROTOCOL_GUID		EFI_GUID(0x56ec3091, 0x954c, 0x11d2,  0x8e, 0x3f, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b)
- #define EFI_LOAD_FILE2_PROTOCOL_GUID		EFI_GUID(0x4006c0c1, 0xfcb3, 0x403e,  0x99, 0x6d, 0x4a, 0x6c, 0x87, 0x24, 0xe0, 0x6d)
 -- 
 2.34.1
 
