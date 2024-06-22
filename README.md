@@ -9,7 +9,7 @@ Fork of the Fedora [kernel package](https://src.fedoraproject.org/rpms/kernel) t
 ### I have a patch I want you to include
 
 Feel free to open an issue about it and I'll look into it to see if its worth while including.
-Do note that :
+Do note that:    
 - it must not negatively affect users more than they already are
 - if it can be packaged externally, it will likely not be included
 - it must be available under an open source license
@@ -32,7 +32,7 @@ Building the kernel as it can then be done like this:
 `./TOOLS/build.sh -ba SPECS/kernel.spec`
 
 ### Friends of Fsync
-- [Fedora](https://fedoraproject.org)
+- [Fedora Project](https://fedoraproject.org)
 - [Nobara Project](https://nobaraproject.org/)
 - [Bazzite](https://bazzite.gg/)
 - [CachyOS](https://cachyos.org/)
