@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.9.5
-%define specversion 6.9.5
+%define specrpmversion 6.9.6
+%define specversion 6.9.6
 %define patchversion 6.9
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.9.5
+%define tarfile_release 6.9.6
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.9.5
+%define kabiversion 6.9.6
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4098,8 +4098,11 @@ fi\
 #
 #
 %changelog
-* Sat Jun 22 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.5-201.fsync
-- kernel-fsync v6.9.5
+* Sat Jun 22 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.6-201.fsync
+- kernel-fsync v6.9.6
+
+* Fri Jun 21 2024 Augusto Caringi <acaringi@redhat.com> [6.9.6-0]
+- Linux v6.9.6
 
 * Sun Jun 16 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.9.5-0]
 - Linux v6.9.5
