@@ -1,3 +1,8 @@
+* Thu Jun 27 2024 Augusto Caringi <acaringi@redhat.com> [6.9.7-0]
+- ACPI: scan: Ignore camera graph port nodes on all Dell Tiger, Alder and Raptor Lake models (Hans de Goede)
+- Linux v6.9.7
+Resolves: 
+
 * Fri Jun 21 2024 Augusto Caringi <acaringi@redhat.com> [6.9.6-0]
 - Linux v6.9.6
 Resolves: 

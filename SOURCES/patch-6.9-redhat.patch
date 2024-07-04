@@ -72,7 +72,7 @@ index 0000000000000..733a26bd887a2
 +
 +endmenu
 diff --git a/Makefile b/Makefile
-index 8da63744745be..f605426ef3d12 100644
+index 17dc3e55323e7..205a0114f9351 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -1453,10 +1453,10 @@ index eff7f5df08e27..b58145ce7775c 100644
   * Intersil/Techwell TW686[4589]-based video capture cards have an empty (zero)
   * class code.  Fix it.
 diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 4f7b9b5b9c5b4..98831fb3769fd 100644
+index a4638ea92571d..aff13cdce0156 100644
 --- a/drivers/scsi/sd.c
 +++ b/drivers/scsi/sd.c
-@@ -119,6 +119,14 @@ static const char *sd_cache_types[] = {
+@@ -120,6 +120,14 @@ static const char *sd_cache_types[] = {
  	"write back, no read (daft)"
  };
  
@@ -1471,7 +1471,7 @@ index 4f7b9b5b9c5b4..98831fb3769fd 100644
  static void sd_set_flush_flag(struct scsi_disk *sdkp)
  {
  	bool wc = false, fua = false;
-@@ -4258,6 +4266,8 @@ static int __init init_sd(void)
+@@ -4262,6 +4270,8 @@ static int __init init_sd(void)
  		goto err_out_class;
  	}
  
@@ -1579,7 +1579,7 @@ index d59b0947fba08..8b1e2e71d4858 100644
  enum efi_secureboot_mode efi_get_secureboot_mode(efi_get_variable_t *get_var)
  {
 diff --git a/include/linux/lsm_hook_defs.h b/include/linux/lsm_hook_defs.h
-index 334e00efbde45..5c962e31ffe57 100644
+index 7e539f6f8c674..3c3e56566457a 100644
 --- a/include/linux/lsm_hook_defs.h
 +++ b/include/linux/lsm_hook_defs.h
 @@ -436,6 +436,8 @@ LSM_HOOK(int, 0, bpf_token_capable, const struct bpf_token *token, int cap)
@@ -1632,7 +1632,7 @@ index ab7eea01ab427..fff7c5f737fc8 100644
  
  int rmi_register_transport_device(struct rmi_transport_dev *xport);
 diff --git a/include/linux/security.h b/include/linux/security.h
-index 41a8f667bdfa0..e2aebf520337e 100644
+index 5122e3ad83b19..b5f0081bc894d 100644
 --- a/include/linux/security.h
 +++ b/include/linux/security.h
 @@ -507,6 +507,7 @@ int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen);
@@ -1751,10 +1751,10 @@ index cd84d8ea1dfbf..e4c70a0312bc8 100644
  
  const struct lsm_id lockdown_lsmid = {
 diff --git a/security/security.c b/security/security.c
-index 0a9a0ac3f2662..a5cfc42f7c331 100644
+index 4fd3c839353ec..d52cb3bb720dd 100644
 --- a/security/security.c
 +++ b/security/security.c
-@@ -5567,6 +5567,18 @@ int security_locked_down(enum lockdown_reason what)
+@@ -5569,6 +5569,18 @@ int security_locked_down(enum lockdown_reason what)
  }
  EXPORT_SYMBOL(security_locked_down);
  

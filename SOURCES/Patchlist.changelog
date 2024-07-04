@@ -1,3 +1,6 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/982eb4ceebb7be3979ef62dbd5d4c8a514180ae1
+ 982eb4ceebb7be3979ef62dbd5d4c8a514180ae1 ACPI: scan: Ignore camera graph port nodes on all Dell Tiger, Alder and Raptor Lake models
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/a058bf42a79af81598f7404ad550ff677eb2be4d
  a058bf42a79af81598f7404ad550ff677eb2be4d lsm: update security_lock_kernel_down
 
