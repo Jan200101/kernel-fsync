@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.9.7
-%define specversion 6.9.7
+%define specrpmversion 6.9.8
+%define specversion 6.9.8
 %define patchversion 6.9
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.9.7
+%define tarfile_release 6.9.8
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.9.7
+%define kabiversion 6.9.8
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -997,7 +997,9 @@ Patch324: 0001-bump-the-sensitivity-of-AMD-SFH.patch
 Patch316: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
 Patch321: v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
-Patch404: rog-ally-gyro-fix.patch
+Patch322: rog-ally-gyro-fix.patch
+Patch323: 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
+Patch336: 0001-add-support-for-ally-x-mcu-switch.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
 Patch208: 0001-ntsync.patch
@@ -1891,6 +1893,8 @@ ApplyOptionalPatch rog-ally-audio-fix.patch
 ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
 ApplyOptionalPatch v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 ApplyOptionalPatch rog-ally-gyro-fix.patch
+ApplyOptionalPatch 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
+ApplyOptionalPatch 0001-add-support-for-ally-x-mcu-switch.patch
 
 # https://github.com/CachyOS/kernel-patches
 ApplyOptionalPatch 0001-ntsync.patch
@@ -2264,6 +2268,19 @@ BuildKernel() {
     rm -f vmlinux.o .tmp_vmlinux.btf
 
     %{log_msg "Install files to RPM_BUILD_ROOT"}
+
+    # Comment out specific config settings that may use resources not available
+    # to the end user so that the packaged config file can be easily reused with
+    # upstream make targets
+    %if %{signkernel}%{signmodules}
+      sed -i -e '/^CONFIG_SYSTEM_TRUSTED_KEYS/{
+        i\# The kernel was built with
+        s/^/# /
+        a\# We are resetting this value to facilitate local builds
+        a\CONFIG_SYSTEM_TRUSTED_KEYS=""
+        }' .config
+    %endif
+
     # Start installing the results
     install -m 644 .config $RPM_BUILD_ROOT/boot/config-$KernelVer
     install -m 644 .config $RPM_BUILD_ROOT/lib/modules/$KernelVer/config
@@ -4098,8 +4115,13 @@ fi\
 #
 #
 %changelog
-* Thu Jul 04 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.7-201.fsync
-- kernel-fsync v6.9.7
+* Tue Jul 09 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.8-201.fsync
+- kernel-fsync v6.9.8
+
+* Fri Jul 05 2024 Augusto Caringi <acaringi@redhat.com> [6.9.8-0]
+- Add BugsFixed for 6.9 (Justin M. Forbes)
+- Turn on USB_SERIAL_F81232 for Fedora (Justin M. Forbes)
+- Linux v6.9.8
 
 * Thu Jun 27 2024 Augusto Caringi <acaringi@redhat.com> [6.9.7-0]
 - ACPI: scan: Ignore camera graph port nodes on all Dell Tiger, Alder and Raptor Lake models (Hans de Goede)
