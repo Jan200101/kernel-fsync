@@ -963,7 +963,7 @@ and this affected the reconnection.
 Through trial it is found that the minimum time required is approx 1200ms
 to allow a proper disconnect and disable, and the same amount of time on
 resume is required to prevent a rapid disconnect/reconnect happening on
-seemingly random occasions. To be more than safe the time is now 2500ms
+seemingly random occasions. To be safe the time is now 1500ms for msleep.
 
 Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 Signed-off-by: Luke D. Jones <luke@ljones.dev>
@@ -980,7 +980,7 @@ index 976e26c82f80..ab98f91e573c 100644
  #define ASUS_USB0_PWR_EC0_CSEE "\\_SB.PCI0.SBRG.EC0.CSEE"
  /* 300ms so far seems to produce a reliable result on AC and battery */
 -#define ASUS_USB0_PWR_EC0_CSEE_WAIT 300
-+#define ASUS_USB0_PWR_EC0_CSEE_WAIT 2500
++#define ASUS_USB0_PWR_EC0_CSEE_WAIT 1500
  
  static const char * const ashs_ids[] = { "ATK4001", "ATK4002", NULL };
  
