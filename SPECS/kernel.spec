@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 203%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.8
 
@@ -4117,6 +4117,9 @@ fi\
 #
 #
 %changelog
+* Sun Jul 14 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.8-203.fsync.1
+- kernel-fsync v6.9.8 increase asus internal usb delay
+
 * Sat Jul 13 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.8-202.fsync.1
 - kernel-fsync v6.9.8 fix audio
 
