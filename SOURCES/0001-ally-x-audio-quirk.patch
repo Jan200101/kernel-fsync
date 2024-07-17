@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Jan200101 <sentrycraft123@gmail.com>
 Date: Sat, 13 Jul 2024 07:34:05 +0200
-Subject: [PATCH] fix audio
+Subject: [PATCH] Add Rog Ally X tas2781 audio quirk
 
 Signed-off-by: Jan200101 <sentrycraft123@gmail.com>
 ---

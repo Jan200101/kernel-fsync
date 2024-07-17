@@ -23,6 +23,8 @@ GENERIC_PATCHES = [
     ["SECURITY_LOCKDOWN_LSM_EARLY", None, UNSET],
     #  scheduler stuff
     ["SCHED_BORE", None, ENABLE],
+    ["MIN_BASE_SLICE_NS", None, "1000000"],
+    ["SCHED_CLASS_EXT", None, ENABLE],
 
     # device specific config
     # Microsoft Surface

@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jan200101 <sentrycraft123@gmail.com>
+Date: Mon, 15 Jul 2024 19:31:40 +0200
+Subject: [PATCH] add ally x dmi quirk for controller suspend
+
+Signed-off-by: Jan200101 <sentrycraft123@gmail.com>
+---
+ drivers/platform/x86/asus-wmi.c            |  3 +--
+ include/linux/platform_data/x86/asus-wmi.h | 14 ++++++++++++++
+ 2 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
+index 4b78c4f4e..a8060e7fb 100644
+--- a/drivers/platform/x86/asus-wmi.c
++++ b/drivers/platform/x86/asus-wmi.c
+@@ -4646,8 +4646,7 @@ static int asus_wmi_add(struct platform_device *pdev)
+ 	asus->egpu_enable_available = asus_wmi_dev_is_present(asus, ASUS_WMI_DEVID_EGPU);
+ 	asus->dgpu_disable_available = asus_wmi_dev_is_present(asus, ASUS_WMI_DEVID_DGPU);
+ 	asus->kbd_rgb_state_available = asus_wmi_dev_is_present(asus, ASUS_WMI_DEVID_TUF_RGB_STATE);
+-	asus->ally_mcu_usb_switch = acpi_has_method(NULL, ASUS_USB0_PWR_EC0_CSEE)
+-						&& dmi_match(DMI_BOARD_NAME, "RC71L");
++	asus->ally_mcu_usb_switch = acpi_has_method(NULL, ASUS_USB0_PWR_EC0_CSEE) && dmi_check_system(ally_usb_switch_dmi_ids);
+ 
+ 	if (asus_wmi_dev_is_present(asus, ASUS_WMI_DEVID_MINI_LED_MODE))
+ 		asus->mini_led_dev_id = ASUS_WMI_DEVID_MINI_LED_MODE;
+diff --git a/include/linux/platform_data/x86/asus-wmi.h b/include/linux/platform_data/x86/asus-wmi.h
+index 870f4bb57..3e8edc07e 100644
+--- a/include/linux/platform_data/x86/asus-wmi.h
++++ b/include/linux/platform_data/x86/asus-wmi.h
+@@ -225,4 +225,18 @@ static const struct dmi_system_id asus_use_hid_led_dmi_ids[] = {
+ 	NULL,
+ };
+ 
++static const struct dmi_system_id ally_usb_switch_dmi_ids[] = {
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_NAME, "RC71L"),
++		},
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_NAME, "RC72LA"),
++		},
++	},
++	NULL,
++};
++
+ #endif	/* __PLATFORM_DATA_X86_ASUS_WMI_H */

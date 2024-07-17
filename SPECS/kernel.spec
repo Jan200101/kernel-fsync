@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.9.8
-%define specversion 6.9.8
+%define specrpmversion 6.9.9
+%define specversion 6.9.9
 %define patchversion 6.9
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.9.8
+%define tarfile_release 6.9.9
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 204%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.9.8
+%define kabiversion 6.9.9
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -983,6 +983,7 @@ Patch206: amdgpu-si-cik-default.patch
 Patch211: tkg-misc-additions.patch
 Patch212: tkg-unprivileged-CLONE_NEWUSER.patch
 Patch213: cachy-bore.patch
+Patch214: scx-kernel.patch
 
 # device specific patches
 Patch300: linux-surface.patch
@@ -999,8 +1000,8 @@ Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
 Patch321: v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 Patch322: rog-ally-gyro-fix.patch
 Patch323: 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
-Patch336: 0001-add-support-for-ally-x-mcu-switch.patch
-Patch337: 0001-fix-audio.patch
+Patch336: 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
+Patch337: 0001-ally-x-audio-quirk.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
 Patch208: 0001-ntsync.patch
@@ -1040,6 +1041,8 @@ Patch411: 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
 Patch412: 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 # fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
 Patch413: amdgpu-ignore-min-pcap.patch
+# improve controller hiding
+Patch414: 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -1879,6 +1882,7 @@ ApplyOptionalPatch amdgpu-si-cik-default.patch
 ApplyOptionalPatch tkg-misc-additions.patch
 ApplyOptionalPatch tkg-unprivileged-CLONE_NEWUSER.patch
 ApplyOptionalPatch cachy-bore.patch
+ApplyOptionalPatch scx-kernel.patch
 
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
@@ -1895,8 +1899,8 @@ ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
 ApplyOptionalPatch v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 ApplyOptionalPatch rog-ally-gyro-fix.patch
 ApplyOptionalPatch 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
-ApplyOptionalPatch 0001-add-support-for-ally-x-mcu-switch.patch
-ApplyOptionalPatch 0001-fix-audio.patch
+ApplyOptionalPatch 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
+ApplyOptionalPatch 0001-ally-x-audio-quirk.patch 
 
 # https://github.com/CachyOS/kernel-patches
 ApplyOptionalPatch 0001-ntsync.patch
@@ -1937,6 +1941,8 @@ ApplyOptionalPatch 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.pat
 ApplyOptionalPatch 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 # fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
 ApplyOptionalPatch amdgpu-ignore-min-pcap.patch
+# improve controller hiding
+ApplyOptionalPatch 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -4117,17 +4123,11 @@ fi\
 #
 #
 %changelog
-* Sun Jul 14 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.8-204.fsync.1
-- kernel-fsync v6.9.8 ally dmi quirk update
+* Tue Jul 16 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-202.fsync
+- kernel-fsync v6.9.9
 
-* Sun Jul 14 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.8-203.fsync.1
-- kernel-fsync v6.9.8 increase asus internal usb delay
-
-* Sat Jul 13 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.8-202.fsync.1
-- kernel-fsync v6.9.8 fix audio
-
-* Tue Jul 09 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.8-201.fsync
-- kernel-fsync v6.9.8
+* Thu Jul 11 2024 Augusto Caringi <acaringi@redhat.com> [6.9.9-0]
+- Linux v6.9.9
 
 * Fri Jul 05 2024 Augusto Caringi <acaringi@redhat.com> [6.9.8-0]
 - Add BugsFixed for 6.9 (Justin M. Forbes)
