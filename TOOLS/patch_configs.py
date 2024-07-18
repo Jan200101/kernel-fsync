@@ -37,8 +37,8 @@ GENERIC_PATCHES = [
     ["SENSORS_SURFACE_FAN", None, MODULE],
     ["SENSORS_SURFACE_TEMP", None, MODULE],
 
-    # Steam Deck / amdgpu HDR Color management
-    ["DRM_AMD_COLOR_STEAMDECK", None, ENABLE],
+    # amdgpu HDR Color management
+    ["AMD_PRIVATE_COLOR", None, ENABLE],
 
     # Rog Ally Gyro Fix
     ["BMI323_I2C", None, MODULE],

@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 203%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.9
 
@@ -984,6 +984,8 @@ Patch211: tkg-misc-additions.patch
 Patch212: tkg-unprivileged-CLONE_NEWUSER.patch
 Patch213: cachy-bore.patch
 Patch214: scx-kernel.patch
+Patch215: cachy-bbr3.patch
+Patch216: cachy-fixes.patch
 
 # device specific patches
 Patch300: linux-surface.patch
@@ -1006,7 +1008,6 @@ Patch337: 0001-ally-x-audio-quirk.patch
 # hdr: https://github.com/CachyOS/kernel-patches
 Patch208: 0001-ntsync.patch
 Patch325: 0001-amd-pstate.patch
-Patch326: 0001-amd-hdr.patch
 Patch327: 0001-add-acpi_call.patch
 Patch328: uinput.patch
 
@@ -1883,6 +1884,8 @@ ApplyOptionalPatch tkg-misc-additions.patch
 ApplyOptionalPatch tkg-unprivileged-CLONE_NEWUSER.patch
 ApplyOptionalPatch cachy-bore.patch
 ApplyOptionalPatch scx-kernel.patch
+ApplyOptionalPatch cachy-bbr3.patch
+ApplyOptionalPatch cachy-fixes.patch
 
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
@@ -1905,7 +1908,6 @@ ApplyOptionalPatch 0001-ally-x-audio-quirk.patch
 # https://github.com/CachyOS/kernel-patches
 ApplyOptionalPatch 0001-ntsync.patch
 ApplyOptionalPatch 0001-amd-pstate.patch
-ApplyOptionalPatch 0001-amd-hdr.patch
 ApplyOptionalPatch 0001-add-acpi_call.patch
 ApplyOptionalPatch uinput.patch
 
@@ -4123,6 +4125,9 @@ fi\
 #
 #
 %changelog
+* Thu Jul 18 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-203.fsync
+- Update patchsets
+
 * Tue Jul 16 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-202.fsync
 - kernel-fsync v6.9.9
 
