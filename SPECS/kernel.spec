@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 204%{?buildid}%{?dist}
+%define specrelease 205%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.9
 
@@ -4125,6 +4125,9 @@ fi\
 #
 #
 %changelog
+* Sun Jul 21 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-205.fsync.1
+- kernel-fsync v6.9.9 Ally X Quirk Patch Two: Electric Boogaloo
+
 * Sat Jul 20 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-204.fsync
 - kernel-fsync v6.9.9 Update Ally X quirk patch
 
