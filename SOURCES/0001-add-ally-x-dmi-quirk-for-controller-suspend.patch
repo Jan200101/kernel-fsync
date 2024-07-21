@@ -1,14 +1,14 @@
-From 79d958eccfa4a1cfbb552032e9542f03333005e7 Mon Sep 17 00:00:00 2001
-From: antheas <antheas@users.noreply.github.com>
-Date: Mon, 15 Jul 2024 00:00:45 +0300
-Subject: [PATCH] add ally x dmi quirk for controller suspend
+From 650af3af1d5ebd5e5b759c503147f2fbc88ac3b7 Mon Sep 17 00:00:00 2001
+From: antheas <git@antheas.dev>
+Date: Sat, 20 Jul 2024 19:43:36 +0300
+Subject: [PATCH v2 1/3] allyx: add quirk for suspending controllers
 
 ---
  drivers/platform/x86/asus-wmi.c | 6 ++++--
  1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
-index 3f9b6285c9a6..8e362726b703 100644
+index 3f9b6285c..8e362726b 100644
 --- a/drivers/platform/x86/asus-wmi.c
 +++ b/drivers/platform/x86/asus-wmi.c
 @@ -4645,8 +4645,10 @@ static int asus_wmi_add(struct platform_device *pdev)
@@ -26,3 +26,100 @@ index 3f9b6285c9a6..8e362726b703 100644
  		asus->mini_led_dev_id = ASUS_WMI_DEVID_MINI_LED_MODE;
 -- 
 2.45.2
+
+
+From 013f01137eab6cb7ebbc6e7345185bd44456cbf6 Mon Sep 17 00:00:00 2001
+From: antheas <git@antheas.dev>
+Date: Sat, 20 Jul 2024 19:57:34 +0300
+Subject: [PATCH v2 2/3] allyx: tweak suspend and resume suspends
+
+---
+ drivers/platform/x86/asus-wmi.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
+index 8e362726b..b51b0153e 100644
+--- a/drivers/platform/x86/asus-wmi.c
++++ b/drivers/platform/x86/asus-wmi.c
+@@ -139,8 +139,11 @@ module_param(fnlock_default, bool, 0444);
+ 
+ /* Controls the power state of the USB0 hub on ROG Ally which input is on */
+ #define ASUS_USB0_PWR_EC0_CSEE "\\_SB.PCI0.SBRG.EC0.CSEE"
+-/* 300ms so far seems to produce a reliable result on AC and battery */
+-#define ASUS_USB0_PWR_EC0_CSEE_WAIT 1500
++/* Use different delays for the ally depending on context. */
++#define ASUS_USB0_PWR_EC0_CSEE_PREPARE 1200
++#define ASUS_USB0_PWR_EC0_CSEE_RESUME_BEFORE 1000
++#define ASUS_USB0_PWR_EC0_CSEE_RESUME_AFTER 1500
++
+ 
+ static const char * const ashs_ids[] = { "ATK4001", "ATK4002", NULL };
+ 
+@@ -4847,10 +4850,11 @@ static int asus_hotk_resume_early(struct device *device)
+ 
+ 	if (asus->ally_mcu_usb_switch) {
+ 		/* sleep required to prevent USB0 being yanked then reappearing rapidly */
++		msleep(ASUS_USB0_PWR_EC0_CSEE_RESUME_BEFORE);
+ 		if (ACPI_FAILURE(acpi_execute_simple_method(NULL, ASUS_USB0_PWR_EC0_CSEE, 0xB8)))
+ 			dev_err(device, "ROG Ally MCU failed to connect USB dev\n");
+ 		else
+-			msleep(ASUS_USB0_PWR_EC0_CSEE_WAIT);
++			msleep(ASUS_USB0_PWR_EC0_CSEE_RESUME_AFTER);
+ 	}
+ 	return 0;
+ }
+@@ -4864,7 +4868,7 @@ static int asus_hotk_prepare(struct device *device)
+ 		if (ACPI_FAILURE(acpi_execute_simple_method(NULL, ASUS_USB0_PWR_EC0_CSEE, 0xB7)))
+ 			dev_err(device, "ROG Ally MCU failed to disconnect USB dev\n");
+ 		else
+-			msleep(ASUS_USB0_PWR_EC0_CSEE_WAIT);
++			msleep(ASUS_USB0_PWR_EC0_CSEE_PREPARE);
+ 	}
+ 	return 0;
+ }
+-- 
+2.45.2
+
+
+From f508c14d1ca1c8161088da37752b1e4c816cd6a9 Mon Sep 17 00:00:00 2001
+From: antheas <git@antheas.dev>
+Date: Sat, 20 Jul 2024 20:07:37 +0300
+Subject: [PATCH v2 3/3] add logging to allyx suspend quirk
+
+---
+ drivers/platform/x86/asus-wmi.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
+index b51b0153e..3122d2c27 100644
+--- a/drivers/platform/x86/asus-wmi.c
++++ b/drivers/platform/x86/asus-wmi.c
+@@ -4853,8 +4853,11 @@ static int asus_hotk_resume_early(struct device *device)
+ 		msleep(ASUS_USB0_PWR_EC0_CSEE_RESUME_BEFORE);
+ 		if (ACPI_FAILURE(acpi_execute_simple_method(NULL, ASUS_USB0_PWR_EC0_CSEE, 0xB8)))
+ 			dev_err(device, "ROG Ally MCU failed to connect USB dev\n");
+-		else
++		else {
++			dev_info(device,
++				 "ROG Ally MCU resume command sent after suspend\n");
+ 			msleep(ASUS_USB0_PWR_EC0_CSEE_RESUME_AFTER);
++		}
+ 	}
+ 	return 0;
+ }
+@@ -4867,8 +4870,11 @@ static int asus_hotk_prepare(struct device *device)
+ 		/* sleep required to ensure USB0 is disabled before sleep continues */
+ 		if (ACPI_FAILURE(acpi_execute_simple_method(NULL, ASUS_USB0_PWR_EC0_CSEE, 0xB7)))
+ 			dev_err(device, "ROG Ally MCU failed to disconnect USB dev\n");
+-		else
++		else {
++			dev_info(device,
++				 "ROG Ally MCU disconnect command sent before suspend.\n");
+ 			msleep(ASUS_USB0_PWR_EC0_CSEE_PREPARE);
++		}
+ 	}
+ 	return 0;
+ }
+-- 
+2.45.2
+
