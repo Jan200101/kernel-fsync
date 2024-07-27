@@ -21,6 +21,7 @@ GENERIC_PATCHES = [
     ["USER_NS_UNPRIVILEGED", None, ENABLE],
     ["TCP_CONG_BBR2", None, MODULE],
     ["SECURITY_LOCKDOWN_LSM_EARLY", None, UNSET],
+    ["SND_SOC_AW87XXX", None, MODULE],
     #  scheduler stuff
     ["SCHED_BORE", None, ENABLE],
     ["MIN_BASE_SLICE_NS", None, "1000000"],
@@ -110,9 +111,6 @@ ARCH_PATCHES = {
         ["USB_DUMMY_HCD", None, UNSET],
         ["USB_CONFIGFS", None, UNSET],
         ["PHY_SAMSUNG_USB2", None, UNSET],
-
-        # Steam Deck HDR Color management
-        ["DRM_AMD_COLOR_STEAMDECK", None, ENABLE],
 
         # Deck Sound stuff?
         ["SND_SOC_AMD_ACP_COMMON", None, MODULE],

@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.9.9
-%define specversion 6.9.9
+%define specrpmversion 6.9.10
+%define specversion 6.9.10
 %define patchversion 6.9
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.9.9
+%define tarfile_release 6.9.10
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 206%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.9.9
+%define kabiversion 6.9.10
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1044,6 +1044,8 @@ Patch412: 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 Patch413: amdgpu-ignore-min-pcap.patch
 # improve controller hiding
 Patch414: 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
+# Chimera speaker fixes
+Patch415: v0-speaker-multifix.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -1945,6 +1947,8 @@ ApplyOptionalPatch 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 ApplyOptionalPatch amdgpu-ignore-min-pcap.patch
 # improve controller hiding
 ApplyOptionalPatch 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
+# Chimera speaker fixes
+ApplyOptionalPatch v0-speaker-multifix.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -4125,20 +4129,11 @@ fi\
 #
 #
 %changelog
-* Tue Jul 23 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-206.fsync
-- kernel v6.9.9 Ally X Quirk Revert
+* Sat Jul 27 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.10-201.fsync
+- kernel-fsync v6.9.10
 
-* Sun Jul 21 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-205.fsync
-- kernel-fsync v6.9.9 Ally X Quirk Patch Two: Electric Boogaloo
-
-* Sat Jul 20 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-204.fsync
-- kernel-fsync v6.9.9 Update Ally X quirk patch
-
-* Thu Jul 18 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-203.fsync
-- Update patchsets
-
-* Tue Jul 16 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.9-202.fsync
-- kernel-fsync v6.9.9
+* Thu Jul 18 2024 Augusto Caringi <acaringi@redhat.com> [6.9.10-0]
+- Linux v6.9.10
 
 * Thu Jul 11 2024 Augusto Caringi <acaringi@redhat.com> [6.9.9-0]
 - Linux v6.9.9
