@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.9.11
-%define specversion 6.9.11
+%define specrpmversion 6.9.12
+%define specversion 6.9.12
 %define patchversion 6.9
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.9.11
+%define tarfile_release 6.9.12
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.9.11
+%define kabiversion 6.9.12
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1046,6 +1046,7 @@ Patch413: amdgpu-ignore-min-pcap.patch
 Patch414: 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
 # Chimera speaker fixes
 Patch415: v0-speaker-multifix.patch
+Patch416: v0-oxp-sensors.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -1949,6 +1950,7 @@ ApplyOptionalPatch amdgpu-ignore-min-pcap.patch
 ApplyOptionalPatch 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
 # Chimera speaker fixes
 ApplyOptionalPatch v0-speaker-multifix.patch
+ApplyOptionalPatch v0-oxp-sensors.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -4129,8 +4131,11 @@ fi\
 #
 #
 %changelog
-* Sun Jul 28 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.11-201.fsync
-- kernel-fsync v6.9.11
+* Mon Jul 29 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-201.fsync
+- kernel-fsync v6.9.12
+
+* Sat Jul 27 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.9.12-0]
+- Linux v6.9.12
 
 * Thu Jul 25 2024 Augusto Caringi <acaringi@redhat.com> [6.9.11-0]
 - Linux v6.9.11
