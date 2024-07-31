@@ -1,5 +1,4 @@
 #/bin/env bash
-
 set -eux
 
 # make sure we check our own directories
