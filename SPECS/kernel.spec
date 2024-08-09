@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 203%{?buildid}%{?dist}
+%define specrelease 204%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.12
 
@@ -1003,7 +1003,7 @@ Patch321: v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 Patch322: rog-ally-gyro-fix.patch
 Patch323: 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
 Patch336: 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
-Patch337: 0001-ally-x-audio-quirk.patch
+Patch337: 0001-patch_realtek-Fix-ROG-ALLY-X-audio.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
 Patch208: 0001-ntsync.patch
@@ -1908,7 +1908,7 @@ ApplyOptionalPatch v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 ApplyOptionalPatch rog-ally-gyro-fix.patch
 ApplyOptionalPatch 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
 ApplyOptionalPatch 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
-ApplyOptionalPatch 0001-ally-x-audio-quirk.patch 
+ApplyOptionalPatch 0001-patch_realtek-Fix-ROG-ALLY-X-audio.patch 
 
 # https://github.com/CachyOS/kernel-patches
 ApplyOptionalPatch 0001-ntsync.patch
@@ -4135,11 +4135,14 @@ fi\
 #
 #
 %changelog
+* Fri Aug 09 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-204.fsync
+- kernel-fsync v6.9.12 Ally X audio correction
+
 * Sat Aug 03 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-203.fsync
 - kernel-fsync v6.9.12 work around DCN issue
 
 * Wed Jul 31 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-202.fsync
-- kernel v6.9.12 loki mini
+- kernel-fsync v6.9.12 loki mini
 
 * Mon Jul 29 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-201.fsync
 - kernel-fsync v6.9.12
