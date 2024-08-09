@@ -57,11 +57,13 @@ diff --git a/drivers/gpu/drm/xe/xe_device_types.h b/drivers/gpu/drm/xe/xe_device
 index e8491979a6f2..4682970746c3 100644
 --- a/drivers/gpu/drm/xe/xe_device_types.h
 +++ b/drivers/gpu/drm/xe/xe_device_types.h
-@@ -498,6 +498,7 @@ struct xe_device {
+@@ -516,6 +516,9 @@
+ 		unsigned int czclk_freq;
+ 		unsigned int fsb_freq, mem_freq, is_ddr3;
  	};
- 	struct {
- 		const char *dmc_firmware_path;
++	struct {
 +		bool disable_async_page_flip;
- 	} params;
++	} params;
  
  	void *pxp;
+ #endif

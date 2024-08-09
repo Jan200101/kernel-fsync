@@ -2,7 +2,7 @@ diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
 index 2ddca08f8a76..72647850f08e 100644
 --- a/drivers/i2c/busses/Kconfig
 +++ b/drivers/i2c/busses/Kconfig
-@@ -217,6 +217,15 @@ config I2C_CHT_WC
+@@ -238,6 +238,15 @@
  	  combined with a FUSB302 Type-C port-controller as such it is advised
  	  to also select CONFIG_TYPEC_FUSB302=m.
 
@@ -17,7 +17,7 @@ index 2ddca08f8a76..72647850f08e 100644
 +
  config I2C_NFORCE2
  	tristate "Nvidia nForce2, nForce3 and nForce4"
- 	depends on PCI
+ 	depends on PCI && HAS_IOPORT
 diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
 index 25d60889713c..3c2a9b237ac6 100644
 --- a/drivers/i2c/busses/Makefile
@@ -413,7 +413,7 @@ index 000000000000..0462f0952043
 +	}
 +
 +	adap->owner = THIS_MODULE;
-+	adap->class = I2C_CLASS_HWMON | I2C_CLASS_SPD;
++	adap->class = I2C_CLASS_HWMON;
 +	adap->algo = &smbus_algorithm;
 +
 +	adapdata = kzalloc(sizeof(*adapdata), GFP_KERNEL);

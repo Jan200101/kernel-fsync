@@ -1,175 +1,3 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Jan200101 <sentrycraft123@gmail.com>
-Date: Wed, 17 Jul 2024 14:30:16 +0200
-Subject: [PATCH] scx
-
-Signed-off-by: Jan200101 <sentrycraft123@gmail.com>
----
- Documentation/scheduler/index.rst             |    1 +
- Documentation/scheduler/sched-ext.rst         |  316 +
- MAINTAINERS                                   |   13 +
- include/asm-generic/vmlinux.lds.h             |    1 +
- include/linux/cgroup.h                        |    4 +-
- include/linux/sched.h                         |    5 +
- include/linux/sched/ext.h                     |  206 +
- include/linux/sched/task.h                    |    3 +-
- include/trace/events/sched_ext.h              |   32 +
- include/uapi/linux/sched.h                    |    1 +
- init/init_task.c                              |   12 +
- kernel/Kconfig.preempt                        |   26 +-
- kernel/fork.c                                 |   17 +-
- kernel/sched/build_policy.c                   |   10 +
- kernel/sched/core.c                           |  250 +-
- kernel/sched/cpufreq_schedutil.c              |   50 +-
- kernel/sched/debug.c                          |    3 +
- kernel/sched/ext.c                            | 6537 +++++++++++++++++
- kernel/sched/ext.h                            |   69 +
- kernel/sched/fair.c                           |   27 +-
- kernel/sched/idle.c                           |    2 +
- kernel/sched/sched.h                          |  171 +-
- lib/dump_stack.c                              |    1 +
- tools/Makefile                                |   10 +-
- tools/sched_ext/.gitignore                    |    2 +
- tools/sched_ext/Makefile                      |  246 +
- tools/sched_ext/README.md                     |  258 +
- .../sched_ext/include/bpf-compat/gnu/stubs.h  |   11 +
- tools/sched_ext/include/scx/common.bpf.h      |  401 +
- tools/sched_ext/include/scx/common.h          |   75 +
- tools/sched_ext/include/scx/compat.bpf.h      |   28 +
- tools/sched_ext/include/scx/compat.h          |  187 +
- tools/sched_ext/include/scx/user_exit_info.h  |  111 +
- tools/sched_ext/scx_central.bpf.c             |  361 +
- tools/sched_ext/scx_central.c                 |  135 +
- tools/sched_ext/scx_qmap.bpf.c                |  706 ++
- tools/sched_ext/scx_qmap.c                    |  144 +
- tools/sched_ext/scx_show_state.py             |   39 +
- tools/sched_ext/scx_simple.bpf.c              |  156 +
- tools/sched_ext/scx_simple.c                  |  107 +
- tools/testing/selftests/sched_ext/.gitignore  |    6 +
- tools/testing/selftests/sched_ext/Makefile    |  218 +
- tools/testing/selftests/sched_ext/config      |    9 +
- .../selftests/sched_ext/create_dsq.bpf.c      |   58 +
- .../testing/selftests/sched_ext/create_dsq.c  |   57 +
- .../sched_ext/ddsp_bogus_dsq_fail.bpf.c       |   42 +
- .../selftests/sched_ext/ddsp_bogus_dsq_fail.c |   57 +
- .../sched_ext/ddsp_vtimelocal_fail.bpf.c      |   39 +
- .../sched_ext/ddsp_vtimelocal_fail.c          |   56 +
- .../selftests/sched_ext/dsp_local_on.bpf.c    |   65 +
- .../selftests/sched_ext/dsp_local_on.c        |   58 +
- .../sched_ext/enq_last_no_enq_fails.bpf.c     |   21 +
- .../sched_ext/enq_last_no_enq_fails.c         |   60 +
- .../sched_ext/enq_select_cpu_fails.bpf.c      |   43 +
- .../sched_ext/enq_select_cpu_fails.c          |   61 +
- tools/testing/selftests/sched_ext/exit.bpf.c  |   84 +
- tools/testing/selftests/sched_ext/exit.c      |   55 +
- tools/testing/selftests/sched_ext/exit_test.h |   20 +
- .../testing/selftests/sched_ext/hotplug.bpf.c |   61 +
- tools/testing/selftests/sched_ext/hotplug.c   |  168 +
- .../selftests/sched_ext/hotplug_test.h        |   15 +
- .../sched_ext/init_enable_count.bpf.c         |   53 +
- .../selftests/sched_ext/init_enable_count.c   |  166 +
- .../testing/selftests/sched_ext/maximal.bpf.c |  132 +
- tools/testing/selftests/sched_ext/maximal.c   |   51 +
- .../selftests/sched_ext/maybe_null.bpf.c      |   36 +
- .../testing/selftests/sched_ext/maybe_null.c  |   49 +
- .../sched_ext/maybe_null_fail_dsp.bpf.c       |   25 +
- .../sched_ext/maybe_null_fail_yld.bpf.c       |   28 +
- .../testing/selftests/sched_ext/minimal.bpf.c |   21 +
- tools/testing/selftests/sched_ext/minimal.c   |   58 +
- .../selftests/sched_ext/prog_run.bpf.c        |   32 +
- tools/testing/selftests/sched_ext/prog_run.c  |   78 +
- .../testing/selftests/sched_ext/reload_loop.c |   75 +
- tools/testing/selftests/sched_ext/runner.c    |  201 +
- tools/testing/selftests/sched_ext/scx_test.h  |  131 +
- .../selftests/sched_ext/select_cpu_dfl.bpf.c  |   40 +
- .../selftests/sched_ext/select_cpu_dfl.c      |   72 +
- .../sched_ext/select_cpu_dfl_nodispatch.bpf.c |   89 +
- .../sched_ext/select_cpu_dfl_nodispatch.c     |   72 +
- .../sched_ext/select_cpu_dispatch.bpf.c       |   41 +
- .../selftests/sched_ext/select_cpu_dispatch.c |   70 +
- .../select_cpu_dispatch_bad_dsq.bpf.c         |   37 +
- .../sched_ext/select_cpu_dispatch_bad_dsq.c   |   56 +
- .../select_cpu_dispatch_dbl_dsp.bpf.c         |   38 +
- .../sched_ext/select_cpu_dispatch_dbl_dsp.c   |   56 +
- .../sched_ext/select_cpu_vtime.bpf.c          |   92 +
- .../selftests/sched_ext/select_cpu_vtime.c    |   59 +
- .../selftests/sched_ext/test_example.c        |   49 +
- tools/testing/selftests/sched_ext/util.c      |   71 +
- tools/testing/selftests/sched_ext/util.h      |   13 +
- 91 files changed, 13860 insertions(+), 118 deletions(-)
- create mode 100644 Documentation/scheduler/sched-ext.rst
- create mode 100644 include/linux/sched/ext.h
- create mode 100644 include/trace/events/sched_ext.h
- create mode 100644 kernel/sched/ext.c
- create mode 100644 kernel/sched/ext.h
- create mode 100644 tools/sched_ext/.gitignore
- create mode 100644 tools/sched_ext/Makefile
- create mode 100644 tools/sched_ext/README.md
- create mode 100644 tools/sched_ext/include/bpf-compat/gnu/stubs.h
- create mode 100644 tools/sched_ext/include/scx/common.bpf.h
- create mode 100644 tools/sched_ext/include/scx/common.h
- create mode 100644 tools/sched_ext/include/scx/compat.bpf.h
- create mode 100644 tools/sched_ext/include/scx/compat.h
- create mode 100644 tools/sched_ext/include/scx/user_exit_info.h
- create mode 100644 tools/sched_ext/scx_central.bpf.c
- create mode 100644 tools/sched_ext/scx_central.c
- create mode 100644 tools/sched_ext/scx_qmap.bpf.c
- create mode 100644 tools/sched_ext/scx_qmap.c
- create mode 100644 tools/sched_ext/scx_show_state.py
- create mode 100644 tools/sched_ext/scx_simple.bpf.c
- create mode 100644 tools/sched_ext/scx_simple.c
- create mode 100644 tools/testing/selftests/sched_ext/.gitignore
- create mode 100644 tools/testing/selftests/sched_ext/Makefile
- create mode 100644 tools/testing/selftests/sched_ext/config
- create mode 100644 tools/testing/selftests/sched_ext/create_dsq.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/create_dsq.c
- create mode 100644 tools/testing/selftests/sched_ext/ddsp_bogus_dsq_fail.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/ddsp_bogus_dsq_fail.c
- create mode 100644 tools/testing/selftests/sched_ext/ddsp_vtimelocal_fail.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/ddsp_vtimelocal_fail.c
- create mode 100644 tools/testing/selftests/sched_ext/dsp_local_on.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/dsp_local_on.c
- create mode 100644 tools/testing/selftests/sched_ext/enq_last_no_enq_fails.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/enq_last_no_enq_fails.c
- create mode 100644 tools/testing/selftests/sched_ext/enq_select_cpu_fails.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/enq_select_cpu_fails.c
- create mode 100644 tools/testing/selftests/sched_ext/exit.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/exit.c
- create mode 100644 tools/testing/selftests/sched_ext/exit_test.h
- create mode 100644 tools/testing/selftests/sched_ext/hotplug.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/hotplug.c
- create mode 100644 tools/testing/selftests/sched_ext/hotplug_test.h
- create mode 100644 tools/testing/selftests/sched_ext/init_enable_count.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/init_enable_count.c
- create mode 100644 tools/testing/selftests/sched_ext/maximal.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/maximal.c
- create mode 100644 tools/testing/selftests/sched_ext/maybe_null.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/maybe_null.c
- create mode 100644 tools/testing/selftests/sched_ext/maybe_null_fail_dsp.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/maybe_null_fail_yld.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/minimal.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/minimal.c
- create mode 100644 tools/testing/selftests/sched_ext/prog_run.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/prog_run.c
- create mode 100644 tools/testing/selftests/sched_ext/reload_loop.c
- create mode 100644 tools/testing/selftests/sched_ext/runner.c
- create mode 100644 tools/testing/selftests/sched_ext/scx_test.h
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dfl.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dfl.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dfl_nodispatch.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dfl_nodispatch.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dispatch.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dispatch.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dispatch_bad_dsq.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dispatch_bad_dsq.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dispatch_dbl_dsp.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_dispatch_dbl_dsp.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_vtime.bpf.c
- create mode 100644 tools/testing/selftests/sched_ext/select_cpu_vtime.c
- create mode 100644 tools/testing/selftests/sched_ext/test_example.c
- create mode 100644 tools/testing/selftests/sched_ext/util.c
- create mode 100644 tools/testing/selftests/sched_ext/util.h
-
 diff --git a/Documentation/scheduler/index.rst b/Documentation/scheduler/index.rst
 index 43bd8a145b7a..0611dc3dda8e 100644
 --- a/Documentation/scheduler/index.rst
@@ -505,10 +333,10 @@ index 000000000000..a707d2181a77
 +possible, they are subject to change without warning between kernel
 +versions.
 diff --git a/MAINTAINERS b/MAINTAINERS
-index 3121709d99e3..bf3b77e96dc4 100644
+index 958e935449e5..17d2679d291a 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -19623,6 +19623,19 @@ F:	include/linux/wait.h
+@@ -19917,6 +19917,19 @@ F:	include/linux/wait.h
  F:	include/uapi/linux/sched.h
  F:	kernel/sched/
  
@@ -528,11 +356,36 @@ index 3121709d99e3..bf3b77e96dc4 100644
  SCSI LIBSAS SUBSYSTEM
  R:	John Garry <john.g.garry@oracle.com>
  R:	Jason Yan <yanaijie@huawei.com>
+diff --git a/Makefile b/Makefile
+index c0af6d8aeb05..99cb65a24af6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@
+ VERSION = 6
+ PATCHLEVEL = 10
+ SUBLEVEL = 3
+-EXTRAVERSION =
++EXTRAVERSION = -scx1
+ NAME = Baby Opossum Posse
+ 
+ # *DOCUMENTATION*
+diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
+index e5974b8239c9..167e877b8bef 100644
+--- a/drivers/tty/sysrq.c
++++ b/drivers/tty/sysrq.c
+@@ -531,6 +531,7 @@ static const struct sysrq_key_op *sysrq_key_table[62] = {
+ 	NULL,				/* P */
+ 	NULL,				/* Q */
+ 	&sysrq_replay_logs_op,		/* R */
++	/* S: May be registered by sched_ext for resetting */
+ 	NULL,				/* S */
+ 	NULL,				/* T */
+ 	NULL,				/* U */
 diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index f7749d0f2562..05bfe4acba1d 100644
+index 70bf1004076b..a8417d31e348 100644
 --- a/include/asm-generic/vmlinux.lds.h
 +++ b/include/asm-generic/vmlinux.lds.h
-@@ -131,6 +131,7 @@
+@@ -133,6 +133,7 @@
  	*(__dl_sched_class)			\
  	*(__rt_sched_class)			\
  	*(__fair_sched_class)			\
@@ -541,7 +394,7 @@ index f7749d0f2562..05bfe4acba1d 100644
  	__sched_class_lowest = .;
  
 diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index 34aaf0e87def..bcebf8096e91 100644
+index 2150ca60394b..3cdaec701600 100644
 --- a/include/linux/cgroup.h
 +++ b/include/linux/cgroup.h
 @@ -29,8 +29,6 @@
@@ -563,7 +416,7 @@ index 34aaf0e87def..bcebf8096e91 100644
  	CSS_TASK_ITER_PROCS    = (1U << 0),  /* walk only threadgroup leaders */
  	CSS_TASK_ITER_THREADED = (1U << 1),  /* walk all threaded css_sets in the domain */
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 3c2abbc587b4..dc07eb0d3290 100644
+index 76214d7c819d..0f3a107bcd02 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -80,6 +80,8 @@ struct task_group;
@@ -575,7 +428,7 @@ index 3c2abbc587b4..dc07eb0d3290 100644
  /*
   * Task state bitmask. NOTE! These bits are also
   * encoded in fs/proc/array.c: get_task_state().
-@@ -798,6 +800,9 @@ struct task_struct {
+@@ -802,6 +804,9 @@ struct task_struct {
  	struct sched_rt_entity		rt;
  	struct sched_dl_entity		dl;
  	struct sched_dl_entity		*dl_server;
@@ -587,10 +440,10 @@ index 3c2abbc587b4..dc07eb0d3290 100644
  #ifdef CONFIG_SCHED_CORE
 diff --git a/include/linux/sched/ext.h b/include/linux/sched/ext.h
 new file mode 100644
-index 000000000000..593d2f4909dd
+index 000000000000..26e1c33bc844
 --- /dev/null
 +++ b/include/linux/sched/ext.h
-@@ -0,0 +1,206 @@
+@@ -0,0 +1,204 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * BPF extensible scheduler class: Documentation/scheduler/sched-ext.rst
@@ -699,16 +552,14 @@ index 000000000000..593d2f4909dd
 + * mechanism. See scx_kf_allow().
 + */
 +enum scx_kf_mask {
-+	SCX_KF_UNLOCKED		= 0,	  /* not sleepable, not rq locked */
-+	/* all non-sleepables may be nested inside SLEEPABLE */
-+	SCX_KF_SLEEPABLE	= 1 << 0, /* sleepable init operations */
++	SCX_KF_UNLOCKED		= 0,	  /* sleepable and not rq locked */
 +	/* ENQUEUE and DISPATCH may be nested inside CPU_RELEASE */
-+	SCX_KF_CPU_RELEASE	= 1 << 1, /* ops.cpu_release() */
++	SCX_KF_CPU_RELEASE	= 1 << 0, /* ops.cpu_release() */
 +	/* ops.dequeue (in REST) may be nested inside DISPATCH */
-+	SCX_KF_DISPATCH		= 1 << 2, /* ops.dispatch() */
-+	SCX_KF_ENQUEUE		= 1 << 3, /* ops.enqueue() and ops.select_cpu() */
-+	SCX_KF_SELECT_CPU	= 1 << 4, /* ops.select_cpu() */
-+	SCX_KF_REST		= 1 << 5, /* other rq-locked operations */
++	SCX_KF_DISPATCH		= 1 << 1, /* ops.dispatch() */
++	SCX_KF_ENQUEUE		= 1 << 2, /* ops.enqueue() and ops.select_cpu() */
++	SCX_KF_SELECT_CPU	= 1 << 3, /* ops.select_cpu() */
++	SCX_KF_REST		= 1 << 4, /* other rq-locked operations */
 +
 +	__SCX_KF_RQ_LOCKED	= SCX_KF_CPU_RELEASE | SCX_KF_DISPATCH |
 +				  SCX_KF_ENQUEUE | SCX_KF_SELECT_CPU | SCX_KF_REST,
@@ -837,7 +688,7 @@ index 000000000000..fe19da7315a9
 +	),
 +
 +	TP_fast_assign(
-+		__assign_str(line, line);
++		__assign_str(line);
 +	),
 +
 +	TP_printk("%s",
@@ -862,7 +713,7 @@ index 3bac0a8ceab2..359a14cc76a4 100644
  /* Can be ORed in to make sure the process is reverted back to SCHED_NORMAL on fork */
  #define SCHED_RESET_ON_FORK     0x40000000
 diff --git a/init/init_task.c b/init/init_task.c
-index 4daee6d761c8..ce882dbd2635 100644
+index eeb110c65fe2..e222722e790b 100644
 --- a/init/init_task.c
 +++ b/init/init_task.c
 @@ -6,6 +6,7 @@
@@ -873,7 +724,7 @@ index 4daee6d761c8..ce882dbd2635 100644
  #include <linux/init.h>
  #include <linux/fs.h>
  #include <linux/mm.h>
-@@ -97,6 +98,17 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
+@@ -98,6 +99,17 @@ struct task_struct init_task __aligned(L1_CACHE_BYTES) = {
  #endif
  #ifdef CONFIG_CGROUP_SCHED
  	.sched_task_group = &root_task_group,
@@ -926,7 +777,7 @@ index c2f1fd95a821..f3d140c3acc1 100644
 +	    Documentation/scheduler/sched-ext.rst
 +	    https://github.com/sched-ext/scx
 diff --git a/kernel/fork.c b/kernel/fork.c
-index aebb3e6c96dc..5d1f9de254d6 100644
+index 99076dbe27d8..741d962db0d9 100644
 --- a/kernel/fork.c
 +++ b/kernel/fork.c
 @@ -23,6 +23,7 @@
@@ -1041,7 +892,7 @@ index d9dc9ab3773f..e7d539bb721e 100644
 +# include "ext.c"
 +#endif
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index d211d40a2edc..e5a6766b3a45 100644
+index ebf21373f663..fb6276f74ee6 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -168,7 +168,10 @@ static inline int __task_prio(const struct task_struct *p)
@@ -1068,7 +919,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	return false;
  }
  
-@@ -1255,11 +1263,14 @@ bool sched_can_stop_tick(struct rq *rq)
+@@ -1254,11 +1262,14 @@ bool sched_can_stop_tick(struct rq *rq)
  		return true;
  
  	/*
@@ -1087,45 +938,18 @@ index d211d40a2edc..e5a6766b3a45 100644
  		return false;
  
  	/*
-@@ -1327,27 +1338,24 @@ int tg_nop(struct task_group *tg, void *data)
- static void set_load_weight(struct task_struct *p, bool update_load)
- {
- 	int prio = p->static_prio - MAX_RT_PRIO;
--	struct load_weight *load = &p->se.load;
-+	struct load_weight lw;
- 
--	/*
--	 * SCHED_IDLE tasks get minimal weight:
--	 */
- 	if (task_has_idle_policy(p)) {
--		load->weight = scale_load(WEIGHT_IDLEPRIO);
--		load->inv_weight = WMULT_IDLEPRIO;
--		return;
-+		lw.weight = scale_load(WEIGHT_IDLEPRIO);
-+		lw.inv_weight = WMULT_IDLEPRIO;
-+	} else {
-+		lw.weight = scale_load(sched_prio_to_weight[prio]);
-+		lw.inv_weight = sched_prio_to_wmult[prio];
- 	}
- 
- 	/*
+@@ -1340,8 +1351,8 @@ static void set_load_weight(struct task_struct *p, bool update_load)
  	 * SCHED_OTHER tasks have to update their load when changing their
  	 * weight
  	 */
--	if (update_load && p->sched_class == &fair_sched_class) {
--		reweight_task(p, prio);
--	} else {
--		load->weight = scale_load(sched_prio_to_weight[prio]);
--		load->inv_weight = sched_prio_to_wmult[prio];
--	}
+-	if (update_load && p->sched_class == &fair_sched_class)
+-		reweight_task(p, &lw);
 +	if (update_load && p->sched_class->reweight_task)
 +		p->sched_class->reweight_task(task_rq(p), p, &lw);
-+	else
-+		p->se.load = lw;
+ 	else
+ 		p->se.load = lw;
  }
- 
- #ifdef CONFIG_UCLAMP_TASK
-@@ -2214,6 +2222,17 @@ inline int task_curr(const struct task_struct *p)
+@@ -2210,6 +2221,17 @@ inline int task_curr(const struct task_struct *p)
  	return cpu_curr(task_cpu(p)) == p;
  }
  
@@ -1143,7 +967,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  /*
   * switched_from, switched_to and prio_changed must _NOT_ drop rq->lock,
   * use the balance_callback list if you want balancing.
-@@ -2221,9 +2240,9 @@ inline int task_curr(const struct task_struct *p)
+@@ -2217,9 +2239,9 @@ inline int task_curr(const struct task_struct *p)
   * this means any call to check_class_changed() must be followed by a call to
   * balance_callback().
   */
@@ -1156,7 +980,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  {
  	if (prev_class != p->sched_class) {
  		if (prev_class->switched_from)
-@@ -3986,6 +4005,15 @@ bool cpus_share_resources(int this_cpu, int that_cpu)
+@@ -3982,6 +4004,15 @@ bool cpus_share_resources(int this_cpu, int that_cpu)
  
  static inline bool ttwu_queue_cond(struct task_struct *p, int cpu)
  {
@@ -1172,7 +996,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	/*
  	 * Do not complicate things with the async wake_list while the CPU is
  	 * in hotplug state.
-@@ -4553,6 +4581,10 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
+@@ -4549,6 +4580,10 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
  	p->rt.on_rq		= 0;
  	p->rt.on_list		= 0;
  
@@ -1183,7 +1007,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  #ifdef CONFIG_PREEMPT_NOTIFIERS
  	INIT_HLIST_HEAD(&p->preempt_notifiers);
  #endif
-@@ -4794,10 +4826,18 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
+@@ -4789,10 +4824,18 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
  
  	if (dl_prio(p->prio))
  		return -EAGAIN;
@@ -1204,7 +1028,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  
  	init_entity_runnable_average(&p->se);
  
-@@ -4817,7 +4857,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
+@@ -4812,7 +4855,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
  	return 0;
  }
  
@@ -1213,7 +1037,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  {
  	unsigned long flags;
  
-@@ -4979,6 +4979,13 @@
+@@ -4974,6 +4974,13 @@
  	if (p->sched_class->task_fork)
  		p->sched_class->task_fork(p);
  	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
@@ -1227,7 +1051,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  }
  
  void sched_post_fork(struct task_struct *p)
-@@ -4987,6 +4994,7 @@
+@@ -4982,6 +4989,7 @@
  	sched_post_fork_bore(p);
  #endif // CONFIG_SCHED_BORE
  	uclamp_post_fork(p);
@@ -1235,7 +1059,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  }
  
  unsigned long to_ratio(u64 period, u64 runtime)
-@@ -5687,6 +5735,7 @@ void scheduler_tick(void)
+@@ -5685,6 +5736,7 @@ void sched_tick(void)
  	calc_global_load_tick(rq);
  	sched_core_tick(rq);
  	task_tick_mm_cid(rq, curr);
@@ -1243,20 +1067,20 @@ index d211d40a2edc..e5a6766b3a45 100644
  
  	rq_unlock(rq, &rf);
  
-@@ -5699,8 +5748,10 @@ void scheduler_tick(void)
+@@ -5697,8 +5749,10 @@ void sched_tick(void)
  		wq_worker_tick(curr);
  
  #ifdef CONFIG_SMP
 -	rq->idle_balance = idle_cpu(cpu);
--	trigger_load_balance(rq);
+-	sched_balance_trigger(rq);
 +	if (!scx_switched_all()) {
 +		rq->idle_balance = idle_cpu(cpu);
-+		trigger_load_balance(rq);
++		sched_balance_trigger(rq);
 +	}
  #endif
  }
  
-@@ -5991,7 +6042,19 @@ static void put_prev_task_balance(struct rq *rq, struct task_struct *prev,
+@@ -5989,7 +6043,19 @@ static void put_prev_task_balance(struct rq *rq, struct task_struct *prev,
  				  struct rq_flags *rf)
  {
  #ifdef CONFIG_SMP
@@ -1276,7 +1100,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	/*
  	 * We must do the balancing pass before put_prev_task(), such
  	 * that when we release the rq->lock the task is in the same
-@@ -6000,7 +6063,7 @@ static void put_prev_task_balance(struct rq *rq, struct task_struct *prev,
+@@ -5998,7 +6064,7 @@ static void put_prev_task_balance(struct rq *rq, struct task_struct *prev,
  	 * We can terminate the balance pass as soon as we know there is
  	 * a runnable task of @class priority or higher.
  	 */
@@ -1285,7 +1109,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  		if (class->balance(rq, prev, rf))
  			break;
  	}
-@@ -6018,6 +6081,9 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
+@@ -6016,6 +6082,9 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
  	const struct sched_class *class;
  	struct task_struct *p;
  
@@ -1295,7 +1119,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	/*
  	 * Optimization: we know that if all tasks are in the fair class we can
  	 * call that function directly, but only if the @prev task wasn't of a
-@@ -6058,10 +6124,15 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
+@@ -6056,10 +6125,15 @@ __pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
  	if (prev->dl_server)
  		prev->dl_server = NULL;
  
@@ -1313,7 +1137,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	}
  
  	BUG(); /* The idle class should always have a runnable task. */
-@@ -6091,7 +6162,7 @@ static inline struct task_struct *pick_task(struct rq *rq)
+@@ -6089,7 +6163,7 @@ static inline struct task_struct *pick_task(struct rq *rq)
  	const struct sched_class *class;
  	struct task_struct *p;
  
@@ -1322,7 +1146,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  		p = class->pick_task(rq);
  		if (p)
  			return p;
-@@ -7081,12 +7152,16 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
+@@ -7080,12 +7154,16 @@ int default_wake_function(wait_queue_entry_t *curr, unsigned mode, int wake_flag
  }
  EXPORT_SYMBOL(default_wake_function);
  
@@ -1340,7 +1164,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	else
  		p->sched_class = &fair_sched_class;
  
-@@ -7247,6 +7322,7 @@ void rt_mutex_setprio(struct task_struct *p, struct task_struct *pi_task)
+@@ -7246,6 +7324,7 @@ void rt_mutex_setprio(struct task_struct *p, struct task_struct *pi_task)
  	}
  
  	__setscheduler_prio(p, prio);
@@ -1348,7 +1172,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  
  	if (queued)
  		enqueue_task(rq, p, queue_flag);
-@@ -7468,6 +7544,25 @@ int sched_core_idle_cpu(int cpu)
+@@ -7467,6 +7546,25 @@ int sched_core_idle_cpu(int cpu)
  #endif
  
  #ifdef CONFIG_SMP
@@ -1361,20 +1185,20 @@ index d211d40a2edc..e5a6766b3a45 100644
 +{
 +	u64 now = rq_clock_pelt(rq);
 +	const struct sched_class *curr_class = rq->curr->sched_class;
-+	unsigned long hw_pressure = arch_scale_thermal_pressure(cpu_of(rq));
++	unsigned long hw_pressure = arch_scale_hw_pressure(cpu_of(rq));
 +
 +	lockdep_assert_rq_held(rq);
 +
 +	return update_rt_rq_load_avg(now, rq, curr_class == &rt_sched_class) |
 +		update_dl_rq_load_avg(now, rq, curr_class == &dl_sched_class) |
-+		update_thermal_load_avg(now, rq, hw_pressure) |
++		update_hw_load_avg(now, rq, hw_pressure) |
 +		update_irq_load_avg(rq, 0);
 +}
 +
  /*
   * This function computes an effective utilization for the given CPU, to be
   * used for frequency selection given the linear relation: f = u * f_max.
-@@ -7790,6 +7885,10 @@ static int __sched_setscheduler(struct task_struct *p,
+@@ -7789,6 +7887,10 @@ static int __sched_setscheduler(struct task_struct *p,
  		goto unlock;
  	}
  
@@ -1385,7 +1209,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	/*
  	 * If not changing anything there's no need to proceed further,
  	 * but store a possible modification of reset_on_fork.
-@@ -7892,6 +7991,7 @@ static int __sched_setscheduler(struct task_struct *p,
+@@ -7891,6 +7993,7 @@ static int __sched_setscheduler(struct task_struct *p,
  		__setscheduler_prio(p, newprio);
  	}
  	__setscheduler_uclamp(p, attr);
@@ -1393,7 +1217,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  
  	if (queued) {
  		/*
-@@ -9067,6 +9167,7 @@ SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
+@@ -9066,6 +9169,7 @@ SYSCALL_DEFINE1(sched_get_priority_max, int, policy)
  	case SCHED_NORMAL:
  	case SCHED_BATCH:
  	case SCHED_IDLE:
@@ -1401,7 +1225,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  		ret = 0;
  		break;
  	}
-@@ -9094,6 +9195,7 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
+@@ -9093,6 +9197,7 @@ SYSCALL_DEFINE1(sched_get_priority_min, int, policy)
  	case SCHED_NORMAL:
  	case SCHED_BATCH:
  	case SCHED_IDLE:
@@ -1409,7 +1233,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  		ret = 0;
  	}
  	return ret;
-@@ -9189,6 +9291,7 @@ void sched_show_task(struct task_struct *p)
+@@ -9188,6 +9293,7 @@ void sched_show_task(struct task_struct *p)
  
  	print_worker_info(KERN_INFO, p);
  	print_stop_info(KERN_INFO, p);
@@ -1417,7 +1241,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	show_stack(p, NULL, KERN_INFO);
  	put_task_stack(p);
  }
-@@ -9681,6 +9784,8 @@ int sched_cpu_activate(unsigned int cpu)
+@@ -9680,6 +9786,8 @@ int sched_cpu_activate(unsigned int cpu)
  		cpuset_cpu_active();
  	}
  
@@ -1426,7 +1250,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	/*
  	 * Put the rq online, if not already. This happens:
  	 *
-@@ -9741,6 +9846,8 @@ int sched_cpu_deactivate(unsigned int cpu)
+@@ -9740,6 +9848,8 @@ int sched_cpu_deactivate(unsigned int cpu)
  	}
  	rq_unlock_irqrestore(rq, &rf);
  
@@ -1435,7 +1259,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  #ifdef CONFIG_SCHED_SMT
  	/*
  	 * When going down, decrement the number of cores with SMT present.
-@@ -10062,11 +10062,15 @@
+@@ -10061,11 +10061,15 @@
  	int i;
  
  	/* Make sure the linker didn't screw up */
@@ -1455,7 +1279,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  #endif
  
  #ifdef CONFIG_SCHED_BORE
-@@ -10097,6 +10208,7 @@ void __init sched_init(void)
+@@ -10096,6 +10210,7 @@ void __init sched_init(void)
  	balance_push_set(smp_processor_id(), false);
  #endif
  	init_sched_fair_class();
@@ -1463,7 +1287,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  
  	psi_init();
  
-@@ -10523,11 +10635,6 @@ void sched_move_task(struct task_struct *tsk)
+@@ -10522,11 +10637,6 @@ void sched_move_task(struct task_struct *tsk)
  	}
  }
  
@@ -1475,7 +1299,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  static struct cgroup_subsys_state *
  cpu_cgroup_css_alloc(struct cgroup_subsys_state *parent_css)
  {
-@@ -11294,29 +11401,27 @@ static int cpu_local_stat_show(struct seq_file *sf,
+@@ -11293,29 +11403,27 @@ static int cpu_local_stat_show(struct seq_file *sf,
  }
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
@@ -1517,7 +1341,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  
  	return sched_group_set_shares(css_tg(css), scale_load(weight));
  }
-@@ -11324,7 +11429,7 @@ static int cpu_weight_write_u64(struct cgroup_subsys_state *css,
+@@ -11323,7 +11431,7 @@ static int cpu_weight_write_u64(struct cgroup_subsys_state *css,
  static s64 cpu_weight_nice_read_s64(struct cgroup_subsys_state *css,
  				    struct cftype *cft)
  {
@@ -1526,7 +1350,7 @@ index d211d40a2edc..e5a6766b3a45 100644
  	int last_delta = INT_MAX;
  	int prio, delta;
  
-@@ -12065,3 +12170,38 @@ void sched_mm_cid_fork(struct task_struct *t)
+@@ -12064,3 +12172,38 @@ void sched_mm_cid_fork(struct task_struct *t)
  	t->mm_cid_active = 1;
  }
  #endif
@@ -1655,10 +1479,10 @@ index eece6244f9d2..e683e5d08daa 100644
  
  	cpufreq_driver_adjust_perf(sg_cpu->cpu, sg_cpu->bw_min,
 diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
-index 8d5d98a5834d..6f306e1c9c3e 100644
+index c1eb9a1afd13..c057ef46c5f8 100644
 --- a/kernel/sched/debug.c
 +++ b/kernel/sched/debug.c
-@@ -1089,6 +1089,9 @@ void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
+@@ -1090,6 +1090,9 @@ void proc_sched_show_task(struct task_struct *p, struct pid_namespace *ns,
  		P(dl.runtime);
  		P(dl.deadline);
  	}
@@ -1670,10 +1494,10 @@ index 8d5d98a5834d..6f306e1c9c3e 100644
  
 diff --git a/kernel/sched/ext.c b/kernel/sched/ext.c
 new file mode 100644
-index 000000000000..b9fd7b7d4a86
+index 000000000000..0dac88d0e578
 --- /dev/null
 +++ b/kernel/sched/ext.c
-@@ -0,0 +1,6537 @@
+@@ -0,0 +1,6532 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * BPF extensible scheduler class: Documentation/scheduler/sched-ext.rst
@@ -2705,16 +2529,12 @@ index 000000000000..b9fd7b7d4a86
 +		return false;
 +	}
 +
-+	if (unlikely((mask & SCX_KF_SLEEPABLE) && in_interrupt())) {
-+		scx_ops_error("sleepable kfunc called from non-sleepable context");
-+		return false;
-+	}
-+
 +	/*
 +	 * Enforce nesting boundaries. e.g. A kfunc which can be called from
 +	 * DISPATCH must not be called if we're running DEQUEUE which is nested
-+	 * inside ops.dispatch(). We don't need to check the SCX_KF_SLEEPABLE
-+	 * boundary thanks to the above in_interrupt() check.
++	 * inside ops.dispatch(). We don't need to check boundaries for any
++	 * blocking kfuncs as the verifier ensures they're only called from
++	 * sleepable progs.
 +	 */
 +	if (unlikely(highest_bit(mask) == SCX_KF_CPU_RELEASE &&
 +		     (current->scx.kf_mask & higher_bits(SCX_KF_CPU_RELEASE)))) {
@@ -4900,9 +4720,9 @@ index 000000000000..b9fd7b7d4a86
 +	atomic_long_inc(&scx_hotplug_seq);
 +
 +	if (online && SCX_HAS_OP(cpu_online))
-+		SCX_CALL_OP(SCX_KF_SLEEPABLE, cpu_online, cpu);
++		SCX_CALL_OP(SCX_KF_UNLOCKED, cpu_online, cpu);
 +	else if (!online && SCX_HAS_OP(cpu_offline))
-+		SCX_CALL_OP(SCX_KF_SLEEPABLE, cpu_offline, cpu);
++		SCX_CALL_OP(SCX_KF_UNLOCKED, cpu_offline, cpu);
 +	else
 +		scx_ops_exit(SCX_ECODE_ACT_RESTART | SCX_ECODE_RSN_HOTPLUG,
 +			     "cpu %d going %s, exiting scheduler", cpu,
@@ -5066,7 +4886,7 @@ index 000000000000..b9fd7b7d4a86
 +			.fork = fork,
 +		};
 +
-+		ret = SCX_CALL_OP_RET(SCX_KF_SLEEPABLE, init_task, p, &args);
++		ret = SCX_CALL_OP_RET(SCX_KF_UNLOCKED, init_task, p, &args);
 +		if (unlikely(ret)) {
 +			ret = ops_sanitize_err("init_task", ret);
 +			return ret;
@@ -6324,7 +6144,7 @@ index 000000000000..b9fd7b7d4a86
 +	cpus_read_lock();
 +
 +	if (scx_ops.init) {
-+		ret = SCX_CALL_OP_RET(SCX_KF_SLEEPABLE, init);
++		ret = SCX_CALL_OP_RET(SCX_KF_UNLOCKED, init);
 +		if (ret) {
 +			ret = ops_sanitize_err("init", ret);
 +			goto err_disable_unlock_cpus;
@@ -6733,7 +6553,7 @@ index 000000000000..b9fd7b7d4a86
 +
 +static int bpf_scx_init(struct btf *btf)
 +{
-+	u32 type_id;
++	s32 type_id;
 +
 +	type_id = btf_find_by_name_kind(btf, "task_struct", BTF_KIND_STRUCT);
 +	if (type_id < 0)
@@ -7100,14 +6920,11 @@ index 000000000000..b9fd7b7d4a86
 + * @dsq_id: DSQ to create
 + * @node: NUMA node to allocate from
 + *
-+ * Create a custom DSQ identified by @dsq_id. Can be called from ops.init() and
-+ * ops.init_task().
++ * Create a custom DSQ identified by @dsq_id. Can be called from any sleepable
++ * scx callback, and any BPF_PROG_TYPE_SYSCALL prog.
 + */
 +__bpf_kfunc s32 scx_bpf_create_dsq(u64 dsq_id, s32 node)
 +{
-+	if (!scx_kf_allowed(SCX_KF_SLEEPABLE))
-+		return -EINVAL;
-+
 +	if (unlikely(node >= (int)nr_node_ids ||
 +		     (node < 0 && node != NUMA_NO_NODE)))
 +		return -EINVAL;
@@ -8166,6 +7983,8 @@ index 000000000000..b9fd7b7d4a86
 +	 */
 +	if ((ret = register_btf_kfunc_id_set(BPF_PROG_TYPE_STRUCT_OPS,
 +					     &scx_kfunc_set_sleepable)) ||
++	    (ret = register_btf_kfunc_id_set(BPF_PROG_TYPE_SYSCALL,
++					     &scx_kfunc_set_sleepable)) ||
 +	    (ret = register_btf_kfunc_id_set(BPF_PROG_TYPE_STRUCT_OPS,
 +					     &scx_kfunc_set_select_cpu)) ||
 +	    (ret = register_btf_kfunc_id_set(BPF_PROG_TYPE_STRUCT_OPS,
@@ -8287,28 +8106,20 @@ index 000000000000..32d3a51f591a
 +static inline void scx_update_idle(struct rq *rq, bool idle) {}
 +#endif
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 213c94d027a4..ee4fe81ba456 100644
+index 483c137b9d3d..ab17954001ae 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4074,6 +4074,17 @@
- 	load->inv_weight = sched_prio_to_wmult[prio];
+@@ -3835,7 +3835,8 @@ static void reweight_entity(struct cfs_rq *cfs_rq, struct sched_entity *se,
+ 	}
  }
  
+-void reweight_task(struct task_struct *p, const struct load_weight *lw)
 +static void reweight_task_fair(struct rq *rq, struct task_struct *p,
 +			       const struct load_weight *lw)
-+{
-+	struct sched_entity *se = &p->se;
-+	struct cfs_rq *cfs_rq = cfs_rq_of(se);
-+	struct load_weight *load = &se->load;
-+
-+	reweight_entity(cfs_rq, se, lw->weight);
-+	load->inv_weight = lw->inv_weight;
-+}
-+
- static inline int throttled_hierarchy(struct cfs_rq *cfs_rq);
- 
- #ifdef CONFIG_FAIR_GROUP_SCHED
-@@ -8348,7 +8348,7 @@ static void check_preempt_wakeup_fair(struct rq *rq, struct task_struct *p, int
+ {
+ 	struct sched_entity *se = &p->se;
+ 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
+@@ -8390,7 +8391,7 @@ static void check_preempt_wakeup_fair(struct rq *rq, struct task_struct *p, int
  	 * Batch and idle tasks do not preempt non-idle tasks (their preemption
  	 * is driven by the tick):
  	 */
@@ -8317,13 +8128,13 @@ index 213c94d027a4..ee4fe81ba456 100644
  		return;
  
  	find_matching_se(&se, &pse);
-@@ -9309,28 +9309,18 @@ static inline void update_blocked_load_status(struct rq *rq, bool has_blocked) {
+@@ -9347,28 +9348,18 @@ static inline void update_blocked_load_status(struct rq *rq, bool has_blocked) {
  
  static bool __update_blocked_others(struct rq *rq, bool *done)
  {
 -	const struct sched_class *curr_class;
 -	u64 now = rq_clock_pelt(rq);
--	unsigned long thermal_pressure;
+-	unsigned long hw_pressure;
 -	bool decayed;
 +	bool updated;
  
@@ -8333,11 +8144,11 @@ index 213c94d027a4..ee4fe81ba456 100644
  	 */
 -	curr_class = rq->curr->sched_class;
 -
--	thermal_pressure = arch_scale_thermal_pressure(cpu_of(rq));
+-	hw_pressure = arch_scale_hw_pressure(cpu_of(rq));
 -
 -	decayed = update_rt_rq_load_avg(now, rq, curr_class == &rt_sched_class) |
 -		  update_dl_rq_load_avg(now, rq, curr_class == &dl_sched_class) |
--		  update_thermal_load_avg(rq_clock_thermal(rq), rq, thermal_pressure) |
+-		  update_hw_load_avg(now, rq, hw_pressure) |
 -		  update_irq_load_avg(rq, 0);
 +	updated = update_other_load_avgs(rq);
  
@@ -8349,7 +8160,7 @@ index 213c94d027a4..ee4fe81ba456 100644
  }
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
-@@ -13156,6 +13146,7 @@ DEFINE_SCHED_CLASS(fair) = {
+@@ -13207,6 +13198,7 @@ DEFINE_SCHED_CLASS(fair) = {
  	.task_tick		= task_tick_fair,
  	.task_fork		= task_fork_fair,
  
@@ -8376,10 +8187,10 @@ index 6135fbe83d68..3b6540cc436a 100644
  }
  
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index ae50f212775e..9ce5074e8a8d 100644
+index 38aeedd8a6cc..f952a4b99ead 100644
 --- a/kernel/sched/sched.h
 +++ b/kernel/sched/sched.h
-@@ -173,9 +173,19 @@ static inline int idle_policy(int policy)
+@@ -187,9 +187,19 @@ static inline int idle_policy(int policy)
  {
  	return policy == SCHED_IDLE;
  }
@@ -8400,7 +8211,7 @@ index ae50f212775e..9ce5074e8a8d 100644
  }
  
  static inline int rt_policy(int policy)
-@@ -223,6 +233,24 @@ static inline void update_avg(u64 *avg, u64 sample)
+@@ -237,6 +247,24 @@ static inline void update_avg(u64 *avg, u64 sample)
  #define shr_bound(val, shift)							\
  	(val >> min_t(typeof(shift), shift, BITS_PER_TYPE(typeof(val)) - 1))
  
@@ -8425,7 +8236,7 @@ index ae50f212775e..9ce5074e8a8d 100644
  /*
   * !! For sched_setattr_nocheck() (kernel) only !!
   *
-@@ -461,6 +489,11 @@ static inline int walk_tg_tree(tg_visitor down, tg_visitor up, void *data)
+@@ -475,6 +503,11 @@ static inline int walk_tg_tree(tg_visitor down, tg_visitor up, void *data)
  	return walk_tg_tree_from(&root_task_group, down, up, data);
  }
  
@@ -8437,7 +8248,7 @@ index ae50f212775e..9ce5074e8a8d 100644
  extern int tg_nop(struct task_group *tg, void *data);
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
-@@ -569,6 +602,12 @@ do {									\
+@@ -583,6 +616,12 @@ do {									\
  # define u64_u32_load(var)      u64_u32_load_copy(var, var##_copy)
  # define u64_u32_store(var, val) u64_u32_store_copy(var, var##_copy, val)
  
@@ -8450,7 +8261,7 @@ index ae50f212775e..9ce5074e8a8d 100644
  /* CFS-related fields in a runqueue */
  struct cfs_rq {
  	struct load_weight	load;
-@@ -677,6 +716,42 @@ struct cfs_rq {
+@@ -691,6 +730,42 @@ struct cfs_rq {
  #endif /* CONFIG_FAIR_GROUP_SCHED */
  };
  
@@ -8493,7 +8304,7 @@ index ae50f212775e..9ce5074e8a8d 100644
  static inline int rt_bandwidth_enabled(void)
  {
  	return sysctl_sched_rt_runtime >= 0;
-@@ -969,12 +1044,6 @@ struct uclamp_rq {
+@@ -988,12 +1063,6 @@ struct uclamp_rq {
  DECLARE_STATIC_KEY_FALSE(sched_uclamp_used);
  #endif /* CONFIG_UCLAMP_TASK */
  
@@ -8506,7 +8317,7 @@ index ae50f212775e..9ce5074e8a8d 100644
  /*
   * This is the main, per-CPU runqueue data structure.
   *
-@@ -1017,6 +1086,9 @@ struct rq {
+@@ -1036,6 +1105,9 @@ struct rq {
  	struct cfs_rq		cfs;
  	struct rt_rq		rt;
  	struct dl_rq		dl;
@@ -8516,7 +8327,7 @@ index ae50f212775e..9ce5074e8a8d 100644
  
  #ifdef CONFIG_FAIR_GROUP_SCHED
  	/* list of leaf cfs_rq on this CPU: */
-@@ -2276,6 +2348,8 @@ struct sched_class {
+@@ -2278,6 +2350,8 @@ struct sched_class {
  	void (*put_prev_task)(struct rq *rq, struct task_struct *p);
  	void (*set_next_task)(struct rq *rq, struct task_struct *p, bool first);
  
@@ -8525,7 +8336,7 @@ index ae50f212775e..9ce5074e8a8d 100644
  #ifdef CONFIG_SMP
  	int (*balance)(struct rq *rq, struct task_struct *prev, struct rq_flags *rf);
  	int  (*select_task_rq)(struct task_struct *p, int task_cpu, int flags);
-@@ -2303,8 +2377,11 @@ struct sched_class {
+@@ -2305,8 +2379,11 @@ struct sched_class {
  	 * cannot assume the switched_from/switched_to pair is serialized by
  	 * rq->lock. They are however serialized by p->pi_lock.
  	 */
@@ -8537,7 +8348,7 @@ index ae50f212775e..9ce5074e8a8d 100644
  	void (*prio_changed) (struct rq *this_rq, struct task_struct *task,
  			      int oldprio);
  
-@@ -2353,19 +2430,54 @@ const struct sched_class name##_sched_class \
+@@ -2355,19 +2432,54 @@ const struct sched_class name##_sched_class \
  extern struct sched_class __sched_class_highest[];
  extern struct sched_class __sched_class_lowest[];
  
@@ -8598,11 +8409,11 @@ index ae50f212775e..9ce5074e8a8d 100644
  
  static inline bool sched_stop_runnable(struct rq *rq)
  {
-@@ -2462,7 +2574,7 @@ extern void init_sched_dl_class(void);
+@@ -2464,7 +2576,7 @@ extern void init_sched_dl_class(void);
  extern void init_sched_rt_class(void);
  extern void init_sched_fair_class(void);
  
--extern void reweight_task(struct task_struct *p, int prio);
+-extern void reweight_task(struct task_struct *p, const struct load_weight *lw);
 +extern void __setscheduler_prio(struct task_struct *p, int prio);
  
  extern void resched_curr(struct rq *rq);
@@ -8680,7 +8491,7 @@ diff --git a/tools/Makefile b/tools/Makefile
 index 276f5d0d53a4..278d24723b74 100644
 --- a/tools/Makefile
 +++ b/tools/Makefile
-@@ -28,6 +28,7 @@ help:
+@@ -28,6 +28,7 @@ include scripts/Makefile.include
  	@echo '  pci                    - PCI tools'
  	@echo '  perf                   - Linux performance measurement and analysis tool'
  	@echo '  selftests              - various kernel selftests'
@@ -8698,7 +8509,7 @@ index 276f5d0d53a4..278d24723b74 100644
  selftests: FORCE
  	$(call descend,testing/$@)
  
-@@ -184,6 +188,9 @@ perf_clean:
+@@ -184,6 +188,9 @@ install: acpi_install counter_install cpupower_install gpio_install \
  	$(Q)mkdir -p $(PERF_O) .
  	$(Q)$(MAKE) --no-print-directory -C perf O=$(PERF_O) subdir= clean
  
@@ -13840,10 +13651,10 @@ index 000000000000..6c5db8ebbf8a
 +REGISTER_SCX_TEST(&minimal)
 diff --git a/tools/testing/selftests/sched_ext/prog_run.bpf.c b/tools/testing/selftests/sched_ext/prog_run.bpf.c
 new file mode 100644
-index 000000000000..fd2c8f12af16
+index 000000000000..6a4d7c48e3f2
 --- /dev/null
 +++ b/tools/testing/selftests/sched_ext/prog_run.bpf.c
-@@ -0,0 +1,32 @@
+@@ -0,0 +1,33 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * A scheduler that validates that we can invoke sched_ext kfuncs in
@@ -13862,6 +13673,7 @@ index 000000000000..fd2c8f12af16
 +SEC("syscall")
 +int BPF_PROG(prog_run_syscall)
 +{
++	scx_bpf_create_dsq(0, -1);
 +	scx_bpf_exit(0xdeadbeef, "Exited from PROG_RUN");
 +	return 0;
 +}

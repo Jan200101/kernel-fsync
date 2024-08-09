@@ -20277,7 +20277,7 @@ diff --git a/sound/soc/codecs/aw87xxx/aw87xxx.c b/sound/soc/codecs/aw87xxx/aw87x
 index eddb01695..7f44d9b9d 100644
 --- a/sound/soc/codecs/aw87xxx/aw87xxx.c
 +++ b/sound/soc/codecs/aw87xxx/aw87xxx.c
-@@ -1,1457 +1,1466 @@
+@@ -1,1457 +1,1467 @@
 -/*
 - * aw87xxx.c  aw87xxx pa module
 - *
@@ -21779,6 +21779,7 @@ index eddb01695..7f44d9b9d 100644
 +#include <linux/hrtimer.h>
 +#include <linux/ktime.h>
 +#include <linux/kthread.h>
++#include <linux/vmalloc.h>
 +#include <uapi/sound/asound.h>
 +#include <sound/control.h>
 +#include <sound/soc.h>
@@ -23668,8 +23669,8 @@ index f2be4b102..928202b1a 100644
  	ALC269_FIXUP_HEADSET_MODE_NO_HP_MIC,
  	ALC269_FIXUP_ASPIRE_HEADSET_MIC,
  	ALC269_FIXUP_ASUS_X101_FUNC,
-@@ -7534,6 +7535,30 @@ enum {
- 	ALC287_FIXUP_LENOVO_THKPAD_WH_ALC1318,
+@@ -7528,6 +7528,30 @@
+ 	ALC287_FIXUP_LENOVO_SSID_17AA3820,
  };
  
 +/* A special fixup for AYN and AYANEO handhelds as both
