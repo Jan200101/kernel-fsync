@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 10
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 201%{?buildid}%{?dist}
+%define specrelease 202%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.10.3
 
@@ -1061,7 +1061,6 @@ Patch414: 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
 # Chimera speaker fixes
 Patch415: v0-speaker-multifix.patch
 Patch416: v0-oxp-sensors.patch
-Patch417: loki-mini-pro-hda-pin-fixes.patch
 Patch418: dcn32-dcn301-dcn321-mpo-reverts.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
@@ -1963,7 +1962,6 @@ ApplyOptionalPatch 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.pat
 # Chimera speaker fixes
 ApplyOptionalPatch v0-speaker-multifix.patch
 ApplyOptionalPatch v0-oxp-sensors.patch
-ApplyOptionalPatch loki-mini-pro-hda-pin-fixes.patch
 ApplyOptionalPatch dcn32-dcn301-dcn321-mpo-reverts.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
@@ -4208,6 +4206,9 @@ fi\
 #
 #
 %changelog
+* Tue Aug 13 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.3-202.fsync
+- kernel-fsync v6.10.3 revert loki mini patch
+
 * Tue Aug 06 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.3-201.fsync
 - kernel-fsync v6.10.3
 
