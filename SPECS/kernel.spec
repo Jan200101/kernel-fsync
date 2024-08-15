@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.10.3
-%define specversion 6.10.3
+%define specrpmversion 6.10.4
+%define specversion 6.10.4
 %define patchversion 6.10
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.10.3
+%define tarfile_release 6.10.4
 # This is needed to do merge window version magic
 %define patchlevel 10
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 202%{?buildid}%{?dist}
+%define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.10.3
+%define kabiversion 6.10.4
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4206,14 +4206,13 @@ fi\
 #
 #
 %changelog
-* Tue Aug 13 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.3-202.fsync
-- kernel-fsync v6.10.3 revert loki mini patch
+* Thu Aug 15 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.4-201.fsync
+- kernel-fsync v6.10.4
 
-* Tue Aug 06 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.3-201.fsync
-- kernel-fsync v6.10.3
-
-* Mon Aug 05 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.3-200]
+* Sun Aug 11 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.4-0]
+- wifi: brcmfmac: cfg80211: Handle SSID based pmksa deletion (Janne Grunau)
 - New config for 6.10.3 (Justin M. Forbes)
+- Linux v6.10.4
 
 * Mon Aug 05 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.3-0]
 - Bluetooth: hci_event: Fix setting DISCOVERY_FINDING for passive scanning (Luiz Augusto von Dentz)

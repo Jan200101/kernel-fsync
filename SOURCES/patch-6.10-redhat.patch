@@ -23,6 +23,7 @@
  drivers/input/rmi4/rmi_driver.c                    | 124 ++++++++++-------
  drivers/iommu/iommu.c                              |  22 +++
  drivers/media/pci/intel/ipu-bridge.c               |  40 ++++--
+ .../broadcom/brcm80211/brcmfmac/cfg80211.c         |  13 +-
  drivers/pci/quirks.c                               |  24 ++++
  drivers/scsi/sd.c                                  |  10 ++
  drivers/usb/core/hub.c                             |   7 +
@@ -33,18 +34,16 @@
  include/linux/rmi.h                                |   1 +
  include/linux/security.h                           |   5 +
  kernel/module/signing.c                            |   9 +-
- net/bluetooth/hci_core.c                           |   7 -
- net/bluetooth/hci_event.c                          |   5 +-
  scripts/sign-file.c                                |  29 +---
  scripts/tags.sh                                    |   2 +
  security/integrity/platform_certs/load_uefi.c      |   6 +-
  security/lockdown/Kconfig                          |  13 ++
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |  12 ++
- 43 files changed, 782 insertions(+), 265 deletions(-)
+ 42 files changed, 789 insertions(+), 259 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index c0af6d8aeb05..33ffe9e302df 100644
+index aec5cc0babf8..d1c4b7c6cdea 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -1523,6 +1522,30 @@ index 61750cc98d70..a0e9a71580b5 100644
  };
  
  static const struct ipu_property_names prop_names = {
+diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
+index 5fe0e671ecb3..826b768196e2 100644
+--- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
++++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
+@@ -4320,9 +4320,16 @@ brcmf_pmksa_v3_op(struct brcmf_if *ifp, struct cfg80211_pmksa *pmksa,
+ 		/* Single PMK operation */
+ 		pmk_op->count = cpu_to_le16(1);
+ 		length += sizeof(struct brcmf_pmksa_v3);
+-		memcpy(pmk_op->pmk[0].bssid, pmksa->bssid, ETH_ALEN);
+-		memcpy(pmk_op->pmk[0].pmkid, pmksa->pmkid, WLAN_PMKID_LEN);
+-		pmk_op->pmk[0].pmkid_len = WLAN_PMKID_LEN;
++		if (pmksa->bssid)
++			memcpy(pmk_op->pmk[0].bssid, pmksa->bssid, ETH_ALEN);
++		if (pmksa->pmkid) {
++			memcpy(pmk_op->pmk[0].pmkid, pmksa->pmkid, WLAN_PMKID_LEN);
++			pmk_op->pmk[0].pmkid_len = WLAN_PMKID_LEN;
++		}
++		if (pmksa->ssid && pmksa->ssid_len) {
++			memcpy(pmk_op->pmk[0].ssid.SSID, pmksa->ssid, pmksa->ssid_len);
++			pmk_op->pmk[0].ssid.SSID_len = pmksa->ssid_len;
++		}
+ 		pmk_op->pmk[0].time_left = cpu_to_le32(alive ? BRCMF_PMKSA_NO_EXPIRY : 0);
+ 	}
+ 
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
 index 568410e64ce6..6afbaee83950 100644
 --- a/drivers/pci/quirks.c
@@ -1783,41 +1806,6 @@ index a2ff4242e623..f0d2be1ee4f1 100644
  }
  
  int module_sig_check(struct load_info *info, int flags)
-diff --git a/net/bluetooth/hci_core.c b/net/bluetooth/hci_core.c
-index 7ae118a6d947..6ecb110bf46b 100644
---- a/net/bluetooth/hci_core.c
-+++ b/net/bluetooth/hci_core.c
-@@ -120,13 +120,6 @@ void hci_discovery_set_state(struct hci_dev *hdev, int state)
- 	case DISCOVERY_STARTING:
- 		break;
- 	case DISCOVERY_FINDING:
--		/* If discovery was not started then it was initiated by the
--		 * MGMT interface so no MGMT event shall be generated either
--		 */
--		if (old_state != DISCOVERY_STARTING) {
--			hdev->discovery.state = old_state;
--			return;
--		}
- 		mgmt_discovering(hdev, 1);
- 		break;
- 	case DISCOVERY_RESOLVING:
-diff --git a/net/bluetooth/hci_event.c b/net/bluetooth/hci_event.c
-index 4611a67d7dcc..a78f6d706cd4 100644
---- a/net/bluetooth/hci_event.c
-+++ b/net/bluetooth/hci_event.c
-@@ -1722,9 +1722,10 @@ static void le_set_scan_enable_complete(struct hci_dev *hdev, u8 enable)
- 	switch (enable) {
- 	case LE_SCAN_ENABLE:
- 		hci_dev_set_flag(hdev, HCI_LE_SCAN);
--		if (hdev->le_scan_type == LE_SCAN_ACTIVE)
-+		if (hdev->le_scan_type == LE_SCAN_ACTIVE) {
- 			clear_pending_adv_report(hdev);
--		hci_discovery_set_state(hdev, DISCOVERY_FINDING);
-+			hci_discovery_set_state(hdev, DISCOVERY_FINDING);
-+		}
- 		break;
- 
- 	case LE_SCAN_DISABLE:
 diff --git a/scripts/sign-file.c b/scripts/sign-file.c
 index 3edb156ae52c..0114ae1dbf7f 100644
 --- a/scripts/sign-file.c

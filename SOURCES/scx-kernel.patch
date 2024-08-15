@@ -356,19 +356,6 @@ index 958e935449e5..17d2679d291a 100644
  SCSI LIBSAS SUBSYSTEM
  R:	John Garry <john.g.garry@oracle.com>
  R:	Jason Yan <yanaijie@huawei.com>
-diff --git a/Makefile b/Makefile
-index c0af6d8aeb05..99cb65a24af6 100644
---- a/Makefile
-+++ b/Makefile
-@@ -2,7 +2,7 @@
- VERSION = 6
- PATCHLEVEL = 10
- SUBLEVEL = 3
--EXTRAVERSION =
-+EXTRAVERSION = -scx1
- NAME = Baby Opossum Posse
- 
- # *DOCUMENTATION*
 diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
 index e5974b8239c9..167e877b8bef 100644
 --- a/drivers/tty/sysrq.c
