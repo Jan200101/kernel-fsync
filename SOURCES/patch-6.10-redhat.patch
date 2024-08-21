@@ -12,7 +12,6 @@
  drivers/acpi/irq.c                                 |  17 ++-
  drivers/acpi/scan.c                                |   9 ++
  drivers/ata/libahci.c                              |  18 +++
- drivers/ata/libata-scsi.c                          |  15 ++-
  drivers/char/ipmi/ipmi_dmi.c                       |  15 +++
  drivers/char/ipmi/ipmi_msghandler.c                |  16 ++-
  drivers/char/random.c                              | 122 +++++++++++++++++
@@ -41,10 +40,11 @@
  security/lockdown/Kconfig                          |  13 ++
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |  12 ++
- 43 files changed, 802 insertions(+), 261 deletions(-)
+ security/selinux/hooks.c                           |  12 +-
+ 43 files changed, 800 insertions(+), 260 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index f9badb79ae8f..4d0eadfc33a1 100644
+index 361a70264e1f..eaf69484d4ce 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -617,32 +617,6 @@ index 83431aae74d8..f2a9c0d644af 100644
  	/* wait for engine to stop. This could be as long as 500 msec */
  	tmp = ata_wait_register(ap, port_mmio + PORT_CMD,
  				PORT_CMD_LIST_ON, PORT_CMD_LIST_ON, 1, 500);
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index 076fbeadce01..4e0847601103 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -941,8 +941,19 @@ static void ata_gen_passthru_sense(struct ata_queued_cmd *qc)
- 				   &sense_key, &asc, &ascq);
- 		ata_scsi_set_sense(qc->dev, cmd, sense_key, asc, ascq);
- 	} else {
--		/* ATA PASS-THROUGH INFORMATION AVAILABLE */
--		ata_scsi_set_sense(qc->dev, cmd, RECOVERED_ERROR, 0, 0x1D);
-+		/*
-+		 * ATA PASS-THROUGH INFORMATION AVAILABLE
-+		 *
-+		 * Note: we are supposed to call ata_scsi_set_sense(), which
-+		 * respects the D_SENSE bit, instead of unconditionally
-+		 * generating the sense data in descriptor format. However,
-+		 * because hdparm, hddtemp, and udisks incorrectly assume sense
-+		 * data in descriptor format, without even looking at the
-+		 * RESPONSE CODE field in the returned sense data (to see which
-+		 * format the returned sense data is in), we are stuck with
-+		 * being bug compatible with older kernels.
-+		 */
-+		scsi_build_sense(cmd, 1, RECOVERED_ERROR, 0, 0x1D);
- 	}
- }
- 
 diff --git a/drivers/char/ipmi/ipmi_dmi.c b/drivers/char/ipmi/ipmi_dmi.c
 index bbf7029e224b..cf7faa970dd6 100644
 --- a/drivers/char/ipmi/ipmi_dmi.c
@@ -1983,3 +1957,26 @@ index 8cee5b6c6e6d..489e25946bf9 100644
  #ifdef CONFIG_PERF_EVENTS
  /**
   * security_perf_event_open() - Check if a perf event open is allowed
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index 55c78c318ccd..bfa61e005aac 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -3852,7 +3852,17 @@ static int selinux_file_mprotect(struct vm_area_struct *vma,
+ 	if (default_noexec &&
+ 	    (prot & PROT_EXEC) && !(vma->vm_flags & VM_EXEC)) {
+ 		int rc = 0;
+-		if (vma_is_initial_heap(vma)) {
++		/*
++		 * We don't use the vma_is_initial_heap() helper as it has
++		 * a history of problems and is currently broken on systems
++		 * where there is no heap, e.g. brk == start_brk.  Before
++		 * replacing the conditional below with vma_is_initial_heap(),
++		 * or something similar, please ensure that the logic is the
++		 * same as what we have below or you have tested every possible
++		 * corner case you can think to test.
++		 */
++		if (vma->vm_start >= vma->vm_mm->start_brk &&
++		    vma->vm_end <= vma->vm_mm->brk) {
+ 			rc = avc_has_perm(sid, sid, SECCLASS_PROCESS,
+ 					  PROCESS__EXECHEAP, NULL);
+ 		} else if (!vma->vm_file && (vma_is_initial_stack(vma) ||
