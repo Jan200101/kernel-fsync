@@ -1237,15 +1237,15 @@ index ebf21373f663..fb6276f74ee6 100644
  	/*
  	 * Put the rq online, if not already. This happens:
  	 *
-@@ -9740,6 +9848,8 @@ int sched_cpu_deactivate(unsigned int cpu)
- 	}
- 	rq_unlock_irqrestore(rq, &rf);
+@@ -9903,6 +9903,8 @@
+ 
+ 	sched_set_rq_offline(rq, cpu);
  
 +	scx_rq_deactivate(rq);
 +
- #ifdef CONFIG_SCHED_SMT
  	/*
  	 * When going down, decrement the number of cores with SMT present.
+ 	 */
 @@ -10061,11 +10061,15 @@
  	int i;
  

@@ -12,6 +12,7 @@
  drivers/acpi/irq.c                                 |  17 ++-
  drivers/acpi/scan.c                                |   9 ++
  drivers/ata/libahci.c                              |  18 +++
+ drivers/ata/libata-scsi.c                          |  15 ++-
  drivers/char/ipmi/ipmi_dmi.c                       |  15 +++
  drivers/char/ipmi/ipmi_msghandler.c                |  16 ++-
  drivers/char/random.c                              | 122 +++++++++++++++++
@@ -40,10 +41,10 @@
  security/lockdown/Kconfig                          |  13 ++
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |  12 ++
- 42 files changed, 789 insertions(+), 259 deletions(-)
+ 43 files changed, 802 insertions(+), 261 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index aec5cc0babf8..d1c4b7c6cdea 100644
+index f9badb79ae8f..4d0eadfc33a1 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -82,10 +83,10 @@ index ee5115252aac..7f3796df8404 100644
  	  The VM uses one page of physical memory for each page table.
  	  For systems with a lot of processes, this can use a lot of
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 5d91259ee7b5..3a9f1962da72 100644
+index 11bbdc15c6e5..9cecc1448e3c 100644
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
-@@ -1368,7 +1368,7 @@ endchoice
+@@ -1364,7 +1364,7 @@ endchoice
  
  config ARM64_FORCE_52BIT
  	bool "Force 52-bit virtual addresses for userspace"
@@ -616,6 +617,32 @@ index 83431aae74d8..f2a9c0d644af 100644
  	/* wait for engine to stop. This could be as long as 500 msec */
  	tmp = ata_wait_register(ap, port_mmio + PORT_CMD,
  				PORT_CMD_LIST_ON, PORT_CMD_LIST_ON, 1, 500);
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index 076fbeadce01..4e0847601103 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -941,8 +941,19 @@ static void ata_gen_passthru_sense(struct ata_queued_cmd *qc)
+ 				   &sense_key, &asc, &ascq);
+ 		ata_scsi_set_sense(qc->dev, cmd, sense_key, asc, ascq);
+ 	} else {
+-		/* ATA PASS-THROUGH INFORMATION AVAILABLE */
+-		ata_scsi_set_sense(qc->dev, cmd, RECOVERED_ERROR, 0, 0x1D);
++		/*
++		 * ATA PASS-THROUGH INFORMATION AVAILABLE
++		 *
++		 * Note: we are supposed to call ata_scsi_set_sense(), which
++		 * respects the D_SENSE bit, instead of unconditionally
++		 * generating the sense data in descriptor format. However,
++		 * because hdparm, hddtemp, and udisks incorrectly assume sense
++		 * data in descriptor format, without even looking at the
++		 * RESPONSE CODE field in the returned sense data (to see which
++		 * format the returned sense data is in), we are stuck with
++		 * being bug compatible with older kernels.
++		 */
++		scsi_build_sense(cmd, 1, RECOVERED_ERROR, 0, 0x1D);
+ 	}
+ }
+ 
 diff --git a/drivers/char/ipmi/ipmi_dmi.c b/drivers/char/ipmi/ipmi_dmi.c
 index bbf7029e224b..cf7faa970dd6 100644
 --- a/drivers/char/ipmi/ipmi_dmi.c
@@ -1582,7 +1609,7 @@ index 568410e64ce6..6afbaee83950 100644
   * Intersil/Techwell TW686[4589]-based video capture cards have an empty (zero)
   * class code.  Fix it.
 diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 1b7561abe05d..13f23905fb25 100644
+index 6b64af7d4927..a7ad470b8b8c 100644
 --- a/drivers/scsi/sd.c
 +++ b/drivers/scsi/sd.c
 @@ -120,6 +120,14 @@ static const char *sd_cache_types[] = {
@@ -1600,7 +1627,7 @@ index 1b7561abe05d..13f23905fb25 100644
  static void sd_set_flush_flag(struct scsi_disk *sdkp)
  {
  	bool wc = false, fua = false;
-@@ -4252,6 +4260,8 @@ static int __init init_sd(void)
+@@ -4253,6 +4261,8 @@ static int __init init_sd(void)
  		goto err_out_class;
  	}
  

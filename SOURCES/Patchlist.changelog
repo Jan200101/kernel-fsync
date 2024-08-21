@@ -1,3 +1,6 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/3a19264d7608d1c0cb6adff9f45883887a30ba29
+ 3a19264d7608d1c0cb6adff9f45883887a30ba29 Revert "ata: libata-scsi: Honor the D_SENSE bit for CK_COND=1 and no error"
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/2c6b48dfc4f3aad194a99c23f8d3e604c1a5593f
  2c6b48dfc4f3aad194a99c23f8d3e604c1a5593f wifi: brcmfmac: cfg80211: Handle SSID based pmksa deletion
 

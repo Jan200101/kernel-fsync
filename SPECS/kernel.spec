@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.10.4
-%define specversion 6.10.4
+%define specrpmversion 6.10.5
+%define specversion 6.10.5
 %define patchversion 6.10
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.10.4
+%define tarfile_release 6.10.5
 # This is needed to do merge window version magic
 %define patchlevel 10
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.10.4
+%define kabiversion 6.10.5
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1018,7 +1018,6 @@ Patch316: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
 Patch321: v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 Patch322: rog-ally-gyro-fix.patch
-Patch323: 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
 Patch336: 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
 Patch337: 0001-patch_realtek-Fix-ROG-ALLY-X-audio.patch
 
@@ -1918,7 +1917,6 @@ ApplyOptionalPatch rog-ally-audio-fix.patch
 ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
 ApplyOptionalPatch v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 ApplyOptionalPatch rog-ally-gyro-fix.patch
-ApplyOptionalPatch 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
 ApplyOptionalPatch 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
 ApplyOptionalPatch 0001-patch_realtek-Fix-ROG-ALLY-X-audio.patch 
 
@@ -4206,8 +4204,12 @@ fi\
 #
 #
 %changelog
-* Thu Aug 15 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.4-201.fsync
-- kernel-fsync v6.10.4
+* Thu Aug 15 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.5-201.fsync
+- kernel-fsync v6.10.5
+
+* Wed Aug 14 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.5-0]
+- Revert "ata: libata-scsi: Honor the D_SENSE bit for CK_COND=1 and no error" (Niklas Cassel)
+- Linux v6.10.5
 
 * Sun Aug 11 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.4-0]
 - wifi: brcmfmac: cfg80211: Handle SSID based pmksa deletion (Janne Grunau)
