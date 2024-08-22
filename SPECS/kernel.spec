@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 204%{?buildid}%{?dist}
+%define specrelease 205%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.12
 
@@ -1049,6 +1049,7 @@ Patch415: v0-speaker-multifix.patch
 Patch416: v0-oxp-sensors.patch
 Patch417: loki-mini-pro-hda-pin-fixes.patch
 Patch418: dcn32-dcn301-dcn321-mpo-reverts.patch
+Patch419: 0001-selinux-revert-our-use-of-vma_is_initial_heap.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -1955,6 +1956,7 @@ ApplyOptionalPatch v0-speaker-multifix.patch
 ApplyOptionalPatch v0-oxp-sensors.patch
 ApplyOptionalPatch loki-mini-pro-hda-pin-fixes.patch
 ApplyOptionalPatch dcn32-dcn301-dcn321-mpo-reverts.patch
+ApplyOptionalPatch 0001-selinux-revert-our-use-of-vma_is_initial_heap.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -4135,6 +4137,9 @@ fi\
 #
 #
 %changelog
+* Thu Aug 22 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-205.fsync
+- kernel-fsync v6.9.12 selinux vma revert
+
 * Fri Aug 09 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-204.fsync
 - kernel-fsync v6.9.12 Ally X audio correction
 
