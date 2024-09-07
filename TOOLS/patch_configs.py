@@ -51,6 +51,10 @@ GENERIC_PATCHES = [
     ["HID_APPLETB_KBD", None, MODULE],
     ["HID_APPLE_MAGIC_BACKLIGHT", None, MODULE],
     ["CONFIG_APPLE_BCE", None, MODULE],
+
+    # Asus Linux
+    ["HID_ASUS_ALLY", None, MODULE],
+    ["ASUS_ARMOURY", None, MODULE],
 ]
 
 ARCH_PATCHES = {

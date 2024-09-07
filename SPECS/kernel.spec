@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.10.6
-%define specversion 6.10.6
+%define specrpmversion 6.10.7
+%define specversion 6.10.7
 %define patchversion 6.10
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.10.6
+%define tarfile_release 6.10.7
 # This is needed to do merge window version magic
 %define patchlevel 10
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.10.6
+%define kabiversion 6.10.7
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1016,10 +1016,7 @@ Patch324: 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally
 Patch316: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
-Patch321: v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 Patch322: rog-ally-gyro-fix.patch
-Patch336: 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
-Patch337: 0001-patch_realtek-Fix-ROG-ALLY-X-audio.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
 Patch208: 0001-ntsync.patch
@@ -1915,10 +1912,7 @@ ApplyOptionalPatch 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally-
 ApplyOptionalPatch rog-ally-audio-fix.patch
 ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
-ApplyOptionalPatch v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 ApplyOptionalPatch rog-ally-gyro-fix.patch
-ApplyOptionalPatch 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
-ApplyOptionalPatch 0001-patch_realtek-Fix-ROG-ALLY-X-audio.patch 
 
 # https://github.com/CachyOS/kernel-patches
 ApplyOptionalPatch 0001-ntsync.patch
@@ -4204,8 +4198,21 @@ fi\
 #
 #
 %changelog
-* Wed Aug 21 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.6-201.fsync
-- kernel-fsync v6.10.6
+* Wed Sep 04 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.7-201.fsync
+- kernel-fsync v6.10.7
+
+* Thu Aug 29 2024 Augusto Caringi <acaringi@redhat.com> [6.10.7-0]
+- KVM: PPC: Book3S HV nestedv2: Keep nested guest HASHPKEYR in sync (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV: Add one-reg interface for HASHPKEYR register (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV nestedv2: Keep nested guest HASHKEYR in sync (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV: Add one-reg interface for HASHKEYR register (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV nestedv2: Keep nested guest DEXCR in sync (Shivaprasad G Bhat)
+- KVM: PPC: Book3S HV: Add one-reg interface for DEXCR register (Shivaprasad G Bhat)
+- Revert the F39 commits which should not have pushed (Justin M. Forbes)
+- Turn off libbpf dynamic for perf on F39 (Justin M. Forbes)
+- Revert "cpupower: Bump soname version" (Justin M. Forbes)
+- Drop soname for libcpupower.so since we reverted the bump (Justin M. Forbes)
+- Linux v6.10.7
 
 * Mon Aug 19 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.6-0]
 - Add to BugsFixed (Justin M. Forbes)

@@ -1,6 +1,12 @@
+ Documentation/virt/kvm/api.rst                     |   3 +
  Makefile                                           |  12 ++
  arch/arm/Kconfig                                   |   4 +-
  arch/arm64/Kconfig                                 |   2 +-
+ arch/powerpc/include/asm/kvm_host.h                |   3 +
+ arch/powerpc/include/uapi/asm/kvm.h                |   3 +
+ arch/powerpc/kvm/book3s_hv.c                       |  18 +++
+ arch/powerpc/kvm/book3s_hv.h                       |   3 +
+ arch/powerpc/kvm/book3s_hv_nestedv2.c              |  18 +++
  arch/s390/include/asm/ipl.h                        |   1 +
  arch/s390/kernel/ipl.c                             |   5 +
  arch/s390/kernel/setup.c                           |   4 +
@@ -23,7 +29,6 @@
  drivers/input/rmi4/rmi_driver.c                    | 124 ++++++++++-------
  drivers/iommu/iommu.c                              |  22 +++
  drivers/media/pci/intel/ipu-bridge.c               |  40 ++++--
- .../broadcom/brcm80211/brcmfmac/cfg80211.c         |  13 +-
  drivers/pci/quirks.c                               |  24 ++++
  drivers/scsi/sd.c                                  |  10 ++
  drivers/usb/core/hub.c                             |   7 +
@@ -40,11 +45,26 @@
  security/lockdown/Kconfig                          |  13 ++
  security/lockdown/lockdown.c                       |   1 +
  security/security.c                                |  12 ++
- security/selinux/hooks.c                           |  12 +-
- 43 files changed, 800 insertions(+), 260 deletions(-)
+ 47 files changed, 827 insertions(+), 256 deletions(-)
 
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index eec8df1dde06..88f49dd10cd0 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -2445,8 +2445,11 @@ registers, find a list below:
+   PPC     KVM_REG_PPC_PSSCR               64
+   PPC     KVM_REG_PPC_DEC_EXPIRY          64
+   PPC     KVM_REG_PPC_PTCR                64
++  PPC     KVM_REG_PPC_HASHKEYR            64
++  PPC     KVM_REG_PPC_HASHPKEYR           64
+   PPC     KVM_REG_PPC_DAWR1               64
+   PPC     KVM_REG_PPC_DAWRX1              64
++  PPC     KVM_REG_PPC_DEXCR               64
+   PPC     KVM_REG_PPC_TM_GPR0             64
+   ...
+   PPC     KVM_REG_PPC_TM_GPR31            64
 diff --git a/Makefile b/Makefile
-index 361a70264e1f..eaf69484d4ce 100644
+index ab77d171e268..c46aa8337181 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -95,6 +115,120 @@ index 11bbdc15c6e5..9cecc1448e3c 100644
  	help
  	  For systems with 52-bit userspace VAs enabled, the kernel will attempt
  	  to maintain compatibility with older software by providing 48-bit VAs
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 8abac532146e..6a0c771d3ce8 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -599,6 +599,9 @@ struct kvm_vcpu_arch {
+ 	ulong dawrx0;
+ 	ulong dawr1;
+ 	ulong dawrx1;
++	ulong dexcr;
++	ulong hashkeyr;
++	ulong hashpkeyr;
+ 	ulong ciabr;
+ 	ulong cfar;
+ 	ulong ppr;
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index 1691297a766a..eaeda001784e 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -645,6 +645,9 @@ struct kvm_ppc_cpu_char {
+ #define KVM_REG_PPC_SIER3	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xc3)
+ #define KVM_REG_PPC_DAWR1	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xc4)
+ #define KVM_REG_PPC_DAWRX1	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xc5)
++#define KVM_REG_PPC_DEXCR	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xc6)
++#define KVM_REG_PPC_HASHKEYR	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xc7)
++#define KVM_REG_PPC_HASHPKEYR	(KVM_REG_PPC | KVM_REG_SIZE_U64 | 0xc8)
+ 
+ /* Transactional Memory checkpointed state:
+  * This is all GPRs, all VSX regs and a subset of SPRs
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index d8352e4d9cdc..36068c3ed8a7 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -2349,6 +2349,15 @@ static int kvmppc_get_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+ 	case KVM_REG_PPC_DAWRX1:
+ 		*val = get_reg_val(id, kvmppc_get_dawrx1_hv(vcpu));
+ 		break;
++	case KVM_REG_PPC_DEXCR:
++		*val = get_reg_val(id, kvmppc_get_dexcr_hv(vcpu));
++		break;
++	case KVM_REG_PPC_HASHKEYR:
++		*val = get_reg_val(id, kvmppc_get_hashkeyr_hv(vcpu));
++		break;
++	case KVM_REG_PPC_HASHPKEYR:
++		*val = get_reg_val(id, kvmppc_get_hashpkeyr_hv(vcpu));
++		break;
+ 	case KVM_REG_PPC_CIABR:
+ 		*val = get_reg_val(id, kvmppc_get_ciabr_hv(vcpu));
+ 		break;
+@@ -2592,6 +2601,15 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+ 	case KVM_REG_PPC_DAWRX1:
+ 		kvmppc_set_dawrx1_hv(vcpu, set_reg_val(id, *val) & ~DAWRX_HYP);
+ 		break;
++	case KVM_REG_PPC_DEXCR:
++		kvmppc_set_dexcr_hv(vcpu, set_reg_val(id, *val));
++		break;
++	case KVM_REG_PPC_HASHKEYR:
++		kvmppc_set_hashkeyr_hv(vcpu, set_reg_val(id, *val));
++		break;
++	case KVM_REG_PPC_HASHPKEYR:
++		kvmppc_set_hashpkeyr_hv(vcpu, set_reg_val(id, *val));
++		break;
+ 	case KVM_REG_PPC_CIABR:
+ 		kvmppc_set_ciabr_hv(vcpu, set_reg_val(id, *val));
+ 		/* Don't allow setting breakpoints in hypervisor code */
+diff --git a/arch/powerpc/kvm/book3s_hv.h b/arch/powerpc/kvm/book3s_hv.h
+index 47b2c815641e..a404c9b221c1 100644
+--- a/arch/powerpc/kvm/book3s_hv.h
++++ b/arch/powerpc/kvm/book3s_hv.h
+@@ -116,6 +116,9 @@ KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(dawr0, 64, KVMPPC_GSID_DAWR0)
+ KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(dawr1, 64, KVMPPC_GSID_DAWR1)
+ KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(dawrx0, 64, KVMPPC_GSID_DAWRX0)
+ KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(dawrx1, 64, KVMPPC_GSID_DAWRX1)
++KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(dexcr, 64, KVMPPC_GSID_DEXCR)
++KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(hashkeyr, 64, KVMPPC_GSID_HASHKEYR)
++KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(hashpkeyr, 64, KVMPPC_GSID_HASHPKEYR)
+ KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(ciabr, 64, KVMPPC_GSID_CIABR)
+ KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(wort, 64, KVMPPC_GSID_WORT)
+ KVMPPC_BOOK3S_HV_VCPU_ACCESSOR(ppr, 64, KVMPPC_GSID_PPR)
+diff --git a/arch/powerpc/kvm/book3s_hv_nestedv2.c b/arch/powerpc/kvm/book3s_hv_nestedv2.c
+index 342f58314770..eeecea8f202b 100644
+--- a/arch/powerpc/kvm/book3s_hv_nestedv2.c
++++ b/arch/powerpc/kvm/book3s_hv_nestedv2.c
+@@ -193,6 +193,15 @@ static int gs_msg_ops_vcpu_fill_info(struct kvmppc_gs_buff *gsb,
+ 		case KVMPPC_GSID_DAWRX1:
+ 			rc = kvmppc_gse_put_u32(gsb, iden, vcpu->arch.dawrx1);
+ 			break;
++		case KVMPPC_GSID_DEXCR:
++			rc = kvmppc_gse_put_u64(gsb, iden, vcpu->arch.dexcr);
++			break;
++		case KVMPPC_GSID_HASHKEYR:
++			rc = kvmppc_gse_put_u64(gsb, iden, vcpu->arch.hashkeyr);
++			break;
++		case KVMPPC_GSID_HASHPKEYR:
++			rc = kvmppc_gse_put_u64(gsb, iden, vcpu->arch.hashpkeyr);
++			break;
+ 		case KVMPPC_GSID_CIABR:
+ 			rc = kvmppc_gse_put_u64(gsb, iden, vcpu->arch.ciabr);
+ 			break;
+@@ -445,6 +454,15 @@ static int gs_msg_ops_vcpu_refresh_info(struct kvmppc_gs_msg *gsm,
+ 		case KVMPPC_GSID_DAWRX1:
+ 			vcpu->arch.dawrx1 = kvmppc_gse_get_u32(gse);
+ 			break;
++		case KVMPPC_GSID_DEXCR:
++			vcpu->arch.dexcr = kvmppc_gse_get_u64(gse);
++			break;
++		case KVMPPC_GSID_HASHKEYR:
++			vcpu->arch.hashkeyr = kvmppc_gse_get_u64(gse);
++			break;
++		case KVMPPC_GSID_HASHPKEYR:
++			vcpu->arch.hashpkeyr = kvmppc_gse_get_u64(gse);
++			break;
+ 		case KVMPPC_GSID_CIABR:
+ 			vcpu->arch.ciabr = kvmppc_gse_get_u64(gse);
+ 			break;
 diff --git a/arch/s390/include/asm/ipl.h b/arch/s390/include/asm/ipl.h
 index b0d00032479d..afb9544fb007 100644
 --- a/arch/s390/include/asm/ipl.h
@@ -569,7 +703,7 @@ index 1687483ff319..390b67f19181 100644
  	return ctx.rc;
  }
 diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 503773707e01..2fead21fcb07 100644
+index cdc5a74092c7..45679565878f 100644
 --- a/drivers/acpi/scan.c
 +++ b/drivers/acpi/scan.c
 @@ -1793,6 +1793,15 @@ static bool acpi_device_enumeration_by_parent(struct acpi_device *device)
@@ -1523,30 +1657,6 @@ index 61750cc98d70..a0e9a71580b5 100644
  };
  
  static const struct ipu_property_names prop_names = {
-diff --git a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
-index 5fe0e671ecb3..826b768196e2 100644
---- a/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
-+++ b/drivers/net/wireless/broadcom/brcm80211/brcmfmac/cfg80211.c
-@@ -4320,9 +4320,16 @@ brcmf_pmksa_v3_op(struct brcmf_if *ifp, struct cfg80211_pmksa *pmksa,
- 		/* Single PMK operation */
- 		pmk_op->count = cpu_to_le16(1);
- 		length += sizeof(struct brcmf_pmksa_v3);
--		memcpy(pmk_op->pmk[0].bssid, pmksa->bssid, ETH_ALEN);
--		memcpy(pmk_op->pmk[0].pmkid, pmksa->pmkid, WLAN_PMKID_LEN);
--		pmk_op->pmk[0].pmkid_len = WLAN_PMKID_LEN;
-+		if (pmksa->bssid)
-+			memcpy(pmk_op->pmk[0].bssid, pmksa->bssid, ETH_ALEN);
-+		if (pmksa->pmkid) {
-+			memcpy(pmk_op->pmk[0].pmkid, pmksa->pmkid, WLAN_PMKID_LEN);
-+			pmk_op->pmk[0].pmkid_len = WLAN_PMKID_LEN;
-+		}
-+		if (pmksa->ssid && pmksa->ssid_len) {
-+			memcpy(pmk_op->pmk[0].ssid.SSID, pmksa->ssid, pmksa->ssid_len);
-+			pmk_op->pmk[0].ssid.SSID_len = pmksa->ssid_len;
-+		}
- 		pmk_op->pmk[0].time_left = cpu_to_le32(alive ? BRCMF_PMKSA_NO_EXPIRY : 0);
- 	}
- 
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
 index 568410e64ce6..6afbaee83950 100644
 --- a/drivers/pci/quirks.c
@@ -1957,26 +2067,3 @@ index 8cee5b6c6e6d..489e25946bf9 100644
  #ifdef CONFIG_PERF_EVENTS
  /**
   * security_perf_event_open() - Check if a perf event open is allowed
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 55c78c318ccd..bfa61e005aac 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -3852,7 +3852,17 @@ static int selinux_file_mprotect(struct vm_area_struct *vma,
- 	if (default_noexec &&
- 	    (prot & PROT_EXEC) && !(vma->vm_flags & VM_EXEC)) {
- 		int rc = 0;
--		if (vma_is_initial_heap(vma)) {
-+		/*
-+		 * We don't use the vma_is_initial_heap() helper as it has
-+		 * a history of problems and is currently broken on systems
-+		 * where there is no heap, e.g. brk == start_brk.  Before
-+		 * replacing the conditional below with vma_is_initial_heap(),
-+		 * or something similar, please ensure that the logic is the
-+		 * same as what we have below or you have tested every possible
-+		 * corner case you can think to test.
-+		 */
-+		if (vma->vm_start >= vma->vm_mm->start_brk &&
-+		    vma->vm_end <= vma->vm_mm->brk) {
- 			rc = avc_has_perm(sid, sid, SECCLASS_PROCESS,
- 					  PROCESS__EXECHEAP, NULL);
- 		} else if (!vma->vm_file && (vma_is_initial_stack(vma) ||

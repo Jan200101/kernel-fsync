@@ -1,3 +1,27 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/378f837843ce9ccefbf401f707cda2c10c03b258
+ 378f837843ce9ccefbf401f707cda2c10c03b258 Revert the F39 commits which should not have pushed
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/617f0465246a2629c0ce735529f0addaacba0604
+ 617f0465246a2629c0ce735529f0addaacba0604 KVM: PPC: Book3S HV nestedv2: Keep nested guest HASHPKEYR in sync
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/713ce2b8136985b1a7ff2ec6dc3c75ebbf4e3ddd
+ 713ce2b8136985b1a7ff2ec6dc3c75ebbf4e3ddd KVM: PPC: Book3S HV: Add one-reg interface for HASHPKEYR register
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/3a7a0b70797b9e19312547345f0fd84595458302
+ 3a7a0b70797b9e19312547345f0fd84595458302 KVM: PPC: Book3S HV nestedv2: Keep nested guest HASHKEYR in sync
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/aab7db47edcfacd592b7483fa0371bf8d23e8b6f
+ aab7db47edcfacd592b7483fa0371bf8d23e8b6f KVM: PPC: Book3S HV: Add one-reg interface for HASHKEYR register
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/1d5f5405eb8b0023aefe21d56558d742e2b558ea
+ 1d5f5405eb8b0023aefe21d56558d742e2b558ea KVM: PPC: Book3S HV nestedv2: Keep nested guest DEXCR in sync
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/3eec751027838fde380aee0676b2bb9806a01a75
+ 3eec751027838fde380aee0676b2bb9806a01a75 KVM: PPC: Book3S HV: Add one-reg interface for DEXCR register
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/c3be1c8ba3dc3a70fb65546e836193ce584de02b
+ c3be1c8ba3dc3a70fb65546e836193ce584de02b Revert "cpupower: Bump soname version"
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/d42657488c703c24d1fffaecced0b3b82d30b393
  d42657488c703c24d1fffaecced0b3b82d30b393 selinux: revert our use of vma_is_initial_heap()
 

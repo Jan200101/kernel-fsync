@@ -1477,7 +1477,7 @@ diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
 index ce71b53ea6c5..fecec1d61393 100644
 --- a/drivers/hid/Makefile
 +++ b/drivers/hid/Makefile
-@@ -29,6 +29,8 @@ obj-$(CONFIG_HID_ALPS)		+= hid-alps.o
+@@ -29,6 +29,8 @@
  obj-$(CONFIG_HID_ACRUX)		+= hid-axff.o
  obj-$(CONFIG_HID_APPLE)		+= hid-apple.o
  obj-$(CONFIG_HID_APPLEIR)	+= hid-appleir.o
@@ -1485,7 +1485,7 @@ index ce71b53ea6c5..fecec1d61393 100644
 +obj-$(CONFIG_HID_APPLETB_KBD)	+= hid-appletb-kbd.o
  obj-$(CONFIG_HID_CREATIVE_SB0540)	+= hid-creative-sb0540.o
  obj-$(CONFIG_HID_ASUS)		+= hid-asus.o
- obj-$(CONFIG_HID_AUREAL)	+= hid-aureal.o
+ obj-$(CONFIG_HID_ASUS_ALLY)	+= hid-asus-ally.o
 diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
 index bd022e004356..6dedb84d7cc3 100644
 --- a/drivers/hid/hid-apple.c

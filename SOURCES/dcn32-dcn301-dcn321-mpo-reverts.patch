@@ -91,8 +91,8 @@ diff --git a/drivers/gpu/drm/amd/display/dc/resource/dcn321/dcn321_resource.c b/
 index 9a3cc0514a36..adde6c7b09f6 100644
 --- a/drivers/gpu/drm/amd/display/dc/resource/dcn321/dcn321_resource.c
 +++ b/drivers/gpu/drm/amd/display/dc/resource/dcn321/dcn321_resource.c
-@@ -1779,7 +1779,7 @@ static bool dcn321_resource_construct(
- 	dc->caps.color.mpc.ocsc = 1;
+@@ -1782,7 +1782,7 @@
+ 	dc->config.use_pipe_ctx_sync_logic = true;
  
  	dc->config.dc_mode_clk_limit_support = true;
 -	dc->config.enable_windowed_mpo_odm = true;
