@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.10.7
-%define specversion 6.10.7
+%define specrpmversion 6.10.8
+%define specversion 6.10.8
 %define patchversion 6.10
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.10.7
+%define tarfile_release 6.10.8
 # This is needed to do merge window version magic
 %define patchlevel 10
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.10.7
+%define kabiversion 6.10.8
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -4198,8 +4198,13 @@ fi\
 #
 #
 %changelog
-* Wed Sep 04 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.7-201.fsync
-- kernel-fsync v6.10.7
+* Sat Sep 07 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.8-201.fsync
+- kernel-fsync v6.10.8
+
+* Wed Sep 04 2024 Augusto Caringi <acaringi@redhat.com> [6.10.8-0]
+- Add to BugsFixed (Augusto Caringi)
+- xfs: xfs_finobt_count_blocks() walks the wrong btree (Dave Chinner)
+- Linux v6.10.8
 
 * Thu Aug 29 2024 Augusto Caringi <acaringi@redhat.com> [6.10.7-0]
 - KVM: PPC: Book3S HV nestedv2: Keep nested guest HASHPKEYR in sync (Shivaprasad G Bhat)
