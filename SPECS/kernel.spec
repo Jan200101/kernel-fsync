@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 205%{?buildid}%{?dist}
+%define specrelease 206%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.12
 
@@ -989,7 +989,7 @@ Patch216: cachy-fixes.patch
 
 # device specific patches
 Patch300: linux-surface.patch
-Patch302: asus-linux.patch
+#Patch302: asus-linux.patch
 Patch303: lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 Patch308: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
@@ -1002,8 +1002,8 @@ Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
 Patch321: v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 Patch322: rog-ally-gyro-fix.patch
 Patch323: 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
-Patch336: 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
 Patch337: 0001-patch_realtek-Fix-ROG-ALLY-X-audio.patch
+Patch338: v2-ally-suspend-fix.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
 Patch208: 0001-ntsync.patch
@@ -1895,7 +1895,7 @@ ApplyOptionalPatch cachy-fixes.patch
 
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
-ApplyOptionalPatch asus-linux.patch
+#ApplyOptionalPatch asus-linux.patch
 ApplyOptionalPatch lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
@@ -1908,8 +1908,8 @@ ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
 ApplyOptionalPatch v14.8-0004-HID-asus-add-ROG-Ally-xpad-settings.patch
 ApplyOptionalPatch rog-ally-gyro-fix.patch
 ApplyOptionalPatch 0001-Revert-drm-i915-mtl-Add-fake-PCH-for-Meteor-Lake.patch
-ApplyOptionalPatch 0001-add-ally-x-dmi-quirk-for-controller-suspend.patch
 ApplyOptionalPatch 0001-patch_realtek-Fix-ROG-ALLY-X-audio.patch 
+ApplyOptionalPatch v2-ally-suspend-fix.patch
 
 # https://github.com/CachyOS/kernel-patches
 ApplyOptionalPatch 0001-ntsync.patch
@@ -4137,6 +4137,9 @@ fi\
 #
 #
 %changelog
+* Sat Sep 21 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-206.fsync
+- kernel-fsync v6.9.12 oxp-sensors update, asus screw driver
+
 * Thu Aug 22 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-205.fsync
 - kernel-fsync v6.9.12 selinux vma revert
 
