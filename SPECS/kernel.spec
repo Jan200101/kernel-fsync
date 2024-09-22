@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 206%{?buildid}%{?dist}
+%define specrelease 207%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.12
 
@@ -989,7 +989,7 @@ Patch216: cachy-fixes.patch
 
 # device specific patches
 Patch300: linux-surface.patch
-#Patch302: asus-linux.patch
+Patch302: asus-linux.patch
 Patch303: lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 Patch308: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
@@ -1895,7 +1895,7 @@ ApplyOptionalPatch cachy-fixes.patch
 
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
-#ApplyOptionalPatch asus-linux.patch
+ApplyOptionalPatch asus-linux.patch
 ApplyOptionalPatch lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
@@ -4137,6 +4137,9 @@ fi\
 #
 #
 %changelog
+* Sun Sep 22 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-207.fsync
+- kernel-fsync v6.9.12 asus unscrew driver
+
 * Sat Sep 21 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-206.fsync
 - kernel-fsync v6.9.12 oxp-sensors update, asus screw driver
 
