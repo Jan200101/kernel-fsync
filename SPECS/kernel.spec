@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 207%{?buildid}%{?dist}
+%define specrelease 208%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.12
 
@@ -994,8 +994,6 @@ Patch303: lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 Patch308: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 Patch309: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
-#  improve AMD SFH 1.1 gyro and accel sensitivity
-Patch324: 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally
 Patch316: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
@@ -1035,11 +1033,8 @@ Patch334: platform-chrome-cros_ec_lpc-add-support-for-AMD-Framework-Laptops.patc
 # temporary patches
 Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
-Patch408: 0001-acpi-proc-idle-skip-dummy-wait.patch
 # Fixes the steam deck not coming back from hibernation
 Patch411: 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
-# Allows corectl to work out of the box
-Patch412: 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 # fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
 Patch413: amdgpu-ignore-min-pcap.patch
 # improve controller hiding
@@ -1050,6 +1045,7 @@ Patch416: v0-oxp-sensors.patch
 Patch417: loki-mini-pro-hda-pin-fixes.patch
 Patch418: dcn32-dcn301-dcn321-mpo-reverts.patch
 Patch419: 0001-selinux-revert-our-use-of-vma_is_initial_heap.patch
+Patch420: CVE-2024-44961.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -1900,8 +1896,6 @@ ApplyOptionalPatch lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
-#  improve AMD SFH 1.1 gyro and accel sensitivity
-ApplyOptionalPatch 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally-
 ApplyOptionalPatch rog-ally-audio-fix.patch
 ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
@@ -1942,11 +1936,8 @@ ApplyOptionalPatch platform-chrome-cros_ec_lpc-add-support-for-AMD-Framework-Lap
 ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 #  mediatek fixups
 ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
-ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
 #  Fixes the steam deck not coming back from hibernation
 ApplyOptionalPatch 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
-#  enable full amd power control by default
-ApplyOptionalPatch 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 # fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
 ApplyOptionalPatch amdgpu-ignore-min-pcap.patch
 # improve controller hiding
@@ -1957,6 +1948,7 @@ ApplyOptionalPatch v0-oxp-sensors.patch
 ApplyOptionalPatch loki-mini-pro-hda-pin-fixes.patch
 ApplyOptionalPatch dcn32-dcn301-dcn321-mpo-reverts.patch
 ApplyOptionalPatch 0001-selinux-revert-our-use-of-vma_is_initial_heap.patch
+ApplyOptionalPatch CVE-2024-44961.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
 # usbcore.interrupt_interval_override=045e:00db:16,1bcf:0005:1
@@ -4137,6 +4129,9 @@ fi\
 #
 #
 %changelog
+* Thu Sep 26 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-208.fsync
+- kernel-fsync v6.9.12 cleaning
+
 * Sun Sep 22 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-207.fsync
 - kernel-fsync v6.9.12 asus unscrew driver
 
