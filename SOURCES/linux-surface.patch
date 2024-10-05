@@ -1,4 +1,4 @@
-From 252c5b2e65865a2a3aa6a5400f204c47d22490ee Mon Sep 17 00:00:00 2001
+From 2dd7c57b604b7cae49efcebc5fb6e46f7401a69b Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sun, 9 Jun 2024 19:48:58 +0200
 Subject: [PATCH] Revert "efi/x86: Set the PE/COFF header's NX compat flag
@@ -33,9 +33,84 @@ index b5c79f43359b..a1bbedd989e4 100644
  	.long	0				# SizeOfStackReserve
  	.long	0				# SizeOfStackCommit
 -- 
-2.46.0
+2.46.1
 
-From 1146270e92aee0b612dfe695bcf8f7131a19bcf3 Mon Sep 17 00:00:00 2001
+From 8c63d9f68dff804be41fcf71b725a1e28c78118f Mon Sep 17 00:00:00 2001
+From: "J. Eduardo" <j.eduardo@gmail.com>
+Date: Sun, 25 Aug 2024 14:17:45 +0200
+Subject: [PATCH] PM: hibernate: Add a lockdown_hibernate parameter
+
+This allows the user to tell the kernel that they know better (namely,
+they secured their swap properly), and that it can enable hibernation.
+
+Signed-off-by: Kelvie Wong <kelvie@kelvie.ca>
+Link: https://github.com/linux-surface/kernel/pull/158
+Link: https://gist.github.com/brknkfr/95d1925ccdbb7a2d18947c168dfabbee
+Patchset: secureboot
+---
+ Documentation/admin-guide/kernel-parameters.txt |  5 +++++
+ kernel/power/hibernate.c                        | 10 +++++++++-
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index c82446cef8e2..2ae1a6fda7f9 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -3000,6 +3000,11 @@
+ 			to extract confidential information from the kernel
+ 			are also disabled.
+ 
++	lockdown_hibernate	[HIBERNATION]
++			Enable hibernation even if lockdown is enabled. Enable this only if
++			your swap is encrypted and secured properly, as an attacker can
++			modify the kernel offline during hibernation.
++
+ 	locktorture.acq_writer_lim= [KNL]
+ 			Set the time limit in jiffies for a lock
+ 			acquisition.  Acquisitions exceeding this limit
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 0a213f69a9e4..8e4f9dcc9f4c 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -37,6 +37,7 @@
+ #include "power.h"
+ 
+ 
++static int lockdown_hibernate;
+ static int nocompress;
+ static int noresume;
+ static int nohibernate;
+@@ -92,7 +93,7 @@ void hibernate_release(void)
+ bool hibernation_available(void)
+ {
+ 	return nohibernate == 0 &&
+-		!security_locked_down(LOCKDOWN_HIBERNATION) &&
++		(lockdown_hibernate || !security_locked_down(LOCKDOWN_HIBERNATION)) &&
+ 		!secretmem_active() && !cxl_mem_active();
+ }
+ 
+@@ -1422,6 +1423,12 @@ static int __init nohibernate_setup(char *str)
+ 	return 1;
+ }
+ 
++static int __init lockdown_hibernate_setup(char *str)
++{
++	lockdown_hibernate = 1;
++	return 1;
++}
++
+ static const char * const comp_alg_enabled[] = {
+ #if IS_ENABLED(CONFIG_CRYPTO_LZO)
+ 	COMPRESSION_ALGO_LZO,
+@@ -1480,3 +1487,4 @@ __setup("hibernate=", hibernate_setup);
+ __setup("resumewait", resumewait_setup);
+ __setup("resumedelay=", resumedelay_setup);
+ __setup("nohibernate", nohibernate_setup);
++__setup("lockdown_hibernate", lockdown_hibernate_setup);
+-- 
+2.46.1
+
+From 3d3aec0cd78fd07d406486dd140daa7baf1fba7c Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 18 Oct 2020 16:42:44 +0900
 Subject: [PATCH] (surface3-oemb) add DMI matches for Surface 3 with broken DMI
@@ -134,9 +209,9 @@ index 5e2ec60e2954..207868c699f2 100644
  };
  
 -- 
-2.46.0
+2.46.1
 
-From 800e9cfe84a3eadd4dc9ae700940068e77fa8a12 Mon Sep 17 00:00:00 2001
+From a50739a5e7b0ca9f6bca85606f2b9389a9dd6bec Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Tue, 3 Nov 2020 13:28:04 +0100
 Subject: [PATCH] mwifiex: Add quirk resetting the PCI bridge on MS Surface
@@ -301,9 +376,9 @@ index d6ff964aec5b..5d30ae39d65e 100644
  void mwifiex_initialize_quirks(struct pcie_service_card *card);
  int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
 -- 
-2.46.0
+2.46.1
 
-From d51c5a356fee57c99a8d181825f8f941f34749d7 Mon Sep 17 00:00:00 2001
+From 883ef69235ff8daa9653576dd6104460f60b7bde Mon Sep 17 00:00:00 2001
 From: Tsuchiya Yuto <kitakar@gmail.com>
 Date: Sun, 4 Oct 2020 00:11:49 +0900
 Subject: [PATCH] mwifiex: pcie: disable bridge_d3 for Surface gen4+
@@ -456,9 +531,9 @@ index 5d30ae39d65e..c14eb56eb911 100644
  void mwifiex_initialize_quirks(struct pcie_service_card *card);
  int mwifiex_pcie_reset_d3cold_quirk(struct pci_dev *pdev);
 -- 
-2.46.0
+2.46.1
 
-From 317cde3654592dcb3e072d0d2fe7b4e5598cc078 Mon Sep 17 00:00:00 2001
+From 9e1720f0132e61bc6f738284080c6925941e1a91 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 25 Mar 2021 11:33:02 +0100
 Subject: [PATCH] Bluetooth: btusb: Lower passive lescan interval on Marvell
@@ -494,7 +569,7 @@ Patchset: mwifiex
  1 file changed, 15 insertions(+)
 
 diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index 789c492df6fa..1e766b6c1f9a 100644
+index 0927f51867c2..3d3573829631 100644
 --- a/drivers/bluetooth/btusb.c
 +++ b/drivers/bluetooth/btusb.c
 @@ -65,6 +65,7 @@ static struct usb_driver btusb_driver;
@@ -534,9 +609,9 @@ index 789c492df6fa..1e766b6c1f9a 100644
  	    (id->driver_info & BTUSB_MEDIATEK)) {
  		hdev->setup = btusb_mtk_setup;
 -- 
-2.46.0
+2.46.1
 
-From 268a79fb66862ef22294397a425fd074fc336c34 Mon Sep 17 00:00:00 2001
+From 68efac8fe5bd9af5e3c3e1d3cf7d9d2a3a5f4248 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 27 Feb 2021 00:45:52 +0100
 Subject: [PATCH] ath10k: Add module parameters to override board files
@@ -654,9 +729,9 @@ index bdf0552cd1c3..e062cc687689 100644
  		snprintf(filename, sizeof(filename), "%s/%s/%s",
  			 dir, ar->board_name, file);
 -- 
-2.46.0
+2.46.1
 
-From 9904c59dbdd422b811974893bab69fc5b4bc9a03 Mon Sep 17 00:00:00 2001
+From 7e608ebdf188a298503111e503a4cc2fc3880f7c Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Thu, 30 Jul 2020 13:21:53 +0200
 Subject: [PATCH] mei: me: Add Icelake device ID for iTouch
@@ -693,9 +768,9 @@ index 6589635f8ba3..a1df48a434e2 100644
  
  	{MEI_PCI_DEVICE(MEI_DEV_ID_TGP_LP, MEI_ME_PCH15_CFG)},
 -- 
-2.46.0
+2.46.1
 
-From b0d9ceae2f95a4e4093b07580bedc10821374555 Mon Sep 17 00:00:00 2001
+From 8b12cf7a1fe199057c7a39087d233f62fd4d6a93 Mon Sep 17 00:00:00 2001
 From: Liban Hannan <liban.p@gmail.com>
 Date: Tue, 12 Apr 2022 23:31:12 +0100
 Subject: [PATCH] iommu: Use IOMMU passthrough mode for IPTS
@@ -719,7 +794,7 @@ Patchset: ipts
  1 file changed, 29 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index f55ec1fd7942..8d95579436a9 100644
+index e9bea0305c26..6ee97bf7b6a9 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
 @@ -40,6 +40,11 @@
@@ -800,9 +875,9 @@ index f55ec1fd7942..8d95579436a9 100644
  {
  	if (risky_device(dev))
 -- 
-2.46.0
+2.46.1
 
-From ee1ebc3f9ec7a8418f418902817b5c5f4b51c21d Mon Sep 17 00:00:00 2001
+From fd63fc042c6554c75134e4dab8e4a1d74c495d05 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Sun, 11 Dec 2022 12:00:59 +0100
 Subject: [PATCH] hid: Add support for Intel Precise Touch and Stylus
@@ -3895,9 +3970,9 @@ index 000000000000..1f966b8b32c4
 +
 +#endif /* IPTS_THREAD_H */
 -- 
-2.46.0
+2.46.1
 
-From 0d0e07366b425e953d6dab698d62dbe9a7546994 Mon Sep 17 00:00:00 2001
+From dc65c76763207057a6797b0ef844c3f58e6a6e15 Mon Sep 17 00:00:00 2001
 From: Dorian Stoll <dorian.stoll@tmsp.io>
 Date: Sun, 11 Dec 2022 12:03:38 +0100
 Subject: [PATCH] iommu: intel: Disable source id verification for ITHC
@@ -3936,9 +4011,9 @@ index e4a70886678c..961a33b87c24 100644
  	 * DMA alias provides us with a PCI device and alias.  The only case
  	 * where the it will return an alias on a different bus than the
 -- 
-2.46.0
+2.46.1
 
-From 19a947aa5cc417bd43656cf9d8bf010abdc6bc3f Mon Sep 17 00:00:00 2001
+From c3ddc02f7b0e27c09233022d7bbfd6b72ca12d2e Mon Sep 17 00:00:00 2001
 From: quo <tuple@list.ru>
 Date: Sun, 11 Dec 2022 12:10:54 +0100
 Subject: [PATCH] hid: Add support for Intel Touch Host Controller
@@ -6666,169 +6741,9 @@ index 000000000000..aec320d4e945
 +int ithc_reset(struct ithc *ithc);
 +
 -- 
-2.46.0
+2.46.1
 
-From 00b833401e8060eb50db269e0681383454a74848 Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Sun, 22 Oct 2023 14:57:11 +0200
-Subject: [PATCH] platform/surface: aggregator_registry: Add support for
- Surface Laptop Go 3
-
-Add SAM client device nodes for the Surface Laptop Go 3. It seems to use
-the same SAM client devices as the Surface Laptop Go 1 and 2, so re-use
-their node group.
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- drivers/platform/surface/surface_aggregator_registry.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index 1c4d74db08c9..f826489dc69d 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -395,6 +395,9 @@ static const struct acpi_device_id ssam_platform_hub_match[] = {
- 	/* Surface Laptop Go 2 */
- 	{ "MSHW0290", (unsigned long)ssam_node_group_slg1 },
- 
-+	/* Surface Laptop Go 3 */
-+	{ "MSHW0440", (unsigned long)ssam_node_group_slg1 },
-+
- 	/* Surface Laptop Studio */
- 	{ "MSHW0123", (unsigned long)ssam_node_group_sls },
- 
--- 
-2.46.0
-
-From 9e13165394bf1898d05c7d5a4a5adb1767d2307e Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Mon, 20 Nov 2023 19:47:00 +0100
-Subject: [PATCH] platform/surface: aggregator_registry: Add support for
- Surface Laptop Studio 2
-
-Add SAM client device nodes for the Surface Laptop Studio 2 (SLS2). The
-SLS2 is quite similar to the SLS1, but it does not provide the touchpad
-as a SAM-HID device. Therefore, add a new node group for the SLS2 and
-update the comments accordingly
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- .../surface/surface_aggregator_registry.c     | 25 ++++++++++++++++---
- 1 file changed, 21 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index f826489dc69d..ef59a7b66667 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -273,8 +273,8 @@ static const struct software_node *ssam_node_group_sl5[] = {
- 	NULL,
- };
- 
--/* Devices for Surface Laptop Studio. */
--static const struct software_node *ssam_node_group_sls[] = {
-+/* Devices for Surface Laptop Studio 1. */
-+static const struct software_node *ssam_node_group_sls1[] = {
- 	&ssam_node_root,
- 	&ssam_node_bat_ac,
- 	&ssam_node_bat_main,
-@@ -289,6 +289,20 @@ static const struct software_node *ssam_node_group_sls[] = {
- 	NULL,
- };
- 
-+/* Devices for Surface Laptop Studio 2. */
-+static const struct software_node *ssam_node_group_sls2[] = {
-+	&ssam_node_root,
-+	&ssam_node_bat_ac,
-+	&ssam_node_bat_main,
-+	&ssam_node_tmp_pprof,
-+	&ssam_node_pos_tablet_switch,
-+	&ssam_node_hid_sam_keyboard,
-+	&ssam_node_hid_sam_penstash,
-+	&ssam_node_hid_sam_sensors,
-+	&ssam_node_hid_sam_ucm_ucsi,
-+	NULL,
-+};
-+
- /* Devices for Surface Laptop Go. */
- static const struct software_node *ssam_node_group_slg1[] = {
- 	&ssam_node_root,
-@@ -398,8 +412,11 @@ static const struct acpi_device_id ssam_platform_hub_match[] = {
- 	/* Surface Laptop Go 3 */
- 	{ "MSHW0440", (unsigned long)ssam_node_group_slg1 },
- 
--	/* Surface Laptop Studio */
--	{ "MSHW0123", (unsigned long)ssam_node_group_sls },
-+	/* Surface Laptop Studio 1 */
-+	{ "MSHW0123", (unsigned long)ssam_node_group_sls1 },
-+
-+	/* Surface Laptop Studio 2 */
-+	{ "MSHW0360", (unsigned long)ssam_node_group_sls2 },
- 
- 	{ },
- };
--- 
-2.46.0
-
-From 83719d2cd70ad6ac1df993782e757ded15e881cc Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Sun, 9 Jun 2024 20:05:57 +0200
-Subject: [PATCH] platform/surface: aggregator_registry: Add support for
- Surface Laptop 6
-
-Add SAM client device nodes for the Surface Laptop Studio 6 (SL6). The
-SL6 is similar to the SL5, with the typical battery/AC, platform
-profile, and HID nodes. It also has support for the newly supported fan
-interface.
-
-Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
-Patchset: surface-sam
----
- .../surface/surface_aggregator_registry.c     | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
-
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index ef59a7b66667..70a2ea5a1957 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -273,6 +273,22 @@ static const struct software_node *ssam_node_group_sl5[] = {
- 	NULL,
- };
- 
-+/* Devices for Surface Laptop 6. */
-+static const struct software_node *ssam_node_group_sl6[] = {
-+	&ssam_node_root,
-+	&ssam_node_bat_ac,
-+	&ssam_node_bat_main,
-+	&ssam_node_tmp_perf_profile_with_fan,
-+	&ssam_node_tmp_sensors,
-+	&ssam_node_fan_speed,
-+	&ssam_node_hid_main_keyboard,
-+	&ssam_node_hid_main_touchpad,
-+	&ssam_node_hid_main_iid5,
-+	&ssam_node_hid_sam_sensors,
-+	&ssam_node_hid_sam_ucm_ucsi,
-+	NULL,
-+};
-+
- /* Devices for Surface Laptop Studio 1. */
- static const struct software_node *ssam_node_group_sls1[] = {
- 	&ssam_node_root,
-@@ -403,6 +419,9 @@ static const struct acpi_device_id ssam_platform_hub_match[] = {
- 	/* Surface Laptop 5 */
- 	{ "MSHW0350", (unsigned long)ssam_node_group_sl5 },
- 
-+	/* Surface Laptop 6 */
-+	{ "MSHW0530", (unsigned long)ssam_node_group_sl5 },
-+
- 	/* Surface Laptop Go 1 */
- 	{ "MSHW0118", (unsigned long)ssam_node_group_slg1 },
- 
--- 
-2.46.0
-
-From c188646846cc6e9db1134eb62208d088ce615312 Mon Sep 17 00:00:00 2001
+From 3e6733db885b3a91339039897cbf0f3e05cda2a5 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 30 Dec 2023 18:07:54 +0100
 Subject: [PATCH] hwmon: Add thermal sensor driver for Surface Aggregator
@@ -7054,9 +6969,9 @@ index 000000000000..48c3e826713f
 +MODULE_DESCRIPTION("Thermal sensor subsystem driver for Surface System Aggregator Module");
 +MODULE_LICENSE("GPL");
 -- 
-2.46.0
+2.46.1
 
-From 31d334453ebc65b7868bf33b1963553586e64fa3 Mon Sep 17 00:00:00 2001
+From 3e4479ac556ff21b45485822edb0980bbb27fdba Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 30 Dec 2023 18:12:23 +0100
 Subject: [PATCH] hwmon: surface_temp: Add support for sensor names
@@ -7249,121 +7164,9 @@ index 48c3e826713f..4c08926139db 100644
  			"surface_thermal", ssam_temp, &ssam_temp_hwmon_chip_info,
  			NULL);
 -- 
-2.46.0
+2.46.1
 
-From 36174000616d130e9b4655d69eb3bd5b07adbecb Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Mon, 10 Jun 2024 21:47:47 +0200
-Subject: [PATCH] platform/surface: aggregator_registry: Add fan and thermal
- sensor support for Surface Laptop 5
-
-Patchset: surface-sam
----
- drivers/platform/surface/surface_aggregator_registry.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index 70a2ea5a1957..6b568804f70b 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -265,7 +265,9 @@ static const struct software_node *ssam_node_group_sl5[] = {
- 	&ssam_node_root,
- 	&ssam_node_bat_ac,
- 	&ssam_node_bat_main,
--	&ssam_node_tmp_perf_profile,
-+	&ssam_node_tmp_perf_profile_with_fan,
-+	&ssam_node_tmp_sensors,
-+	&ssam_node_fan_speed,
- 	&ssam_node_hid_main_keyboard,
- 	&ssam_node_hid_main_touchpad,
- 	&ssam_node_hid_main_iid5,
--- 
-2.46.0
-
-From e32f317be4ad620fb6683b62ad9e883f37e17f57 Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Mon, 10 Jun 2024 21:48:02 +0200
-Subject: [PATCH] platform/surface: aggregator_registry: Add fan and thermal
- sensor support for Surface Laptop Studio 2
-
-Patchset: surface-sam
----
- drivers/platform/surface/surface_aggregator_registry.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index 6b568804f70b..9046df95c043 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -312,7 +312,9 @@ static const struct software_node *ssam_node_group_sls2[] = {
- 	&ssam_node_root,
- 	&ssam_node_bat_ac,
- 	&ssam_node_bat_main,
--	&ssam_node_tmp_pprof,
-+	&ssam_node_tmp_perf_profile_with_fan,
-+	&ssam_node_tmp_sensors,
-+	&ssam_node_fan_speed,
- 	&ssam_node_pos_tablet_switch,
- 	&ssam_node_hid_sam_keyboard,
- 	&ssam_node_hid_sam_penstash,
--- 
-2.46.0
-
-From ebf64f6dcf1bdf0dbe80b5ec5e3d4b8a6cfab41e Mon Sep 17 00:00:00 2001
-From: Maximilian Luz <luzmaximilian@gmail.com>
-Date: Fri, 28 Jun 2024 22:31:37 +0200
-Subject: [PATCH] platform/surface: aggregator_registry: Add Support for
- Surface Pro 10
-
-Patchset: surface-sam
----
- .../surface/surface_aggregator_registry.c     | 22 +++++++++++++++++++
- 1 file changed, 22 insertions(+)
-
-diff --git a/drivers/platform/surface/surface_aggregator_registry.c b/drivers/platform/surface/surface_aggregator_registry.c
-index 9046df95c043..058f4edd8b66 100644
---- a/drivers/platform/surface/surface_aggregator_registry.c
-+++ b/drivers/platform/surface/surface_aggregator_registry.c
-@@ -377,6 +377,25 @@ static const struct software_node *ssam_node_group_sp9[] = {
- 	NULL,
- };
- 
-+/* Devices for Surface Pro 10 */
-+static const struct software_node *ssam_node_group_sp10[] = {
-+	&ssam_node_root,
-+	&ssam_node_hub_kip,
-+	&ssam_node_bat_ac,
-+	&ssam_node_bat_main,
-+	&ssam_node_tmp_perf_profile_with_fan,
-+	&ssam_node_tmp_sensors,
-+	&ssam_node_fan_speed,
-+	&ssam_node_pos_tablet_switch,
-+	&ssam_node_hid_kip_keyboard,
-+	&ssam_node_hid_kip_penstash,
-+	&ssam_node_hid_kip_touchpad,
-+	&ssam_node_hid_kip_fwupd,
-+	&ssam_node_hid_sam_sensors,
-+	&ssam_node_hid_sam_ucm_ucsi,
-+	NULL,
-+};
-+
- 
- /* -- SSAM platform/meta-hub driver. ---------------------------------------- */
- 
-@@ -399,6 +418,9 @@ static const struct acpi_device_id ssam_platform_hub_match[] = {
- 	/* Surface Pro 9 */
- 	{ "MSHW0343", (unsigned long)ssam_node_group_sp9 },
- 
-+	/* Surface Pro 10 */
-+	{ "MSHW0510", (unsigned long)ssam_node_group_sp10 },
-+
- 	/* Surface Book 2 */
- 	{ "MSHW0107", (unsigned long)ssam_node_group_gen5 },
- 
--- 
-2.46.0
-
-From 8dac7a369f2f1c461750a3c3f6d93caae9566ace Mon Sep 17 00:00:00 2001
+From 134830c02674d93c2433bb898de34d1b84467f86 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 25 Jul 2020 17:19:53 +0200
 Subject: [PATCH] i2c: acpi: Implement RawBytes read access
@@ -7416,14 +7219,14 @@ quirk-like interface into the I2C core.
 Signed-off-by: Maximilian Luz <luzmaximilian@gmail.com>
 Patchset: surface-sam-over-hid
 ---
- drivers/i2c/i2c-core-acpi.c | 35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ drivers/i2c/i2c-core-acpi.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
 diff --git a/drivers/i2c/i2c-core-acpi.c b/drivers/i2c/i2c-core-acpi.c
-index 14ae0cfc325e..a3a9f81fb47f 100644
+index 14ae0cfc325e..6197c5252d2a 100644
 --- a/drivers/i2c/i2c-core-acpi.c
 +++ b/drivers/i2c/i2c-core-acpi.c
-@@ -639,6 +639,28 @@ static int acpi_gsb_i2c_write_bytes(struct i2c_client *client,
+@@ -639,6 +639,27 @@ static int acpi_gsb_i2c_write_bytes(struct i2c_client *client,
  	return (ret == 1) ? 0 : -EIO;
  }
  
@@ -7431,7 +7234,7 @@ index 14ae0cfc325e..a3a9f81fb47f 100644
 +		u8 *data, u8 data_len)
 +{
 +	struct i2c_msg msgs[1];
-+	int ret = AE_OK;
++	int ret;
 +
 +	msgs[0].addr = client->addr;
 +	msgs[0].flags = client->flags;
@@ -7439,7 +7242,6 @@ index 14ae0cfc325e..a3a9f81fb47f 100644
 +	msgs[0].buf = data;
 +
 +	ret = i2c_transfer(client->adapter, msgs, ARRAY_SIZE(msgs));
-+
 +	if (ret < 0) {
 +		dev_err(&client->adapter->dev, "i2c write failed: %d\n", ret);
 +		return ret;
@@ -7452,7 +7254,7 @@ index 14ae0cfc325e..a3a9f81fb47f 100644
  static acpi_status
  i2c_acpi_space_handler(u32 function, acpi_physical_address command,
  			u32 bits, u64 *value64,
-@@ -740,6 +762,19 @@ i2c_acpi_space_handler(u32 function, acpi_physical_address command,
+@@ -740,6 +761,19 @@ i2c_acpi_space_handler(u32 function, acpi_physical_address command,
  		}
  		break;
  
@@ -7473,9 +7275,9 @@ index 14ae0cfc325e..a3a9f81fb47f 100644
  		dev_warn(&adapter->dev, "protocol 0x%02x not supported for client 0x%02x\n",
  			 accessor_type, client->addr);
 -- 
-2.46.0
+2.46.1
 
-From fe964119c511036a560d1dfcbec1196ae4ed1621 Mon Sep 17 00:00:00 2001
+From 61af2c864646d5582463f9e5fbf06a96e0c4300d Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 13 Feb 2021 16:41:18 +0100
 Subject: [PATCH] platform/surface: Add driver for Surface Book 1 dGPU switch
@@ -7493,8 +7295,8 @@ Patchset: surface-sam-over-hid
 ---
  drivers/platform/surface/Kconfig              |   7 +
  drivers/platform/surface/Makefile             |   1 +
- .../surface/surfacebook1_dgpu_switch.c        | 162 ++++++++++++++++++
- 3 files changed, 170 insertions(+)
+ .../surface/surfacebook1_dgpu_switch.c        | 136 ++++++++++++++++++
+ 3 files changed, 144 insertions(+)
  create mode 100644 drivers/platform/surface/surfacebook1_dgpu_switch.c
 
 diff --git a/drivers/platform/surface/Kconfig b/drivers/platform/surface/Kconfig
@@ -7529,35 +7331,28 @@ index 53344330939b..7efcd0cdb532 100644
  obj-$(CONFIG_SURFACE_HOTPLUG)		+= surface_hotplug.o
 diff --git a/drivers/platform/surface/surfacebook1_dgpu_switch.c b/drivers/platform/surface/surfacebook1_dgpu_switch.c
 new file mode 100644
-index 000000000000..8b816ed8f35c
+index 000000000000..68db237734a1
 --- /dev/null
 +++ b/drivers/platform/surface/surfacebook1_dgpu_switch.c
-@@ -0,0 +1,162 @@
+@@ -0,0 +1,136 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +
-+#include <linux/kernel.h>
 +#include <linux/module.h>
 +#include <linux/acpi.h>
 +#include <linux/platform_device.h>
 +
-+
-+#ifdef pr_fmt
-+#undef pr_fmt
-+#endif
-+#define pr_fmt(fmt) "%s:%s: " fmt, KBUILD_MODNAME, __func__
-+
-+
-+static const guid_t dgpu_sw_guid = GUID_INIT(0x6fd05c69, 0xcde3, 0x49f4,
-+	0x95, 0xed, 0xab, 0x16, 0x65, 0x49, 0x80, 0x35);
++/* MSHW0040/VGBI DSM UUID: 6fd05c69-cde3-49f4-95ed-ab1665498035 */
++static const guid_t dgpu_sw_guid =
++	GUID_INIT(0x6fd05c69, 0xcde3, 0x49f4,
++		  0x95, 0xed, 0xab, 0x16, 0x65, 0x49, 0x80, 0x35);
 +
 +#define DGPUSW_ACPI_PATH_DSM	"\\_SB_.PCI0.LPCB.EC0_.VGBI"
 +#define DGPUSW_ACPI_PATH_HGON	"\\_SB_.PCI0.RP05.HGON"
 +#define DGPUSW_ACPI_PATH_HGOF	"\\_SB_.PCI0.RP05.HGOF"
 +
-+
 +static int sb1_dgpu_sw_dsmcall(void)
 +{
-+	union acpi_object *ret;
++	union acpi_object *obj;
 +	acpi_handle handle;
 +	acpi_status status;
 +
@@ -7565,67 +7360,66 @@ index 000000000000..8b816ed8f35c
 +	if (status)
 +		return -EINVAL;
 +
-+	ret = acpi_evaluate_dsm_typed(handle, &dgpu_sw_guid, 1, 1, NULL, ACPI_TYPE_BUFFER);
-+	if (!ret)
++	obj = acpi_evaluate_dsm_typed(handle, &dgpu_sw_guid, 1, 1, NULL, ACPI_TYPE_BUFFER);
++	if (!obj)
 +		return -EINVAL;
 +
-+	ACPI_FREE(ret);
++	ACPI_FREE(obj);
 +	return 0;
 +}
 +
-+static int sb1_dgpu_sw_hgon(void)
++static int sb1_dgpu_sw_hgon(struct device *dev)
 +{
 +	struct acpi_buffer buf = {ACPI_ALLOCATE_BUFFER, NULL};
 +	acpi_status status;
 +
 +	status = acpi_evaluate_object(NULL, DGPUSW_ACPI_PATH_HGON, NULL, &buf);
 +	if (status) {
-+		pr_err("failed to run HGON: %d\n", status);
++		dev_err(dev, "failed to run HGON: %d\n", status);
 +		return -EINVAL;
 +	}
 +
-+	if (buf.pointer)
-+		ACPI_FREE(buf.pointer);
++	ACPI_FREE(buf.pointer);
 +
-+	pr_info("turned-on dGPU via HGON\n");
++	dev_info(dev, "turned-on dGPU via HGON\n");
 +	return 0;
 +}
 +
-+static int sb1_dgpu_sw_hgof(void)
++static int sb1_dgpu_sw_hgof(struct device *dev)
 +{
 +	struct acpi_buffer buf = {ACPI_ALLOCATE_BUFFER, NULL};
 +	acpi_status status;
 +
 +	status = acpi_evaluate_object(NULL, DGPUSW_ACPI_PATH_HGOF, NULL, &buf);
 +	if (status) {
-+		pr_err("failed to run HGOF: %d\n", status);
++		dev_err(dev, "failed to run HGOF: %d\n", status);
 +		return -EINVAL;
 +	}
 +
-+	if (buf.pointer)
-+		ACPI_FREE(buf.pointer);
++	ACPI_FREE(buf.pointer);
 +
-+	pr_info("turned-off dGPU via HGOF\n");
++	dev_info(dev, "turned-off dGPU via HGOF\n");
 +	return 0;
 +}
-+
 +
 +static ssize_t dgpu_dsmcall_store(struct device *dev, struct device_attribute *attr,
 +				  const char *buf, size_t len)
 +{
-+	int status, value;
++	bool value;
++	int status;
 +
-+	status = kstrtoint(buf, 0, &value);
++	status = kstrtobool(buf, &value);
 +	if (status < 0)
 +		return status;
 +
-+	if (value != 1)
-+		return -EINVAL;
++	if (!value)
++		return 0;
 +
 +	status = sb1_dgpu_sw_dsmcall();
 +
 +	return status < 0 ? status : len;
 +}
++static DEVICE_ATTR_WO(dgpu_dsmcall);
 +
 +static ssize_t dgpu_power_store(struct device *dev, struct device_attribute *attr,
 +				const char *buf, size_t len)
@@ -7638,37 +7432,20 @@ index 000000000000..8b816ed8f35c
 +		return status;
 +
 +	if (power)
-+		status = sb1_dgpu_sw_hgon();
++		status = sb1_dgpu_sw_hgon(dev);
 +	else
-+		status = sb1_dgpu_sw_hgof();
++		status = sb1_dgpu_sw_hgof(dev);
 +
 +	return status < 0 ? status : len;
 +}
-+
-+static DEVICE_ATTR_WO(dgpu_dsmcall);
 +static DEVICE_ATTR_WO(dgpu_power);
 +
 +static struct attribute *sb1_dgpu_sw_attrs[] = {
 +	&dev_attr_dgpu_dsmcall.attr,
 +	&dev_attr_dgpu_power.attr,
-+	NULL,
++	NULL
 +};
-+
-+static const struct attribute_group sb1_dgpu_sw_attr_group = {
-+	.attrs = sb1_dgpu_sw_attrs,
-+};
-+
-+
-+static int sb1_dgpu_sw_probe(struct platform_device *pdev)
-+{
-+	return sysfs_create_group(&pdev->dev.kobj, &sb1_dgpu_sw_attr_group);
-+}
-+
-+static int sb1_dgpu_sw_remove(struct platform_device *pdev)
-+{
-+	sysfs_remove_group(&pdev->dev.kobj, &sb1_dgpu_sw_attr_group);
-+	return 0;
-+}
++ATTRIBUTE_GROUPS(sb1_dgpu_sw);
 +
 +/*
 + * The dGPU power seems to be actually handled by MSHW0040. However, that is
@@ -7677,17 +7454,16 @@ index 000000000000..8b816ed8f35c
 + */
 +static const struct acpi_device_id sb1_dgpu_sw_match[] = {
 +	{ "MSHW0041", },
-+	{ },
++	{ }
 +};
 +MODULE_DEVICE_TABLE(acpi, sb1_dgpu_sw_match);
 +
 +static struct platform_driver sb1_dgpu_sw = {
-+	.probe = sb1_dgpu_sw_probe,
-+	.remove = sb1_dgpu_sw_remove,
 +	.driver = {
 +		.name = "surfacebook1_dgpu_switch",
 +		.acpi_match_table = sb1_dgpu_sw_match,
 +		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
++		.dev_groups = sb1_dgpu_sw_groups,
 +	},
 +};
 +module_platform_driver(sb1_dgpu_sw);
@@ -7696,9 +7472,9 @@ index 000000000000..8b816ed8f35c
 +MODULE_DESCRIPTION("Discrete GPU Power-Switch for Surface Book 1");
 +MODULE_LICENSE("GPL");
 -- 
-2.46.0
+2.46.1
 
-From d811fb8e32e1327baf131c85522aee281f4281af Mon Sep 17 00:00:00 2001
+From 02f4deefe4c0ab63cd6771198cd05d5798fcc80f Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:05:09 +1100
 Subject: [PATCH] Input: soc_button_array - support AMD variant Surface devices
@@ -7773,9 +7549,9 @@ index f6d060377d18..b8603f74eb28 100644
  
  /*
 -- 
-2.46.0
+2.46.1
 
-From e21138766921f4a22e710b4858f75f98e308c61d Mon Sep 17 00:00:00 2001
+From fbdda31b4a3ce2a7113fa831056830b6b46cf0df Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Tue, 5 Oct 2021 00:22:57 +1100
 Subject: [PATCH] platform/surface: surfacepro3_button: don't load on amd
@@ -7845,9 +7621,9 @@ index 2755601f979c..4240c98ca226 100644
  
  
 -- 
-2.46.0
+2.46.1
 
-From a19b7328ccb6c090354593fa039e5283140a5e69 Mon Sep 17 00:00:00 2001
+From edc26a9d993aca624b164989945d6bbcc5c7a856 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sat, 18 Feb 2023 01:02:49 +0100
 Subject: [PATCH] USB: quirks: Add USB_QUIRK_DELAY_INIT for Surface Go 3
@@ -7886,9 +7662,9 @@ index 13171454f959..a83beefd25f3 100644
  	{ USB_DEVICE(0x046a, 0x0023), .driver_info = USB_QUIRK_RESET_RESUME },
  
 -- 
-2.46.0
+2.46.1
 
-From 99fb371b3a11e3c3d67d29673508911b81a1408c Mon Sep 17 00:00:00 2001
+From 43bac5cac64c45b423509196acdb2261c3f0a7ba Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Jonas=20Dre=C3=9Fler?= <verdre@v0yd.nl>
 Date: Thu, 5 Nov 2020 13:09:45 +0100
 Subject: [PATCH] hid/multitouch: Turn off Type Cover keyboard backlight when
@@ -7924,7 +7700,7 @@ Patchset: surface-typecover
  1 file changed, 98 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
-index 56fc78841f24..a266449065a0 100644
+index 99812c0f830b..0b3b51e37149 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
 @@ -34,7 +34,10 @@
@@ -7996,7 +7772,7 @@ index 56fc78841f24..a266449065a0 100644
  	{ }
  };
  
-@@ -1720,6 +1740,69 @@ static void mt_expired_timeout(struct timer_list *t)
+@@ -1744,6 +1764,69 @@ static void mt_expired_timeout(struct timer_list *t)
  	clear_bit_unlock(MT_IO_FLAGS_RUNNING, &td->mt_io_flags);
  }
  
@@ -8066,7 +7842,7 @@ index 56fc78841f24..a266449065a0 100644
  static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
  {
  	int ret, i;
-@@ -1743,6 +1826,9 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
+@@ -1767,6 +1850,9 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
  	td->inputmode_value = MT_INPUTMODE_TOUCHSCREEN;
  	hid_set_drvdata(hdev, td);
  
@@ -8076,7 +7852,7 @@ index 56fc78841f24..a266449065a0 100644
  	INIT_LIST_HEAD(&td->applications);
  	INIT_LIST_HEAD(&td->reports);
  
-@@ -1781,15 +1867,19 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
+@@ -1805,15 +1891,19 @@ static int mt_probe(struct hid_device *hdev, const struct hid_device_id *id)
  	timer_setup(&td->release_timer, mt_expired_timeout, 0);
  
  	ret = hid_parse(hdev);
@@ -8098,7 +7874,7 @@ index 56fc78841f24..a266449065a0 100644
  
  	ret = sysfs_create_group(&hdev->dev.kobj, &mt_attribute_group);
  	if (ret)
-@@ -1839,6 +1929,7 @@ static void mt_remove(struct hid_device *hdev)
+@@ -1863,6 +1953,7 @@ static void mt_remove(struct hid_device *hdev)
  {
  	struct mt_device *td = hid_get_drvdata(hdev);
  
@@ -8106,7 +7882,7 @@ index 56fc78841f24..a266449065a0 100644
  	del_timer_sync(&td->release_timer);
  
  	sysfs_remove_group(&hdev->dev.kobj, &mt_attribute_group);
-@@ -2235,6 +2326,11 @@ static const struct hid_device_id mt_devices[] = {
+@@ -2267,6 +2358,11 @@ static const struct hid_device_id mt_devices[] = {
  		MT_USB_DEVICE(USB_VENDOR_ID_XIROKU,
  			USB_DEVICE_ID_XIROKU_CSR2) },
  
@@ -8119,9 +7895,9 @@ index 56fc78841f24..a266449065a0 100644
  	{ .driver_data = MT_CLS_GOOGLE,
  		HID_DEVICE(HID_BUS_ANY, HID_GROUP_ANY, USB_VENDOR_ID_GOOGLE,
 -- 
-2.46.0
+2.46.1
 
-From 7b797164a3f2ecf402b8f24d5123e74914b09064 Mon Sep 17 00:00:00 2001
+From 41478ba3be0680c18610cb66f5344abadff1b82d Mon Sep 17 00:00:00 2001
 From: PJungkamp <p.jungkamp@gmail.com>
 Date: Fri, 25 Feb 2022 12:04:25 +0100
 Subject: [PATCH] hid/multitouch: Add support for surface pro type cover tablet
@@ -8150,7 +7926,7 @@ Patchset: surface-typecover
  1 file changed, 122 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/hid/hid-multitouch.c b/drivers/hid/hid-multitouch.c
-index a266449065a0..060c706e936a 100644
+index 0b3b51e37149..481b97dce830 100644
 --- a/drivers/hid/hid-multitouch.c
 +++ b/drivers/hid/hid-multitouch.c
 @@ -77,6 +77,7 @@ MODULE_LICENSE("GPL");
@@ -8260,7 +8036,7 @@ index a266449065a0..060c706e936a 100644
  	return 0;
  }
  
-@@ -1610,6 +1656,42 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app)
+@@ -1634,6 +1680,42 @@ static void mt_post_parse(struct mt_device *td, struct mt_application *app)
  		app->quirks &= ~MT_QUIRK_CONTACT_CNT_ACCURATE;
  }
  
@@ -8303,7 +8079,7 @@ index a266449065a0..060c706e936a 100644
  static int mt_input_configured(struct hid_device *hdev, struct hid_input *hi)
  {
  	struct mt_device *td = hid_get_drvdata(hdev);
-@@ -1658,6 +1740,13 @@ static int mt_input_configured(struct hid_device *hdev, struct hid_input *hi)
+@@ -1682,6 +1764,13 @@ static int mt_input_configured(struct hid_device *hdev, struct hid_input *hi)
  		/* force BTN_STYLUS to allow tablet matching in udev */
  		__set_bit(BTN_STYLUS, hi->input->keybit);
  		break;
@@ -8317,7 +8093,7 @@ index a266449065a0..060c706e936a 100644
  	default:
  		suffix = "UNKNOWN";
  		break;
-@@ -1740,30 +1829,6 @@ static void mt_expired_timeout(struct timer_list *t)
+@@ -1764,30 +1853,6 @@ static void mt_expired_timeout(struct timer_list *t)
  	clear_bit_unlock(MT_IO_FLAGS_RUNNING, &td->mt_io_flags);
  }
  
@@ -8348,7 +8124,7 @@ index a266449065a0..060c706e936a 100644
  static void update_keyboard_backlight(struct hid_device *hdev, bool enabled)
  {
  	struct usb_device *udev = hid_to_usb_dev(hdev);
-@@ -1772,8 +1837,9 @@ static void update_keyboard_backlight(struct hid_device *hdev, bool enabled)
+@@ -1796,8 +1861,9 @@ static void update_keyboard_backlight(struct hid_device *hdev, bool enabled)
  	/* Wake up the device in case it's already suspended */
  	pm_runtime_get_sync(&udev->dev);
  
@@ -8360,7 +8136,7 @@ index a266449065a0..060c706e936a 100644
  		hid_err(hdev, "couldn't find backlight field\n");
  		goto out;
  	}
-@@ -1907,13 +1973,24 @@ static int mt_suspend(struct hid_device *hdev, pm_message_t state)
+@@ -1931,13 +1997,24 @@ static int mt_suspend(struct hid_device *hdev, pm_message_t state)
  
  static int mt_reset_resume(struct hid_device *hdev)
  {
@@ -8385,7 +8161,7 @@ index a266449065a0..060c706e936a 100644
  	/* Some Elan legacy devices require SET_IDLE to be set on resume.
  	 * It should be safe to send it to other devices too.
  	 * Tested on 3M, Stantum, Cypress, Zytronic, eGalax, and Elan panels. */
-@@ -1922,12 +1999,31 @@ static int mt_resume(struct hid_device *hdev)
+@@ -1946,12 +2023,31 @@ static int mt_resume(struct hid_device *hdev)
  
  	mt_set_modes(hdev, HID_LATENCY_NORMAL, true, true);
  
@@ -8418,9 +8194,9 @@ index a266449065a0..060c706e936a 100644
  	unregister_pm_notifier(&td->pm_notifier);
  	del_timer_sync(&td->release_timer);
 -- 
-2.46.0
+2.46.1
 
-From e26e0570db9e2dbb37e075ef7a88270fe793fb94 Mon Sep 17 00:00:00 2001
+From fe6c6b6e8d581aeca114902ec5f962a44a0ee3ff Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sun, 19 Feb 2023 22:12:24 +0100
 Subject: [PATCH] PCI: Add quirk to prevent calling shutdown mehtod
@@ -8515,9 +8291,9 @@ index cafc5ab1cbcb..64bb5aca2c13 100644
  	atomic_t	enable_cnt;	/* pci_enable_device has been called */
  
 -- 
-2.46.0
+2.46.1
 
-From bed56a2a67db8c5934008ed83fa0bbd71360ab02 Mon Sep 17 00:00:00 2001
+From d0443743ccc9c4d76192f7bbf0152990e461945e Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Sun, 12 Mar 2023 01:41:57 +0100
 Subject: [PATCH] platform/surface: gpe: Add support for Surface Pro 9
@@ -8566,9 +8342,9 @@ index 62fd4004db31..103fc4468262 100644
  		.ident = "Surface Book 1",
  		.matches = {
 -- 
-2.46.0
+2.46.1
 
-From 0a70aafbfa7ad39054c0974e428935c9d9e48cf1 Mon Sep 17 00:00:00 2001
+From e7b32369a9dc01221dc44a1250c425d8ebc9b28b Mon Sep 17 00:00:00 2001
 From: Hans de Goede <hdegoede@redhat.com>
 Date: Sun, 10 Oct 2021 20:56:57 +0200
 Subject: [PATCH] ACPI: delay enumeration of devices with a _DEP pointing to an
@@ -8628,7 +8404,7 @@ Patchset: cameras
  1 file changed, 3 insertions(+)
 
 diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 503773707e01..a292a20c4315 100644
+index cdc5a74092c7..e3a16c14a29e 100644
 --- a/drivers/acpi/scan.c
 +++ b/drivers/acpi/scan.c
 @@ -2176,6 +2176,9 @@ static acpi_status acpi_bus_check_add_2(acpi_handle handle, u32 lvl_not_used,
@@ -8642,9 +8418,9 @@ index 503773707e01..a292a20c4315 100644
  	 * Do not enumerate devices with enumeration_by_parent flag set as
  	 * they will be enumerated by their respective parents.
 -- 
-2.46.0
+2.46.1
 
-From bdae5b6a0e462398fa6035a2f0de8efae144abe4 Mon Sep 17 00:00:00 2001
+From aa71d469b9000984bfbd4ee4f596517db89bcb46 Mon Sep 17 00:00:00 2001
 From: zouxiaoh <xiaohong.zou@intel.com>
 Date: Fri, 25 Jun 2021 08:52:59 +0800
 Subject: [PATCH] iommu: intel-ipu: use IOMMU passthrough mode for Intel IPUs
@@ -8670,7 +8446,7 @@ Patchset: cameras
  1 file changed, 30 insertions(+)
 
 diff --git a/drivers/iommu/intel/iommu.c b/drivers/iommu/intel/iommu.c
-index 8d95579436a9..cbfb59ed5985 100644
+index 6ee97bf7b6a9..a1f86bde277a 100644
 --- a/drivers/iommu/intel/iommu.c
 +++ b/drivers/iommu/intel/iommu.c
 @@ -45,6 +45,13 @@
@@ -8752,9 +8528,9 @@ index 8d95579436a9..cbfb59ed5985 100644
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x9D3E, quirk_iommu_ipts);
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, 0x34E4, quirk_iommu_ipts);
 -- 
-2.46.0
+2.46.1
 
-From aa044fab288ddf51ad963effe090d0b548d83243 Mon Sep 17 00:00:00 2001
+From fb1981ea8427c311f08860ddbb2ea1b7e1ddd313 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <djrscally@gmail.com>
 Date: Sun, 10 Oct 2021 20:57:02 +0200
 Subject: [PATCH] platform/x86: int3472: Enable I2c daisy chain
@@ -8789,9 +8565,9 @@ index 1e107fd49f82..e3e1696e7f0e 100644
  
  	return 0;
 -- 
-2.46.0
+2.46.1
 
-From 12da0a015e6d71071561668950a4fb5e33220af8 Mon Sep 17 00:00:00 2001
+From ae05619486ea72603af63628e7f7a0c3b4f045ac Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Thu, 2 Mar 2023 12:59:39 +0000
 Subject: [PATCH] platform/x86: int3472: Remap reset GPIO for INT347E
@@ -8809,19 +8585,20 @@ polarity of the pin to match the driver's expectation.
 Signed-off-by: Daniel Scally <dan.scally@ideasonboard.com>
 Patchset: cameras
 ---
- drivers/platform/x86/intel/int3472/discrete.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/platform/x86/intel/int3472/discrete.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
 diff --git a/drivers/platform/x86/intel/int3472/discrete.c b/drivers/platform/x86/intel/int3472/discrete.c
-index 07b302e09340..1d3097bc7e48 100644
+index 07b302e09340..baad1e50ca81 100644
 --- a/drivers/platform/x86/intel/int3472/discrete.c
 +++ b/drivers/platform/x86/intel/int3472/discrete.c
-@@ -83,12 +83,26 @@ static int skl_int3472_map_gpio_to_sensor(struct int3472_discrete_device *int347
+@@ -83,12 +83,27 @@ static int skl_int3472_map_gpio_to_sensor(struct int3472_discrete_device *int347
  					  const char *func, u32 polarity)
  {
  	int ret;
 +	const struct acpi_device_id ov7251_ids[] = {
 +		{ "INT347E" },
++		{ }
 +	};
  
  	if (int3472->n_sensor_gpios >= INT3472_MAX_SENSOR_GPIOS) {
@@ -8837,16 +8614,16 @@ index 07b302e09340..1d3097bc7e48 100644
 +	 */
 +	if (!strcmp(func, "reset") && !acpi_match_device_ids(int3472->sensor, ov7251_ids)) {
 +		func = "enable";
-+		polarity = GPIO_ACTIVE_HIGH;
++		polarity ^= GPIO_ACTIVE_LOW;
 +	}
 +
  	ret = skl_int3472_fill_gpiod_lookup(&int3472->gpios.table[int3472->n_sensor_gpios],
  					    agpio, func, polarity);
  	if (ret)
 -- 
-2.46.0
+2.46.1
 
-From ddc65d1014592b1fe4d6e16c9badcc928e577b3b Mon Sep 17 00:00:00 2001
+From 7066acd9423a7eecc94d22397095e04f4a47aba8 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Tue, 21 Mar 2023 13:45:26 +0000
 Subject: [PATCH] media: i2c: Clarify that gain is Analogue gain in OV7251
@@ -8883,9 +8660,9 @@ index 30f61e04ecaf..9c1292ca8552 100644
  				     V4L2_CID_TEST_PATTERN,
  				     ARRAY_SIZE(ov7251_test_pattern_menu) - 1,
 -- 
-2.46.0
+2.46.1
 
-From ea560c5a7e55695438ac99fbd363352991fe62af Mon Sep 17 00:00:00 2001
+From 9feb537c1c69e0d01ad3ed713959fcf371dc2db6 Mon Sep 17 00:00:00 2001
 From: Daniel Scally <dan.scally@ideasonboard.com>
 Date: Wed, 22 Mar 2023 11:01:42 +0000
 Subject: [PATCH] media: v4l2-core: Acquire privacy led in
@@ -8934,9 +8711,9 @@ index 89c7192148df..44eca113e772 100644
  	if (ret < 0)
  		goto out_cleanup;
 -- 
-2.46.0
+2.46.1
 
-From 0c59f9eee1c8dc8ea4d99f8b1a07b342ef5e425d Mon Sep 17 00:00:00 2001
+From 580ca92681c7c6bafa132b81043fbd0857b5da6b Mon Sep 17 00:00:00 2001
 From: Kate Hsuan <hpa@redhat.com>
 Date: Tue, 21 Mar 2023 23:37:16 +0800
 Subject: [PATCH] platform: x86: int3472: Add MFD cell for tps68470 LED
@@ -8975,9 +8752,9 @@ index e3e1696e7f0e..423dc555093f 100644
  		for (i = 0; i < board_data->n_gpiod_lookups; i++)
  			gpiod_add_lookup_table(board_data->tps68470_gpio_lookup_tables[i]);
 -- 
-2.46.0
+2.46.1
 
-From 8f69fe36b3d6052c7f41182041fc59ea84515066 Mon Sep 17 00:00:00 2001
+From ef863c4385da78967765505ccd3702371a32d70e Mon Sep 17 00:00:00 2001
 From: Kate Hsuan <hpa@redhat.com>
 Date: Tue, 21 Mar 2023 23:37:17 +0800
 Subject: [PATCH] include: mfd: tps68470: Add masks for LEDA and LEDB
@@ -9016,9 +8793,9 @@ index 7807fa329db0..2d2abb25b944 100644
 +
  #endif /* __LINUX_MFD_TPS68470_H */
 -- 
-2.46.0
+2.46.1
 
-From 457ccb4dad651a58bc24e4c49fcc95a81e3762bb Mon Sep 17 00:00:00 2001
+From e81fa0ec83149cf15d779fea0ba7435f8fd28898 Mon Sep 17 00:00:00 2001
 From: Kate Hsuan <hpa@redhat.com>
 Date: Tue, 21 Mar 2023 23:37:18 +0800
 Subject: [PATCH] leds: tps68470: Add LED control for tps68470
@@ -9267,9 +9044,9 @@ index 000000000000..35aeb5db89c8
 +MODULE_DESCRIPTION("LED driver for TPS68470 PMIC");
 +MODULE_LICENSE("GPL v2");
 -- 
-2.46.0
+2.46.1
 
-From 281dcaef04abcc6a75b34c6f69f8f608b68912cf Mon Sep 17 00:00:00 2001
+From afce9fb83bf7355d5ceb4a6958023dd07e00cfdf Mon Sep 17 00:00:00 2001
 From: mojyack <mojyack@gmail.com>
 Date: Sat, 3 Feb 2024 12:59:53 +0900
 Subject: [PATCH] media: staging: ipu3-imgu: Fix multiple calls of s_stream on
@@ -9314,9 +9091,9 @@ index 3df58eb3e882..81aff2d5d898 100644
  		r = imgu_s_stream(imgu, false);
  		if (!r)
 -- 
-2.46.0
+2.46.1
 
-From f1d09776b3c5026bfd4d035bbca5be3f8e41b247 Mon Sep 17 00:00:00 2001
+From 10cc9e54fa6067a0c08dc4f2c0f5bf029e3a4ed1 Mon Sep 17 00:00:00 2001
 From: mojyack <mojyack@gmail.com>
 Date: Tue, 26 Mar 2024 05:55:44 +0900
 Subject: [PATCH] media: i2c: dw9719: fix probe error on surface go 2
@@ -9346,9 +9123,9 @@ index c626ed845928..0094cfda57ea 100644
  	cci_write(dw9719->regmap, DW9719_CONTROL, 1, &ret);
  
 -- 
-2.46.0
+2.46.1
 
-From 29121bd1e5b235572d56645abdb8f54a31bf476e Mon Sep 17 00:00:00 2001
+From 04f1ce03393e660c6275004e0ccda0f1e4481f8b Mon Sep 17 00:00:00 2001
 From: Sachi King <nakato@nakato.io>
 Date: Sat, 29 May 2021 17:47:38 +1000
 Subject: [PATCH] ACPI: Add quirk for Surface Laptop 4 AMD missing irq 7
@@ -9413,9 +9190,9 @@ index 4bf82dbd2a6b..7a8cb090c656 100644
  	mp_config_acpi_legacy_irqs();
  
 -- 
-2.46.0
+2.46.1
 
-From f8d58835a76ce8ea016c0fcd75ddb93a95ca14c6 Mon Sep 17 00:00:00 2001
+From a05e3240a282702699117da0e657a46bc960a944 Mon Sep 17 00:00:00 2001
 From: Maximilian Luz <luzmaximilian@gmail.com>
 Date: Thu, 3 Jun 2021 14:04:26 +0200
 Subject: [PATCH] ACPI: Add AMD 13" Surface Laptop 4 model to irq 7 override
@@ -9455,9 +9232,9 @@ index 7a8cb090c656..0faafc323e67 100644
  };
  
 -- 
-2.46.0
+2.46.1
 
-From 5c662b210790b2b297457de3e84274cc062b215e Mon Sep 17 00:00:00 2001
+From 4e5c87c48625f80729705e6ca756b289dace0452 Mon Sep 17 00:00:00 2001
 From: "Bart Groeneveld | GPX Solutions B.V" <bart@gpxbv.nl>
 Date: Mon, 5 Dec 2022 16:08:46 +0100
 Subject: [PATCH] acpi: allow usage of acpi_tad on HW-reduced platforms
@@ -9565,5 +9342,5 @@ index 1d670dbe4d1d..71c9e375ca1c 100644
  		ret = sysfs_create_group(&dev->kobj, &acpi_tad_dc_attr_group);
  		if (ret)
 -- 
-2.46.0
+2.46.1
 

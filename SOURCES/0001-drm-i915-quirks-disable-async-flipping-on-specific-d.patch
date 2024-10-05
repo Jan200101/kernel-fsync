@@ -12,8 +12,8 @@ diff --git a/drivers/gpu/drm/i915/display/intel_quirks.c b/drivers/gpu/drm/i915/
 index a280448df771..1596114dd9ae 100644
 --- a/drivers/gpu/drm/i915/display/intel_quirks.c
 +++ b/drivers/gpu/drm/i915/display/intel_quirks.c
-@@ -65,6 +65,12 @@
- 	drm_info(display->drm, "Applying no pps backlight power quirk\n");
+@@ -78,6 +78,12 @@
+ 	drm_info(display->drm, "Applying Fast Wake sync pulse count quirk\n");
  }
  
 +static void quirk_async_page_flips_force_disable(struct intel_display *display)
@@ -25,7 +25,7 @@ index a280448df771..1596114dd9ae 100644
  struct intel_quirk {
  	int device;
  	int subsystem_vendor;
-@@ -136,6 +142,20 @@ static const struct intel_dmi_quirk intel_dmi_quirks[] = {
+@@ -164,6 +170,20 @@
  		},
  		.hook = quirk_no_pps_backlight_power_hook,
  	},
@@ -36,7 +36,7 @@ index a280448df771..1596114dd9ae 100644
 +				.ident = "ASUS TUF DASH F15",
 +				.matches = {
 +					DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
-+					DMI_MATCH(DMI_PRODUCT_NAME, "ASUS TUF Dash F15 FX516PC_FX516PC"),
++					DMI_MATCH(DMI_PRODUCT_NAME, "ASUS TUF Dash F15 FX516PC"),
 +				},
 +			},
 +			{ }

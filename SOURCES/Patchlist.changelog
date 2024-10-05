@@ -1,3 +1,6 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/7c261c4b600417524d07c5494a381e58abe404b1
+ 7c261c4b600417524d07c5494a381e58abe404b1 drm/nouveau/fb: restore init() for ramgp102
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/3b2f4b84968261c49a19cde5a2c01c32c09cc1f8
  3b2f4b84968261c49a19cde5a2c01c32c09cc1f8 xfs: xfs_finobt_count_blocks() walks the wrong btree
 

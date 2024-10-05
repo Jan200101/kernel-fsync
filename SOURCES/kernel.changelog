@@ -1,3 +1,22 @@
+* Mon Sep 30 2024 Augusto Caringi <acaringi@redhat.com> [6.10.12-0]
+- Linux v6.10.12
+Resolves: 
+
+* Wed Sep 18 2024 Augusto Caringi <acaringi@redhat.com> [6.10.11-0]
+- New config for 6.10.11 (Augusto Caringi)
+- Linux v6.10.11
+Resolves: 
+
+* Thu Sep 12 2024 Augusto Caringi <acaringi@redhat.com> [6.10.10-0]
+- Add entry for BugsFixed (Justin M. Forbes)
+- drm/nouveau/fb: restore init() for ramgp102 (Ben Skeggs)
+- Linux v6.10.10
+Resolves: 
+
+* Sun Sep 08 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.9-0]
+- Linux v6.10.9
+Resolves: 
+
 * Wed Sep 04 2024 Augusto Caringi <acaringi@redhat.com> [6.10.8-0]
 - Add to BugsFixed (Augusto Caringi)
 - xfs: xfs_finobt_count_blocks() walks the wrong btree (Dave Chinner)

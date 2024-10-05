@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.10.8
-%define specversion 6.10.8
+%define specrpmversion 6.10.12
+%define specversion 6.10.12
 %define patchversion 6.10
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.10.8
+%define tarfile_release 6.10.12
 # This is needed to do merge window version magic
 %define patchlevel 10
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.10.8
+%define kabiversion 6.10.12
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -1006,13 +1006,10 @@ Patch215: cachy-bbr3.patch
 
 # device specific patches
 Patch300: linux-surface.patch
-Patch302: asus-linux.patch
 Patch303: lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 Patch308: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 Patch309: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
-#  improve AMD SFH 1.1 gyro and accel sensitivity
-Patch324: 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally
 Patch316: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
@@ -1039,17 +1036,12 @@ Patch312: steamdeck-oled-audio.patch
 Patch313: steamdeck-oled-hw-quirks.patch
 Patch315: steamdeck-oled-legion-go-bluetooth-hang.patch
 
-# t2 macbook patches
-Patch332: t2linux.patch
-
 # temporary patches
 Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
 Patch408: 0001-acpi-proc-idle-skip-dummy-wait.patch
 # Fixes the steam deck not coming back from hibernation
 Patch411: 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
-# Allows corectl to work out of the box
-Patch412: 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 # fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
 Patch413: amdgpu-ignore-min-pcap.patch
 # improve controller hiding
@@ -1902,13 +1894,10 @@ ApplyOptionalPatch cachy-bbr3.patch
 
 # device specific patches
 ApplyOptionalPatch linux-surface.patch
-ApplyOptionalPatch asus-linux.patch
 ApplyOptionalPatch lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
 ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
-#  improve AMD SFH 1.1 gyro and accel sensitivity
-ApplyOptionalPatch 0001-bump-the-sensitivity-of-AMD-SFH.patch
 # ROG Ally-
 ApplyOptionalPatch rog-ally-audio-fix.patch
 ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
@@ -1935,9 +1924,6 @@ ApplyOptionalPatch steamdeck-oled-audio.patch
 ApplyOptionalPatch steamdeck-oled-hw-quirks.patch
 ApplyOptionalPatch steamdeck-oled-legion-go-bluetooth-hang.patch
 
-# t2 macbook patches
-ApplyOptionalPatch t2linux.patch
-
 # temporary patches
 ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 #  mediatek fixups
@@ -1945,8 +1931,6 @@ ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
 ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
 #  Fixes the steam deck not coming back from hibernation
 ApplyOptionalPatch 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
-#  enable full amd power control by default
-ApplyOptionalPatch 0001-Set-amdgpu.ppfeaturemask-0xffffffff-as-default.patch
 # fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
 ApplyOptionalPatch amdgpu-ignore-min-pcap.patch
 # improve controller hiding
@@ -4198,8 +4182,23 @@ fi\
 #
 #
 %changelog
-* Sat Sep 07 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.8-201.fsync
-- kernel-fsync v6.10.8
+* Sat Oct 05 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.12-201.fsync
+- kernel-fsync v6.10.12
+
+* Mon Sep 30 2024 Augusto Caringi <acaringi@redhat.com> [6.10.12-0]
+- Linux v6.10.12
+
+* Wed Sep 18 2024 Augusto Caringi <acaringi@redhat.com> [6.10.11-0]
+- New config for 6.10.11 (Augusto Caringi)
+- Linux v6.10.11
+
+* Thu Sep 12 2024 Augusto Caringi <acaringi@redhat.com> [6.10.10-0]
+- Add entry for BugsFixed (Justin M. Forbes)
+- drm/nouveau/fb: restore init() for ramgp102 (Ben Skeggs)
+- Linux v6.10.10
+
+* Sun Sep 08 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.9-0]
+- Linux v6.10.9
 
 * Wed Sep 04 2024 Augusto Caringi <acaringi@redhat.com> [6.10.8-0]
 - Add to BugsFixed (Augusto Caringi)
