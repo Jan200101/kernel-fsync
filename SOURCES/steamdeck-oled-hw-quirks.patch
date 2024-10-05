@@ -173,17 +173,17 @@ diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c b/drivers/gpu/drm
 index e1a77a0d66336..8e61c86819fe2 100644
 --- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
 +++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-@@ -4017,7 +4017,7 @@ static int amdgpu_dm_mode_config_init(struct amdgpu_device *adev)
+@@ -4147,7 +4147,7 @@
  	return 0;
  }
-
+ 
 -#define AMDGPU_DM_DEFAULT_MIN_BACKLIGHT 12
 +#define AMDGPU_DM_DEFAULT_MIN_BACKLIGHT 0
  #define AMDGPU_DM_DEFAULT_MAX_BACKLIGHT 255
+ #define AMDGPU_DM_MIN_SPREAD ((AMDGPU_DM_DEFAULT_MAX_BACKLIGHT - AMDGPU_DM_DEFAULT_MIN_BACKLIGHT) / 2)
  #define AUX_BL_DEFAULT_TRANSITION_TIME_MS 50
-
-@@ -4035,11 +4035,27 @@ static void amdgpu_dm_update_backlight_caps(struct amdgpu_display_manager *dm,
- 	amdgpu_acpi_get_backlight_caps(&caps);
+@@ -4181,11 +4181,27 @@
+ 
  	if (caps.caps_valid) {
  		dm->backlight_caps[bl_idx].caps_valid = true;
 +

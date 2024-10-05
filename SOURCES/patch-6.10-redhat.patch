@@ -64,7 +64,7 @@ index eec8df1dde06a..88f49dd10cd06 100644
    ...
    PPC     KVM_REG_PPC_TM_GPR31            64
 diff --git a/Makefile b/Makefile
-index 175d7f27ea32a..52eef3d589e67 100644
+index 93731d0b1a04a..81291ebb3aa4f 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -22,6 +22,18 @@ $(if $(filter __%, $(MAKECMDGOALS)), \
@@ -103,7 +103,7 @@ index ee5115252aac4..7f3796df84041 100644
  	  The VM uses one page of physical memory for each page table.
  	  For systems with a lot of processes, this can use a lot of
 diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 11bbdc15c6e5e..9cecc1448e3c6 100644
+index cd9772b1fd95e..f3b3d8493c1c2 100644
 --- a/arch/arm64/Kconfig
 +++ b/arch/arm64/Kconfig
 @@ -1364,7 +1364,7 @@ endchoice
@@ -1658,10 +1658,10 @@ index 61750cc98d705..a0e9a71580b5d 100644
  
  static const struct ipu_property_names prop_names = {
 diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 568410e64ce64..6afbaee839503 100644
+index 206b76156c051..42a6117c139db 100644
 --- a/drivers/pci/quirks.c
 +++ b/drivers/pci/quirks.c
-@@ -4433,6 +4433,30 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM, 0x9000,
+@@ -4446,6 +4446,30 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM, 0x9000,
  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM, 0x9084,
  				quirk_bridge_cavm_thrx2_pcie_root);
  
@@ -1693,7 +1693,7 @@ index 568410e64ce64..6afbaee839503 100644
   * Intersil/Techwell TW686[4589]-based video capture cards have an empty (zero)
   * class code.  Fix it.
 diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 7d2a294ebc3d7..c2536099932b6 100644
+index 5dd100175ec61..b7f3cb9bb3899 100644
 --- a/drivers/scsi/sd.c
 +++ b/drivers/scsi/sd.c
 @@ -120,6 +120,14 @@ static const char *sd_cache_types[] = {
@@ -1819,10 +1819,10 @@ index 418e555459da7..fdd941287ae1d 100644
  enum efi_secureboot_mode efi_get_secureboot_mode(efi_get_variable_t *get_var)
  {
 diff --git a/include/linux/lsm_hook_defs.h b/include/linux/lsm_hook_defs.h
-index 855db460e08bc..7a8c28cd7510d 100644
+index 19c333fafe113..db33ee7f55d54 100644
 --- a/include/linux/lsm_hook_defs.h
 +++ b/include/linux/lsm_hook_defs.h
-@@ -438,6 +438,8 @@ LSM_HOOK(int, 0, bpf_token_capable, const struct bpf_token *token, int cap)
+@@ -439,6 +439,8 @@ LSM_HOOK(int, 0, bpf_token_capable, const struct bpf_token *token, int cap)
  #endif /* CONFIG_BPF_SYSCALL */
  
  LSM_HOOK(int, 0, locked_down, enum lockdown_reason what)
@@ -2045,10 +2045,10 @@ index cd84d8ea1dfbf..e4c70a0312bc8 100644
  
  const struct lsm_id lockdown_lsmid = {
 diff --git a/security/security.c b/security/security.c
-index 8cee5b6c6e6d5..489e25946bf96 100644
+index 43166e341526c..b8cf110aeb589 100644
 --- a/security/security.c
 +++ b/security/security.c
-@@ -5596,6 +5596,18 @@ int security_locked_down(enum lockdown_reason what)
+@@ -5630,6 +5630,18 @@ int security_locked_down(enum lockdown_reason what)
  }
  EXPORT_SYMBOL(security_locked_down);
  
