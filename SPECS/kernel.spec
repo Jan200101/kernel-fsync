@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 209%{?buildid}%{?dist}
+%define specrelease 210%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.12
 
@@ -4131,7 +4131,10 @@ fi\
 #
 #
 %changelog
-* Mon Oct 07 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-209.fsync.1
+* Mon Oct 07 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-210.fsync
+- kernel-fsync v6.9.12 HOTDOG
+
+* Mon Oct 07 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-209.fsync
 - kernel-fsync v6.9.12 power in misery
 
 * Thu Sep 26 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-208.fsync
