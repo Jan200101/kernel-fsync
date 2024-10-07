@@ -630,27 +630,3 @@ index 83730d931824..e6ae932c11c5 100644
  			case orange_pi_neo:
  				/* scale to range [1-244] */
  				val = ((val - 1) * 243 / 254) + 1;
-
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Jan200101 <sentrycraft123@gmail.com>
-Date: Sat, 21 Sep 2024 10:01:47 +0200
-Subject: [PATCH] oxp-sensors: hwmon: match all ONEXPLAYER F1 models
-
-Signed-off-by: Jan200101 <sentrycraft123@gmail.com>
----
- drivers/hwmon/oxp-sensors.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/hwmon/oxp-sensors.c
-index e6ae932c11c5..0e564dfc5a05 100644
---- a/drivers/hwmon/oxp-sensors.c
-+++ b/drivers/hwmon/oxp-sensors.c
-@@ -202,7 +202,7 @@ static const struct dmi_system_id dmi_table[] = {
- 	{
- 		.matches = {
- 			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
--			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1"),
-+			DMI_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1"),
- 		},
- 		.driver_data = (void *)oxp_fly,
- 	},

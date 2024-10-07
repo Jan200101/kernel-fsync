@@ -1,0 +1,126 @@
+From 1ea6dd6a28c054be66cd361ccc33511e70c19c58 Mon Sep 17 00:00:00 2001
+From: Antheas Kapenekakis <git@antheas.dev>
+Date: Wed, 2 Oct 2024 22:17:26 +0200
+Subject: [PATCH v2 1/3] HID: Add quirk to ignore the touchscreen battery on
+ OneXPlayer X1
+
+---
+ drivers/hid/hid-ids.h   | 1 +
+ drivers/hid/hid-input.c | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index 781c5aa29859..917595aafd5c 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -1008,6 +1008,7 @@
+ #define USB_VENDOR_ID_NOVATEK		0x0603
+ #define USB_DEVICE_ID_NOVATEK_PCT	0x0600
+ #define USB_DEVICE_ID_NOVATEK_MOUSE	0x1602
++#define I2C_DEVICE_ID_ONEXPLAYER_X1    0xF001
+ 
+ #define USB_VENDOR_ID_NTI               0x0757
+ #define USB_DEVICE_ID_USB_SUN           0x0a00
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index c9094a4f281e..455e2fd4cec3 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -417,6 +417,8 @@ static const struct hid_device_id hid_battery_quirks[] = {
+ 	  HID_BATTERY_QUIRK_IGNORE },
+ 	{ HID_I2C_DEVICE(USB_VENDOR_ID_ELAN, I2C_DEVICE_ID_CHROMEBOOK_TROGDOR_POMPOM),
+ 	  HID_BATTERY_QUIRK_AVOID_QUERY },
++	{ HID_I2C_DEVICE(USB_VENDOR_ID_NOVATEK, I2C_DEVICE_ID_ONEXPLAYER_X1),
++	  HID_BATTERY_QUIRK_IGNORE },
+ 	{}
+ };
+ 
+-- 
+2.46.2
+
+
+From 0bb5d03d90997fde2d7756537039f7a4c5bd2898 Mon Sep 17 00:00:00 2001
+From: Antheas Kapenekakis <git@antheas.dev>
+Date: Wed, 2 Oct 2024 22:01:14 +0200
+Subject: [PATCH v2 2/3] drm/panel-orientation-quirks: add OneXPlayer X1 (AMD)
+
+---
+ drivers/gpu/drm/drm_panel_orientation_quirks.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff --git a/drivers/gpu/drm/drm_panel_orientation_quirks.c b/drivers/gpu/drm/drm_panel_orientation_quirks.c
+index 0830cae9a4d0..03a640233e97 100644
+--- a/drivers/gpu/drm/drm_panel_orientation_quirks.c
++++ b/drivers/gpu/drm/drm_panel_orientation_quirks.c
+@@ -456,6 +456,24 @@
+ 		},
+ 		.driver_data = (void *)&gpd_onemix2s,
+ 	},
++	}, {	/* OneXPlayer X1 AMD */
++		.matches = {
++		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "ONE-NETBOOK"),
++		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "ONEXPLAYER X1 A"),
++		},
++		.driver_data = (void *)&lcd1600x2560_leftside_up,
++	}, {	/* OneXPlayer X1 Intel */
++		.matches = {
++		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "ONE-NETBOOK"),
++		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "ONEXPLAYER X1 i"),
++		},
++		.driver_data = (void *)&lcd1600x2560_leftside_up,
++	}, {	/* OneXPlayer X1 mini (AMD) */
++		.matches = {
++		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "ONE-NETBOOK"),
++		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "ONEXPLAYER X1 mini"),
++		},
++		.driver_data = (void *)&lcd1600x2560_leftside_up,
+ 	{}
+ };
+ 
+-- 
+2.46.2
+
+
+From 8d4503da18e170537fec84e2b0adfb130df42d38 Mon Sep 17 00:00:00 2001
+From: Antheas Kapenekakis <git@antheas.dev>
+Date: Mon, 7 Oct 2024 20:38:32 +0200
+Subject: [PATCH v2 3/3] add more OXP F1 and X1 variants
+
+---
+ drivers/hwmon/oxp-sensors.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/drivers/hwmon/oxp-sensors.c b/drivers/hwmon/oxp-sensors.c
+index b6d06370469d..5733d767da00 100644
+--- a/drivers/hwmon/oxp-sensors.c
++++ b/drivers/hwmon/oxp-sensors.c
+@@ -188,6 +188,27 @@ static const struct dmi_system_id dmi_table[] = {
+ 		},
+ 		.driver_data = (void *)oxp_fly,
+ 	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1 "),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_EXACT_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1L"),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
++			DMI_MATCH(DMI_BOARD_NAME, "ONEXPLAYER F1L "),
++		},
++		.driver_data = (void *)oxp_fly,
++	},
+ 	{
+ 		.matches = {
+ 			DMI_MATCH(DMI_BOARD_VENDOR, "ONE-NETBOOK"),
+-- 
+2.46.2
+

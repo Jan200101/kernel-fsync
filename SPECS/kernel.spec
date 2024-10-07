@@ -169,7 +169,7 @@ Summary: The Linux kernel
 # This is needed to do merge window version magic
 %define patchlevel 9
 # This allows pkg_release to have configurable %%{?dist} tag
-%define specrelease 208%{?buildid}%{?dist}
+%define specrelease 209%{?buildid}%{?dist}
 # This defines the kabi tarball version
 %define kabiversion 6.9.12
 
@@ -1042,6 +1042,7 @@ Patch414: 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
 # Chimera speaker fixes
 Patch415: v0-speaker-multifix.patch
 Patch416: v0-oxp-sensors.patch
+Patch421: v2-onexplayer.patch
 Patch417: loki-mini-pro-hda-pin-fixes.patch
 Patch418: dcn32-dcn301-dcn321-mpo-reverts.patch
 Patch419: 0001-selinux-revert-our-use-of-vma_is_initial_heap.patch
@@ -1945,6 +1946,7 @@ ApplyOptionalPatch 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.pat
 # Chimera speaker fixes
 ApplyOptionalPatch v0-speaker-multifix.patch
 ApplyOptionalPatch v0-oxp-sensors.patch
+ApplyOptionalPatch v2-onexplayer.patch
 ApplyOptionalPatch loki-mini-pro-hda-pin-fixes.patch
 ApplyOptionalPatch dcn32-dcn301-dcn321-mpo-reverts.patch
 ApplyOptionalPatch 0001-selinux-revert-our-use-of-vma_is_initial_heap.patch
@@ -4129,6 +4131,9 @@ fi\
 #
 #
 %changelog
+* Mon Oct 07 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-209.fsync.1
+- kernel-fsync v6.9.12 power in misery
+
 * Thu Sep 26 2024 Jan200101 <sentrycraft123@gmail.com> - 6.9.12-208.fsync
 - kernel-fsync v6.9.12 cleaning
 
