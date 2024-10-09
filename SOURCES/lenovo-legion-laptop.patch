@@ -49,7 +49,7 @@ new file mode 100644
 index 000000000..5ec0a518f
 --- /dev/null
 +++ b/drivers/platform/x86/legion-laptop.c
-@@ -0,0 +1,6089 @@
+@@ -0,0 +1,6088 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
 + *  legion-laptop.c - Extra Lenovo Legion laptop support, in
@@ -6047,7 +6047,7 @@ index 000000000..5ec0a518f
 +	return err;
 +}
 +
-+static int legion_remove(struct platform_device *pdev)
++static void legion_remove(struct platform_device *pdev)
 +{
 +	struct legion_private *priv = dev_get_drvdata(&pdev->dev);
 +
@@ -6075,7 +6075,6 @@ index 000000000..5ec0a518f
 +	legion_shared_exit(priv);
 +
 +	pr_info("Legion platform unloaded\n");
-+	return 0;
 +}
 +
 +static int legion_resume(struct platform_device *pdev)
@@ -6139,6 +6138,3 @@ index 000000000..5ec0a518f
 +}
 +
 +module_exit(legion_exit);
---
-2.43.2
-

@@ -225,10 +225,10 @@ diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
 index 11d076cad8a2..d03c1e1d339f 100644
 --- a/drivers/hwmon/Makefile
 +++ b/drivers/hwmon/Makefile
-@@ -200,6 +200,7 @@
- obj-$(CONFIG_SENSORS_SMSC47M1)	+= smsc47m1.o
+@@ -207,6 +207,7 @@
  obj-$(CONFIG_SENSORS_SMSC47M192)+= smsc47m192.o
  obj-$(CONFIG_SENSORS_SPARX5)	+= sparx5-temp.o
+ obj-$(CONFIG_SENSORS_SPD5118)	+= spd5118.o
 +obj-$(CONFIG_SENSORS_STEAMDECK) += steamdeck-hwmon.o
  obj-$(CONFIG_SENSORS_STTS751)	+= stts751.o
  obj-$(CONFIG_SENSORS_SURFACE_FAN)+= surface_fan.o

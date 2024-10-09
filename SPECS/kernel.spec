@@ -56,7 +56,7 @@
 
 # Replace '-' with '_' where needed so that variants can use '-' in
 # their name.
-%define uname_suffix %{lua:
+%define uname_suffix() %{lua:
 	local flavour = rpm.expand('%{?1:+%{1}}')
 	flavour = flavour:gsub('-', '_')
 	if flavour ~= '' then
@@ -69,7 +69,7 @@
 # string. However, kernel-64k-debug is the debug version of kernel-64k,
 # in this case we need to return "64k", and so on. This is used in
 # macros below where we need this for some uname based requires.
-%define uname_variant %{lua:
+%define uname_variant() %{lua:
 	local flavour = rpm.expand('%{?1:%{1}}')
 	_, _, main, sub = flavour:find("(%w+)-(.*)")
 	if main then
@@ -160,18 +160,18 @@ Summary: The Linux kernel
 #  the --with-release option overrides this setting.)
 %define debugbuildsenabled 1
 %define buildid .fsync
-%define specrpmversion 6.10.13
-%define specversion 6.10.13
-%define patchversion 6.10
+%define specrpmversion 6.11.2
+%define specversion 6.11.2
+%define patchversion 6.11
 %define pkgrelease 200
 %define kversion 6
-%define tarfile_release 6.10.13
+%define tarfile_release 6.11.2
 # This is needed to do merge window version magic
-%define patchlevel 10
+%define patchlevel 11
 # This allows pkg_release to have configurable %%{?dist} tag
 %define specrelease 201%{?buildid}%{?dist}
 # This defines the kabi tarball version
-%define kabiversion 6.10.13
+%define kabiversion 6.11.2
 
 # If this variable is set to 1, a bpf selftests build failure will cause a
 # fatal kernel package build error
@@ -287,7 +287,7 @@ Summary: The Linux kernel
 # Want to build a vanilla kernel build without any non-upstream patches?
 %define with_vanilla %{?_with_vanilla: 1} %{?!_with_vanilla: 0}
 
-%ifarch x86_64 aarch64
+%ifarch x86_64 aarch64 riscv64
 %define with_efiuki %{?_without_efiuki: 0} %{?!_without_efiuki: 1}
 %else
 %define with_efiuki 0
@@ -449,6 +449,11 @@ Summary: The Linux kernel
 %define with_selftests 0
 %endif
 
+# bpftool needs debuginfo to work
+%if %{with_debuginfo} == 0
+%define with_bpftool 0
+%endif
+
 %ifnarch noarch
 %define with_kernel_abi_stablelists 0
 %endif
@@ -541,6 +546,13 @@ Summary: The Linux kernel
 %define kernel_image arch/arm64/boot/vmlinuz.efi
 %endif
 
+%ifarch riscv64
+%define asmarch riscv
+%define hdrarch riscv
+%define make_target vmlinuz.efi
+%define kernel_image arch/riscv/boot/vmlinuz.efi
+%endif
+
 # Should make listnewconfig fail if there's config options
 # printed out?
 %if %{nopatches}
@@ -586,7 +598,7 @@ Summary: The Linux kernel
 %endif
 
 # Architectures we build kernel livepatching selftests on
-%define klptestarches x86_64 ppc64le
+%define klptestarches x86_64 ppc64le s390x
 
 %if 0%{?use_vdso}
 %define _use_vdso 1
@@ -643,7 +655,7 @@ Release: %{pkg_release}
 # DO NOT CHANGE THE 'ExclusiveArch' LINE TO TEMPORARILY EXCLUDE AN ARCHITECTURE BUILD.
 # SET %%nobuildarches (ABOVE) INSTEAD
 %if 0%{?fedora}
-ExclusiveArch: noarch x86_64 s390x aarch64 ppc64le
+ExclusiveArch: noarch x86_64 s390x aarch64 ppc64le riscv64
 %else
 ExclusiveArch: noarch i386 i686 x86_64 s390x aarch64 ppc64le
 %endif
@@ -662,6 +674,9 @@ Provides: installonlypkg(kernel)
 BuildRequires: kmod, bash, coreutils, tar, git-core, which
 BuildRequires: bzip2, xz, findutils, m4, perl-interpreter, perl-Carp, perl-devel, perl-generators, make, diffutils, gawk, %compression
 BuildRequires: gcc, binutils, redhat-rpm-config, hmaccalc, bison, flex, gcc-c++
+%if 0%{?fedora}
+BuildRequires: rust, rust-src, bindgen
+%endif
 BuildRequires: net-tools, hostname, bc, elfutils-devel
 BuildRequires: dwarves
 BuildRequires: python3
@@ -715,11 +730,11 @@ BuildRequires: openssl-devel
 %endif
 %if %{with_bpftool}
 BuildRequires: python3-docutils
-BuildRequires: zlib-devel binutils-devel
+BuildRequires: zlib-devel binutils-devel llvm-devel
 %endif
 %if %{with_selftests}
 BuildRequires: clang llvm-devel fuse-devel
-%ifarch x86_64
+%ifarch x86_64 riscv64
 BuildRequires: lld
 %endif
 BuildRequires: libcap-devel libcap-ng-devel rsync libmnl-devel
@@ -756,7 +771,7 @@ BuildRequires: openssl
 %if 0%{?rhel}%{?centos} && !0%{?eln}
 BuildRequires: system-sb-certs
 %endif
-%ifarch x86_64 aarch64
+%ifarch x86_64 aarch64 riscv64
 BuildRequires: nss-tools
 BuildRequires: pesign >= 0.10-4
 %endif
@@ -795,6 +810,8 @@ BuildRequires: lvm2
 BuildRequires: systemd-boot-unsigned
 # For systemd-stub and systemd-pcrphase
 BuildRequires: systemd-udev >= 252-1
+# For UKI kernel cmdline addons
+BuildRequires: systemd-ukify
 # For TPM operations in UKI initramfs
 BuildRequires: tpm2-tools
 # For UKI sb cert
@@ -904,6 +921,8 @@ Source58: %{name}-s390x-fedora.config
 Source59: %{name}-s390x-debug-fedora.config
 Source60: %{name}-x86_64-fedora.config
 Source61: %{name}-x86_64-debug-fedora.config
+Source700: %{name}-riscv64-fedora.config
+Source701: %{name}-riscv64-debug-fedora.config
 
 Source62: def_variants.yaml.fedora
 %endif
@@ -922,6 +941,9 @@ Source81: process_configs.sh
 Source86: dracut-virt.conf
 
 Source87: flavors
+
+Source151: uki_create_addons.py
+Source152: uki_addons.json
 
 Source100: rheldup3.x509
 Source101: rhelkpatch1.x509
@@ -954,11 +976,13 @@ Source201: Module.kabi_aarch64
 Source202: Module.kabi_ppc64le
 Source203: Module.kabi_s390x
 Source204: Module.kabi_x86_64
+Source205: Module.kabi_riscv64
 
 Source210: Module.kabi_dup_aarch64
 Source211: Module.kabi_dup_ppc64le
 Source212: Module.kabi_dup_s390x
 Source213: Module.kabi_dup_x86_64
+Source214: Module.kabi_dup_riscv64
 
 Source300: kernel-abi-stablelists-%{kabiversion}.tar.xz
 Source301: kernel-kabi-dw-%{kabiversion}.tar.xz
@@ -994,15 +1018,11 @@ Source4002: gating.yaml
 Patch1: patch-%{patchversion}-redhat.patch
 
 # linux-fsync patches
-Patch200: tkg.patch
-Patch202: fsync.patch
-Patch203: OpenRGB.patch
 Patch206: amdgpu-si-cik-default.patch
 Patch211: tkg-misc-additions.patch
-Patch212: tkg-unprivileged-CLONE_NEWUSER.patch
+Patch212: hdr-config.patch
 Patch213: cachy-bore.patch
 Patch214: scx-kernel.patch
-Patch215: cachy-bbr3.patch
 
 # device specific patches
 Patch300: linux-surface.patch
@@ -1011,13 +1031,10 @@ Patch303: lenovo-legion-laptop.patch
 Patch308: 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 Patch309: 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
 # ROG Ally
-Patch316: rog-ally-audio-fix.patch
 Patch317: ROG-ALLY-NCT6775-PLATFORM.patch
-Patch322: rog-ally-gyro-fix.patch
+Patch338: v2-ally-suspend-fix.patch
 
 # hdr: https://github.com/CachyOS/kernel-patches
-Patch208: 0001-ntsync.patch
-Patch325: 0001-amd-pstate.patch
 Patch327: 0001-add-acpi_call.patch
 Patch328: uinput.patch
 
@@ -1038,17 +1055,14 @@ Patch315: steamdeck-oled-legion-go-bluetooth-hang.patch
 
 # temporary patches
 Patch401: 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
-Patch405: mt76:-mt7921:-Disable-powersave-features-by-default.patch
 Patch408: 0001-acpi-proc-idle-skip-dummy-wait.patch
 # Fixes the steam deck not coming back from hibernation
 Patch411: 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
 # fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
 Patch413: amdgpu-ignore-min-pcap.patch
-# improve controller hiding
-Patch414: 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
 # Chimera speaker fixes
-Patch415: v0-speaker-multifix.patch
 Patch416: v0-oxp-sensors.patch
+Patch417: v2-onexplayer.patch
 Patch418: dcn32-dcn301-dcn321-mpo-reverts.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
@@ -1623,7 +1637,7 @@ Requires: kernel-%{?1:%{1}-}-modules-core-uname-r = %{KVERREL}%{uname_variant %{
 %{expand:%%kernel_debuginfo_package %{?1:%{1}}}\
 %endif\
 %if "%{1}" == "rt" || "%{1}" == "rt-debug"\
-%{expand:%%kernel_kvm_package %{?1:%{1}}} %{!?{-n}:%{1}}%{?{-n}:%{-n*}}}\
+%{expand:%%kernel_kvm_package %{?1:%{1}} %{!?{-n}:%{1}}%{?{-n}:%{-n*}}}\
 %else \
 %if %{with_efiuki}\
 %package %{?1:%{1}-}uki-virt\
@@ -1632,6 +1646,11 @@ Provides: installonlypkg(kernel)\
 Provides: kernel-%{?1:%{1}-}uname-r = %{KVERREL}%{uname_suffix %{?1:+%{1}}}\
 Requires: kernel%{?1:-%{1}}-modules-core-uname-r = %{KVERREL}%{uname_suffix %{?1:+%{1}}}\
 Requires(pre): %{kernel_prereq}\
+Requires(pre): systemd >= 254-1\
+%package %{?1:%{1}-}uki-virt-addons\
+Summary: %{variant_summary} unified kernel image addons for virtual machines\
+Provides: installonlypkg(kernel)\
+Requires: kernel%{?1:-%{1}}-uki-virt = %{specrpmversion}-%{release}\
 Requires(pre): systemd >= 254-1\
 %endif\
 %endif\
@@ -1772,31 +1791,49 @@ input and output, etc.
 %if %{with_up} && %{with_debug} && %{with_efiuki}
 %description debug-uki-virt
 Prebuilt debug unified kernel image for virtual machines.
+
+%description debug-uki-virt-addons
+Prebuilt debug unified kernel image addons for virtual machines.
 %endif
 
 %if %{with_up_base} && %{with_efiuki}
 %description uki-virt
 Prebuilt default unified kernel image for virtual machines.
+
+%description uki-virt-addons
+Prebuilt default unified kernel image addons for virtual machines.
 %endif
 
 %if %{with_arm64_16k} && %{with_debug} && %{with_efiuki}
 %description 16k-debug-uki-virt
 Prebuilt 16k debug unified kernel image for virtual machines.
+
+%description 16k-debug-uki-virt-addons
+Prebuilt 16k debug unified kernel image addons for virtual machines.
 %endif
 
 %if %{with_arm64_16k_base} && %{with_efiuki}
 %description 16k-uki-virt
 Prebuilt 16k unified kernel image for virtual machines.
+
+%description 16k-uki-virt-addons
+Prebuilt 16k unified kernel image addons for virtual machines.
 %endif
 
 %if %{with_arm64_64k} && %{with_debug} && %{with_efiuki}
 %description 64k-debug-uki-virt
 Prebuilt 64k debug unified kernel image for virtual machines.
+
+%description 64k-debug-uki-virt-addons
+Prebuilt 64k debug unified kernel image addons for virtual machines.
 %endif
 
 %if %{with_arm64_64k_base} && %{with_efiuki}
 %description 64k-uki-virt
 Prebuilt 64k unified kernel image for virtual machines.
+
+%description 64k-uki-virt-addons
+Prebuilt 64k unified kernel image addons for virtual machines.
 %endif
 
 %if %{with_ipaclones}
@@ -1882,31 +1919,31 @@ cp -a %{SOURCE1} .
 ApplyOptionalPatch patch-%{patchversion}-redhat.patch
 
 # linux-fsync patches
-ApplyOptionalPatch tkg.patch
-ApplyOptionalPatch fsync.patch
-ApplyOptionalPatch OpenRGB.patch
 ApplyOptionalPatch amdgpu-si-cik-default.patch
+#  https://github.com/Frogging-Family/linux-tkg/blob/master/linux-tkg-patches/6.11/0012-misc-additions.patch
 ApplyOptionalPatch tkg-misc-additions.patch
-ApplyOptionalPatch tkg-unprivileged-CLONE_NEWUSER.patch
+ApplyOptionalPatch hdr-config.patch
+#  https://github.com/CachyOS/kernel-patches/blob/master/6.11/sched/0001-bore.patch
 ApplyOptionalPatch cachy-bore.patch
 ApplyOptionalPatch scx-kernel.patch
-ApplyOptionalPatch cachy-bbr3.patch
 
 # device specific patches
+#  https://github.com/linux-surface/linux-surface/tree/master/patches/6.11
 ApplyOptionalPatch linux-surface.patch
+#  https://github.com/johnfanv2/LenovoLegionLinux
 ApplyOptionalPatch lenovo-legion-laptop.patch
 #  workaround for i915 getting stuck during async page flips on Nvidia PRIME systems
+#    https://gitlab.freedesktop.org/xorg/xserver/-/issues/24
+#    https://gitlab.freedesktop.org/xorg/driver/xf86-video-intel/-/issues/208
 ApplyOptionalPatch 0001-drm-i915-quirks-disable-async-flipping-on-specific-d.patch
 ApplyOptionalPatch 0002-drm-i915-add-kernel-parameter-to-disable-async-page-.patch
 # ROG Ally-
-ApplyOptionalPatch rog-ally-audio-fix.patch
 ApplyOptionalPatch ROG-ALLY-NCT6775-PLATFORM.patch
-ApplyOptionalPatch rog-ally-gyro-fix.patch
+ApplyOptionalPatch v2-ally-suspend-fix.patch
 
 # https://github.com/CachyOS/kernel-patches
-ApplyOptionalPatch 0001-ntsync.patch
-ApplyOptionalPatch 0001-amd-pstate.patch
 ApplyOptionalPatch 0001-add-acpi_call.patch
+# https://github.com/Nobara-Project/rpm-sources/blob/main/baseos/kernel/6.11.2/uinput.patch
 ApplyOptionalPatch uinput.patch
 
 # fixes framerate control in gamescope
@@ -1927,17 +1964,14 @@ ApplyOptionalPatch steamdeck-oled-legion-go-bluetooth-hang.patch
 # temporary patches
 ApplyOptionalPatch 0001-Revert-PCI-Add-a-REBAR-size-quirk-for-Sapphire-RX-56.patch
 #  mediatek fixups
-ApplyOptionalPatch mt76:-mt7921:-Disable-powersave-features-by-default.patch
 ApplyOptionalPatch 0001-acpi-proc-idle-skip-dummy-wait.patch
 #  Fixes the steam deck not coming back from hibernation
 ApplyOptionalPatch 0001-Revert-nvme-pci-drop-redundant-pci_enable_pcie_error.patch
 # fix https://gitlab.freedesktop.org/drm/amd/-/issues/3183
 ApplyOptionalPatch amdgpu-ignore-min-pcap.patch
-# improve controller hiding
-ApplyOptionalPatch 0001-add-revoke_all-ioctl-to-release-event-and-joy-nodes-.patch
 # Chimera speaker fixes
-ApplyOptionalPatch v0-speaker-multifix.patch
 ApplyOptionalPatch v0-oxp-sensors.patch
+ApplyOptionalPatch v2-onexplayer.patch
 ApplyOptionalPatch dcn32-dcn301-dcn321-mpo-reverts.patch
 
 # Allow to set custom USB pollrate for specific devices like so:
@@ -2025,6 +2059,7 @@ GetArch()
   *ppc64le*) echo "ppc64le" ;;
   *s390x*) echo "s390x" ;;
   *x86_64*) echo "x86_64" ;;
+  *riscv64*) echo "riscv64" ;;
   # no arch, apply everywhere
   *) echo "" ;;
   esac
@@ -2081,15 +2116,6 @@ for i in *.config; do
 done
 %endif
 
-# Adjust FIPS module name for RHEL
-%if 0%{?rhel}
-%{log_msg "Adjust FIPS module name for RHEL"}
-for i in *.config; do
-  sed -i 's/CONFIG_CRYPTO_FIPS_NAME=.*/CONFIG_CRYPTO_FIPS_NAME="Red Hat Enterprise Linux %{rhel} - Kernel Cryptographic API"/' $i
-done
-%endif
-
-%{log_msg "Set process_configs.sh $OPTS"}
 cp %{SOURCE81} .
 OPTS=""
 %if %{with_configchecks}
@@ -2203,6 +2229,10 @@ InitBuildVars() {
     cp configs/x509.genkey certs/.
     %endif
 
+%if %{with_debuginfo} == 0
+    sed -i 's/^\(CONFIG_DEBUG_INFO.*\)=y/# \1 is not set/' .config
+%endif
+
     Arch=`head -1 .config | cut -b 3-`
     %{log_msg "InitBuildVars: USING ARCH=$Arch"}
 
@@ -2272,7 +2302,7 @@ BuildKernel() {
     mkdir -p $RPM_BUILD_ROOT%{debuginfodir}/%{image_install_path}
 %endif
 
-%ifarch aarch64
+%ifarch aarch64 riscv64
     %{log_msg "Build dtb kernel"}
     %{make} ARCH=$Arch dtbs INSTALL_DTBS_PATH=$RPM_BUILD_ROOT/%{image_install_path}/dtb-$KernelVer
     %{make} ARCH=$Arch dtbs_install INSTALL_DTBS_PATH=$RPM_BUILD_ROOT/%{image_install_path}/dtb-$KernelVer
@@ -2541,12 +2571,12 @@ BuildKernel() {
     cp --parents tools/build/Build $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
     cp --parents tools/build/fixdep.c $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
     cp --parents tools/objtool/sync-check.sh $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
-    cp -a --parents tools/bpf/resolve_btfids/main.c $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
-    cp -a --parents tools/bpf/resolve_btfids/Build $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
+    cp -a --parents tools/bpf/resolve_btfids $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
 
     cp --parents security/selinux/include/policycap_names.h $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
     cp --parents security/selinux/include/policycap.h $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
 
+    cp -a --parents tools/include/asm $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
     cp -a --parents tools/include/asm-generic $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
     cp -a --parents tools/include/linux $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
     cp -a --parents tools/include/uapi/asm $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
@@ -2583,6 +2613,9 @@ BuildKernel() {
 %endif
     if [ -d arch/%{asmarch}/include ]; then
       cp -a --parents arch/%{asmarch}/include $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/
+    fi
+    if [ -d tools/arch/%{asmarch}/include ]; then
+      cp -a --parents tools/arch/%{asmarch}/include $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
     fi
 %ifarch aarch64
     # arch/arm64/include/asm/xen references arch/arm
@@ -2753,6 +2786,10 @@ BuildKernel() {
            --kernel-cmdline 'console=tty0 console=ttyS0' \
 	   $KernelUnifiedImage
 
+  KernelAddonsDirOut="$KernelUnifiedImage.extra.d"
+  mkdir -p $KernelAddonsDirOut
+  python3 %{SOURCE151} %{SOURCE152} $KernelAddonsDirOut virt %{primary_target} %{_target_cpu}
+
 %if %{signkernel}
 	%{log_msg "Sign the EFI UKI kernel"}
 %if 0%{?fedora}%{?eln}
@@ -2774,9 +2811,20 @@ BuildKernel() {
         fi
         mv $KernelUnifiedImage.signed $KernelUnifiedImage
 
+      for addon in "$KernelAddonsDirOut"/*; do
+        %pesign -s -i $addon -o $addon.signed -a %{secureboot_ca_0} -c %{secureboot_key_0} -n %{pesign_name_0}
+        rm -f $addon
+        mv $addon.signed $addon
+      done
+
 # signkernel
 %endif
 
+    # hmac sign the UKI for FIPS
+    KernelUnifiedImageHMAC="$KernelUnifiedImageDir/.$InstallName-virt.efi.hmac"
+    %{log_msg "hmac sign the UKI for FIPS"}
+    %{log_msg "Creating hmac file: $KernelUnifiedImageHMAC"}
+    (cd $KernelUnifiedImageDir && sha512hmac $InstallName-virt.efi) > $KernelUnifiedImageHMAC;
 
 # with_efiuki
 %endif
@@ -2835,7 +2883,10 @@ BuildKernel() {
         sed -i %{?zipsed} $absolute_file_list
 %endif
         # add also dir for the case when there are no kmods
-        echo "%dir /lib/modules/$KernelVer/$module_subdir" >> $absolute_file_list
+        # "kernel" subdir is covered in %files section, skip it here
+        if [ "$module_subdir" != "kernel" ]; then
+                echo "%dir /lib/modules/$KernelVer/$module_subdir" >> $absolute_file_list
+        fi
 
         if [ "$add_all_dirs" -eq 1 ]; then
             (cd $RPM_BUILD_ROOT; find lib/modules/$KernelVer/kernel -mindepth 1 -type d | sort -n) > ../module-dirs.list
@@ -2886,7 +2937,7 @@ BuildKernel() {
             # in case below list needs to be extended, remember to add a
             # matching ghost entry in the files section as well
             rm -f modules.{alias,alias.bin,builtin.alias.bin,builtin.bin} \
-                  modules.{dep,dep.bin,devname,softdep,symbols,symbols.bin}
+                  modules.{dep,dep.bin,devname,softdep,symbols,symbols.bin,weakdep}
         popd
     }
 
@@ -2895,6 +2946,12 @@ BuildKernel() {
     rm -f $RPM_BUILD_ROOT/System.map
     %{log_msg "Remove depmod files"}
     remove_depmod_files
+
+%if %{with_cross}
+    make -C $RPM_BUILD_ROOT/lib/modules/$KernelVer/build M=scripts clean
+    make -C $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/tools/bpf/resolve_btfids clean
+    sed -i 's/REBUILD_SCRIPTS_FOR_CROSS:=0/REBUILD_SCRIPTS_FOR_CROSS:=1/' $RPM_BUILD_ROOT/lib/modules/$KernelVer/build/Makefile
+%endif
 
     # Move the devel headers out of the root file system
     %{log_msg "Move the devel headers to RPM_BUILD_ROOT"}
@@ -2907,6 +2964,7 @@ BuildKernel() {
     # the F17 UsrMove feature.
     ln -sf $DevelDir $RPM_BUILD_ROOT/lib/modules/$KernelVer/build
 
+%if %{with_debuginfo}
     # Generate vmlinux.h and put it to kernel-devel path
     # zfcpdump build does not have btf anymore
     if [ "$Variant" != "zfcpdump" ]; then
@@ -2914,10 +2972,11 @@ BuildKernel() {
         # Build the bootstrap bpftool to generate vmlinux.h
         export BPFBOOTSTRAP_CFLAGS=$(echo "%{__global_compiler_flags}" | sed -r "s/\-specs=[^\ ]+\/redhat-annobin-cc1//")
         export BPFBOOTSTRAP_LDFLAGS=$(echo "%{__global_ldflags}" | sed -r "s/\-specs=[^\ ]+\/redhat-annobin-cc1//")
-        CFLAGS="" LDFLAGS="" make EXTRA_CFLAGS="${BPFBOOTSTRAP_CFLAGS}" EXTRA_LDFLAGS="${BPFBOOTSTRAP_LDFLAGS}" %{?make_opts} %{?clang_make_opts} V=1 -C tools/bpf/bpftool bootstrap
+        CFLAGS="" LDFLAGS="" make EXTRA_CFLAGS="${BPFBOOTSTRAP_CFLAGS}" EXTRA_CXXFLAGS="${BPFBOOTSTRAP_CFLAGS}" EXTRA_LDFLAGS="${BPFBOOTSTRAP_LDFLAGS}" %{?make_opts} %{?clang_make_opts} V=1 -C tools/bpf/bpftool bootstrap
 
         tools/bpf/bpftool/bootstrap/bpftool btf dump file vmlinux format c > $RPM_BUILD_ROOT/$DevelDir/vmlinux.h
     fi
+%endif
 
     %{log_msg "Cleanup kernel-devel and kernel-debuginfo files"}
     # prune junk from kernel-devel
@@ -3126,7 +3185,7 @@ echo "${RPM_VMLINUX_H}" > ../vmlinux_h_path
 
 %if %{with_bpftool}
 %global bpftool_make \
-  %{__make} EXTRA_CFLAGS="${RPM_OPT_FLAGS}" EXTRA_LDFLAGS="%{__global_ldflags}" DESTDIR=$RPM_BUILD_ROOT %{?make_opts} VMLINUX_H="${RPM_VMLINUX_H}" V=1
+  %{__make} EXTRA_CFLAGS="${RPM_OPT_FLAGS}" EXTRA_CXXFLAGS="${RPM_OPT_FLAGS}" EXTRA_LDFLAGS="%{__global_ldflags}" DESTDIR=$RPM_BUILD_ROOT %{?make_opts} VMLINUX_H="${RPM_VMLINUX_H}" V=1
 %{log_msg "build bpftool"}
 pushd tools/bpf/bpftool
 %{bpftool_make}
@@ -3167,7 +3226,7 @@ pushd tools/testing/selftests
 %endif
 
 %{log_msg "main selftests compile"}
-%{make} %{?_smp_mflags} ARCH=$Arch V=1 TARGETS="bpf cgroup mm net net/forwarding net/mptcp netfilter tc-testing memfd drivers/net/bonding iommu" SKIP_TARGETS="" $force_targets INSTALL_PATH=%{buildroot}%{_libexecdir}/kselftests VMLINUX_H="${RPM_VMLINUX_H}" install
+%{make} %{?_smp_mflags} ARCH=$Arch V=1 TARGETS="bpf cgroup mm net net/forwarding net/mptcp netfilter tc-testing memfd drivers/net/bonding iommu cachestat" SKIP_TARGETS="" $force_targets INSTALL_PATH=%{buildroot}%{_libexecdir}/kselftests VMLINUX_H="${RPM_VMLINUX_H}" install
 
 %ifarch %{klptestarches}
 	# kernel livepatching selftest test_modules will build against
@@ -3313,7 +3372,7 @@ find $RPM_BUILD_ROOT/usr/include \
 %endif
 
 %if %{with_cross_headers}
-HDR_ARCH_LIST='arm64 powerpc s390 x86'
+HDR_ARCH_LIST='arm64 powerpc s390 x86 riscv'
 mkdir -p $RPM_BUILD_ROOT/usr/tmp-headers
 
 for arch in $HDR_ARCH_LIST; do
@@ -3588,6 +3647,10 @@ then\
      /usr/bin/find /usr/src/kernels -type f -name '*.hardlink-temporary' -delete\
     )\
 fi\
+%if %{with_cross}\
+    echo "Building scripts and resolve_btfids"\
+    env --unset=ARCH make -C /usr/src/kernels/%{KVERREL}%{?1:+%{1}} prepare_after_cross\
+%endif\
 %{nil}
 
 #
@@ -3835,7 +3898,7 @@ fi\
 %endif
 
 %if %{with_kabidw_base}
-%ifarch x86_64 s390x ppc64 ppc64le aarch64
+%ifarch x86_64 s390x ppc64 ppc64le aarch64 riscv64
 %files kernel-kabidw-base-internal
 %defattr(-,root,root)
 /kabidw-base/%{_target_cpu}/*
@@ -4042,7 +4105,7 @@ fi\
 %ghost /%{image_install_path}/%{?-k:%{-k*}}%{!?-k:vmlinuz}-%{KVERREL}%{?3:+%{3}}\
 /lib/modules/%{KVERREL}%{?3:+%{3}}/.vmlinuz.hmac \
 %ghost /%{image_install_path}/.vmlinuz-%{KVERREL}%{?3:+%{3}}.hmac \
-%ifarch aarch64\
+%ifarch aarch64 riscv64\
 /lib/modules/%{KVERREL}%{?3:+%{3}}/dtb \
 %ghost /%{image_install_path}/dtb-%{KVERREL}%{?3:+%{3}} \
 %endif\
@@ -4057,6 +4120,8 @@ fi\
 %ghost %attr(0600, root, root) /boot/initramfs-%{KVERREL}%{?3:+%{3}}.img\
 %ghost %attr(0644, root, root) /boot/config-%{KVERREL}%{?3:+%{3}}\
 %{expand:%%files -f kernel-%{?3:%{3}-}modules-core.list %{?3:%{3}-}modules-core}\
+%dir /lib/modules\
+%dir /lib/modules/%{KVERREL}%{?3:+%{3}}\
 %dir /lib/modules/%{KVERREL}%{?3:+%{3}}/kernel\
 /lib/modules/%{KVERREL}%{?3:+%{3}}/build\
 /lib/modules/%{KVERREL}%{?3:+%{3}}/source\
@@ -4082,6 +4147,7 @@ fi\
 %ghost %attr(0644, root, root) /lib/modules/%{KVERREL}%{?3:+%{3}}/modules.softdep\
 %ghost %attr(0644, root, root) /lib/modules/%{KVERREL}%{?3:+%{3}}/modules.symbols\
 %ghost %attr(0644, root, root) /lib/modules/%{KVERREL}%{?3:+%{3}}/modules.symbols.bin\
+%ghost %attr(0644, root, root) /lib/modules/%{KVERREL}%{?3:+%{3}}/modules.weakdep\
 %{expand:%%files -f kernel-%{?3:%{3}-}modules.list %{?3:%{3}-}modules}\
 %{expand:%%files %{?3:%{3}-}devel}\
 %defverify(not mtime)\
@@ -4102,12 +4168,18 @@ fi\
 %else\
 %if %{with_efiuki}\
 %{expand:%%files %{?3:%{3}-}uki-virt}\
+%dir /lib/modules\
+%dir /lib/modules/%{KVERREL}%{?3:+%{3}}\
 /lib/modules/%{KVERREL}%{?3:+%{3}}/System.map\
 /lib/modules/%{KVERREL}%{?3:+%{3}}/symvers.%compext\
 /lib/modules/%{KVERREL}%{?3:+%{3}}/config\
 /lib/modules/%{KVERREL}%{?3:+%{3}}/modules.builtin*\
 %attr(0644, root, root) /lib/modules/%{KVERREL}%{?3:+%{3}}/%{?-k:%{-k*}}%{!?-k:vmlinuz}-virt.efi\
+%attr(0644, root, root) /lib/modules/%{KVERREL}%{?3:+%{3}}/.%{?-k:%{-k*}}%{!?-k:vmlinuz}-virt.efi.hmac\
 %ghost /%{image_install_path}/efi/EFI/Linux/%{?-k:%{-k*}}%{!?-k:*}-%{KVERREL}%{?3:+%{3}}.efi\
+%{expand:%%files %{?3:%{3}-}uki-virt-addons}\
+%dir /lib/modules/%{KVERREL}%{?3:+%{3}}/%{?-k:%{-k*}}%{!?-k:vmlinuz}-virt.efi.extra.d/ \
+/lib/modules/%{KVERREL}%{?3:+%{3}}/%{?-k:%{-k*}}%{!?-k:vmlinuz}-virt.efi.extra.d/*.addon.efi\
 %endif\
 %endif\
 %if %{?3:1} %{!?3:0}\
@@ -4182,146 +4254,316 @@ fi\
 #
 #
 %changelog
-* Sat Oct 05 2024 Jan200101 <sentrycraft123@gmail.com> - 6.10.13-201.fsync
-- kernel-fsync v6.10.13
+* Mon Oct 07 2024 Jan200101 <sentrycraft123@gmail.com> - 6.11.2-201.fsync
+- kernel-fsync v6.11.2
 
-* Fri Oct 04 2024 Augusto Caringi <acaringi@redhat.com> [6.10.13-0]
-- Linux v6.10.13
+* Fri Oct 04 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.11.2-0]
+- Linux v6.11.2
 
-* Mon Sep 30 2024 Augusto Caringi <acaringi@redhat.com> [6.10.12-0]
-- Linux v6.10.12
+* Mon Sep 30 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.11.1-0]
+- media: qcom: camss: Fix ordering of pm_runtime_enable (Bryan O'Donoghue)
+- media: qcom: camss: Remove use_count guard in stop_streaming (Bryan O'Donoghue)
+- arm64: dts: allwinner: a64: Add GPU thermal trips to the SoC dtsi (Dragan Simic)
+- arm64: dts: rockchip: Raise Pinebook Pro's panel backlight PWM frequency (Dragan Simic)
+- arm64: dts: qcom: sc8280xp-x13s: Enable RGB sensor (Bryan O'Donoghue)
+- ARM: dts: bcm2837/bcm2712: adjust local intc node names (Stefan Wahren)
+- arm64: dts: broadcom: Add minimal support for Raspberry Pi 5 (Andrea della Porta)
+- Linux v6.11.1
 
-* Wed Sep 18 2024 Augusto Caringi <acaringi@redhat.com> [6.10.11-0]
-- New config for 6.10.11 (Augusto Caringi)
-- Linux v6.10.11
-
-* Thu Sep 12 2024 Augusto Caringi <acaringi@redhat.com> [6.10.10-0]
-- Add entry for BugsFixed (Justin M. Forbes)
-- drm/nouveau/fb: restore init() for ramgp102 (Ben Skeggs)
-- Linux v6.10.10
-
-* Sun Sep 08 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.9-0]
-- Linux v6.10.9
-
-* Wed Sep 04 2024 Augusto Caringi <acaringi@redhat.com> [6.10.8-0]
-- Add to BugsFixed (Augusto Caringi)
-- xfs: xfs_finobt_count_blocks() walks the wrong btree (Dave Chinner)
-- Linux v6.10.8
-
-* Thu Aug 29 2024 Augusto Caringi <acaringi@redhat.com> [6.10.7-0]
-- KVM: PPC: Book3S HV nestedv2: Keep nested guest HASHPKEYR in sync (Shivaprasad G Bhat)
-- KVM: PPC: Book3S HV: Add one-reg interface for HASHPKEYR register (Shivaprasad G Bhat)
-- KVM: PPC: Book3S HV nestedv2: Keep nested guest HASHKEYR in sync (Shivaprasad G Bhat)
-- KVM: PPC: Book3S HV: Add one-reg interface for HASHKEYR register (Shivaprasad G Bhat)
-- KVM: PPC: Book3S HV nestedv2: Keep nested guest DEXCR in sync (Shivaprasad G Bhat)
-- KVM: PPC: Book3S HV: Add one-reg interface for DEXCR register (Shivaprasad G Bhat)
-- Revert the F39 commits which should not have pushed (Justin M. Forbes)
-- Turn off libbpf dynamic for perf on F39 (Justin M. Forbes)
-- Revert "cpupower: Bump soname version" (Justin M. Forbes)
-- Drop soname for libcpupower.so since we reverted the bump (Justin M. Forbes)
-- Linux v6.10.7
-
-* Mon Aug 19 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.6-0]
-- Add to BugsFixed (Justin M. Forbes)
-- selinux: revert our use of vma_is_initial_heap() (Paul Moore)
-- Linux v6.10.6
-
-* Wed Aug 14 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.5-0]
-- Revert "ata: libata-scsi: Honor the D_SENSE bit for CK_COND=1 and no error" (Niklas Cassel)
-- Linux v6.10.5
-
-* Sun Aug 11 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.4-0]
-- wifi: brcmfmac: cfg80211: Handle SSID based pmksa deletion (Janne Grunau)
-- New config for 6.10.3 (Justin M. Forbes)
-- Linux v6.10.4
-
-* Mon Aug 05 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.3-0]
-- Bluetooth: hci_event: Fix setting DISCOVERY_FINDING for passive scanning (Luiz Augusto von Dentz)
-- Linux v6.10.3
-
-* Sat Jul 27 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.2-0]
-- Linux v6.10.2
-
-* Wed Jul 24 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.1-0]
+* Tue Sep 24 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.11.0-0]
 - Initial set up for stable Fedora branch (Justin M. Forbes)
+- Reset RHEL_RELEASE for 6.12 (Justin M. Forbes)
+
+* Sun Sep 15 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-63]
+- Linux v6.11.0
+
+* Sun Sep 15 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc7.d42f7708e27c.62]
+- Linux v6.11.0-0.rc7.d42f7708e27c
+
+* Sat Sep 14 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc7.b7718454f937.61]
+- Consolidate configs into common for 6.11 kernels (Justin M. Forbes)
+- Linux v6.11.0-0.rc7.b7718454f937
+
+* Fri Sep 13 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc7.196145c606d0.60]
+- uki-virt: add systemd-cryptsetup module (Vitaly Kuznetsov)
+- redhat/docs: fix command to install missing build dependencies (Davide Cavalca)
+- spec: Respect rpmbuild --without debuginfo (Orgad Shaneh)
+- fedora/configs: enable GPIO expander drivers (Rupinderjit Singh)
+- redhat/configs: Switch to the Rust implementation of AX88796B_PHY driver for Fedora (Neal Gompa)
+- redhat: Turn on support for Rust code in Fedora (Neal Gompa)
+- Turn off RUST for risc-v (Justin M. Forbes)
+- Linux v6.11.0-0.rc7.196145c606d0
+
+* Thu Sep 12 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc7.77f587896757.59]
+- gitlab-ci: allow failure of clang LTO pipelines (Michael Hofmann)
+- redhat/configs: Consolidate the CONFIG_KVM_BOOK3S_HV_P*_TIMING switches (Thomas Huth)
+- redhat/configs: Consolidate the CONFIG_KVM_SW_PROTECTED_VM switch (Thomas Huth)
+- redhat/configs: Consolidate the CONFIG_KVM_HYPERV switch (Thomas Huth)
+- redhat/configs: Consolidate the CONFIG_KVM_AMD_SEV switch (Thomas Huth)
+- Linux v6.11.0-0.rc7.77f587896757
+
+* Wed Sep 11 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc7.8d8d276ba2fb.58]
+- Cleanup some riscv CONFIG locations (Justin M. Forbes)
+- Fix up pending riscv Fedora configs post merge (Justin M. Forbes)
+- Linux v6.11.0-0.rc7.8d8d276ba2fb
+
+* Tue Sep 10 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc7.bc83b4d1f086.57]
+- fedora/configs: Enable SCMI configuration (Rupinderjit Singh)
+- Remove S390 special config for PHYLIB (Justin M. Forbes)
+- Disable ELN for riscv64 (Isaiah Stapleton)
+- redhat: add checks to ensure only building riscv64 on fedora (Isaiah Stapleton)
+- redhat: Add missing riscv fedora configs (Isaiah Stapleton)
+- Add riscv64 to the CI pipelines (Isaiah Stapleton)
+- redhat: Regenerate dist-self-test-data for riscv64 (Isaiah Stapleton)
+- redhat: Add riscv config changes for fedora (David Abdurachmanov)
+- redhat: Add support for riscv (David Abdurachmanov)
+- redhat: Do not include UKI addons twice (Vitaly Kuznetsov)
+- redhat: update gating.yml (Michael Hofmann)
+- Linux v6.11.0-0.rc7.bc83b4d1f086
+
+* Mon Sep 09 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc7.56]
+- Linux v6.11.0-0.rc7
+
+* Sun Sep 08 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc6.d1f2d51b711a.55]
+- Linux v6.11.0-0.rc6.d1f2d51b711a
+
+* Sat Sep 07 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc6.b31c44928842.54]
+- Linux v6.11.0-0.rc6.b31c44928842
+
+* Fri Sep 06 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc6.b831f83e40a2.53]
+- Linux v6.11.0-0.rc6.b831f83e40a2
+
+* Thu Sep 05 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc6.c763c4339688.52]
+- Linux v6.11.0-0.rc6.c763c4339688
+
+* Wed Sep 04 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc6.88fac17500f4.51]
+- Linux v6.11.0-0.rc6.88fac17500f4
+
+* Mon Sep 02 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc6.67784a74e258.50]
+- Linux v6.11.0-0.rc6.67784a74e258
+
+* Sun Sep 01 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc6.49]
+- Linux v6.11.0-0.rc6
+
+* Sat Aug 31 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc5.1934261d8974.48]
+- Remove CONFIG_FSCACHE_DEBUG as it has been renamed (Justin M. Forbes)
+- Set Fedora configs for 6.11 (Justin M. Forbes)
+- Linux v6.11.0-0.rc5.1934261d8974
+
+* Fri Aug 30 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc5.20371ba12063.47]
+- Linux v6.11.0-0.rc5.20371ba12063
+
+* Thu Aug 29 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc5.d5d547aa7b51.46]
+- redhat/configs: Microchip lan743x driver (Izabela Bakollari)
+- Linux v6.11.0-0.rc5.d5d547aa7b51
+
+* Wed Aug 28 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc5.86987d84b968.45]
+- redhat: include resolve_btfids in kernel-devel (Jan Stancek)
+- redhat: workaround CKI cross compilation for scripts (Jan Stancek)
+- spec: fix "unexpected argument to non-parametric macro" warnings (Jan Stancek)
+- Linux v6.11.0-0.rc5.86987d84b968
+
+* Tue Aug 27 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc5.3e9bff3bbe13.44]
+- Linux v6.11.0-0.rc5.3e9bff3bbe13
+
+* Mon Aug 26 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc5.43]
+- Add weakdep support to the kernel spec (Justin M. Forbes)
+- redhat: configs: disable PF_KEY in RHEL (Sabrina Dubroca)
+- crypto: akcipher - Disable signing and decryption (Vladis Dronov) [RHEL-54183] {CVE-2023-6240}
+- crypto: dh - implement FIPS PCT (Vladis Dronov) [RHEL-54183]
+- crypto: ecdh - disallow plain "ecdh" usage in FIPS mode (Vladis Dronov) [RHEL-54183]
+- crypto: seqiv - flag instantiations as FIPS compliant (Vladis Dronov) [RHEL-54183]
+- [kernel] bpf: set default value for bpf_jit_harden (Artem Savkov) [RHEL-51896]
+
+* Sun Aug 25 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc5.42]
+- Linux v6.11.0-0.rc5
+
+* Sat Aug 24 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc4.d2bafcf224f3.41]
+- Linux v6.11.0-0.rc4.d2bafcf224f3
+
+* Fri Aug 23 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc4.3d5f968a177d.40]
+- Linux v6.11.0-0.rc4.3d5f968a177d
+
+* Thu Aug 22 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc4.872cf28b8df9.39]
+- Linux v6.11.0-0.rc4.872cf28b8df9
+
+* Wed Aug 21 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc4.b311c1b497e5.38]
+- Linux v6.11.0-0.rc4.b311c1b497e5
+
+* Tue Aug 20 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc4.6e4436539ae1.37]
+- fedora: disable CONFIG_DRM_WERROR (Patrick Talbert)
+- Linux v6.11.0-0.rc4.6e4436539ae1
+
+* Mon Aug 19 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc4.36]
+- Linux v6.11.0-0.rc4
+
+* Sun Aug 18 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc3.c3f2d783a459.35]
+- Linux v6.11.0-0.rc3.c3f2d783a459
+
+* Sat Aug 17 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc3.e5fa841af679.34]
+- Linux v6.11.0-0.rc3.e5fa841af679
+
+* Fri Aug 16 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc3.d7a5aa4b3c00.33]
+- redhat/configs: Disable dlm in rhel configs (Andrew Price)
+- rhel: aarch64: enable required PSCI configs (Peter Robinson)
+- Linux v6.11.0-0.rc3.d7a5aa4b3c00
+
+* Thu Aug 15 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc3.1fb918967b56.32]
+- Linux v6.11.0-0.rc3.1fb918967b56
+
+* Wed Aug 14 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc3.6b0f8db921ab.31]
+- fedora: Enable AF8133J Magnetometer driver (Peter Robinson)
+- Linux v6.11.0-0.rc3.6b0f8db921ab
+
+* Tue Aug 13 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc3.d74da846046a.30]
+- redhat: spec: add cachestat kselftest (Eric Chanudet)
+- redhat: hmac sign the UKI for FIPS (Vitaly Kuznetsov)
+- not upstream: Disable vdso getrandom when FIPS is enabled (Herbert Xu)
+- Linux v6.11.0-0.rc3.d74da846046a
+
+* Mon Aug 12 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc3.29]
+- Linux v6.11.0-0.rc3
+
+* Sun Aug 11 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc2.5189dafa4cf9.28]
+- Linux v6.11.0-0.rc2.5189dafa4cf9
+
+* Sat Aug 10 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc2.34ac1e82e5a7.27]
+- kernel: config: enable erofs lzma compression (Ian Kent)
+- fedora: disable RTL8192CU in Fedora (Peter Robinson)
+- Linux v6.11.0-0.rc2.34ac1e82e5a7
+
+* Fri Aug 09 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc2.ee9a43b7cfe2.26]
+- redhat: Fix the ownership of /lib/modules/<kversion> directory (Vitaly Kuznetsov)
+- new configs in drivers/phy (Izabela Bakollari)
+- Add support to rh_waived cmdline boot parameter (Ricardo Robaina) [RHEL-26170]
+- Linux v6.11.0-0.rc2.ee9a43b7cfe2
+
+* Thu Aug 08 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc2.6a0e38264012.25]
+- Linux v6.11.0-0.rc2.6a0e38264012
+
+* Wed Aug 07 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc2.d4560686726f.24]
+- Linux v6.11.0-0.rc2.d4560686726f
+
+* Tue Aug 06 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc2.b446a2dae984.23]
+- redhat/configs: Disable gfs2 in rhel configs (Andrew Price)
+- redhat/uki_addons/virt: add common FIPS addon (Emanuele Giuseppe Esposito)
+- redhat/kernel.spec: add uki_addons to create UKI kernel cmdline addons (Emanuele Giuseppe Esposito)
+- Linux v6.11.0-0.rc2.b446a2dae984
+
+* Mon Aug 05 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc2.22]
+- rh_flags: fix failed when register_sysctl_sz rh_flags_table to kernel (Ricardo Robaina) [RHEL-52629]
+- Linux v6.11.0-0.rc2
+
+* Sun Aug 04 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc1.defaf1a2113a.21]
+- Linux v6.11.0-0.rc1.defaf1a2113a
+
+* Sat Aug 03 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc1.17712b7ea075.20]
+- Linux v6.11.0-0.rc1.17712b7ea075
+
+* Fri Aug 02 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc1.c0ecd6388360.19]
+- redhat/dracut-virt.conf: add systemd-veritysetup module (Emanuele Giuseppe Esposito)
+- Linux v6.11.0-0.rc1.c0ecd6388360
+
+* Thu Aug 01 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc1.21b136cc63d2.18]
+- redhat/configs: enable CONFIG_LOCK_STAT on the debug kernels for aarch64 (Brian Masney)
+- redhat/configs: enable CONFIG_KEYBOARD_GPIO_POLLED for RHEL on aarch64 (Luiz Capitulino)
+- redhat/configs: fedora: Enable new Qualcomm configs (Andrew Halaney)
+- redhat/configs: fedora: Disable CONFIG_QCOM_PD_MAPPER for non aarch64 (Andrew Halaney)
+- redhat/configs/fedora: set CONFIG_CRYPTO_CURVE25519_PPC64 (Dan Horák)
+- fedora: Updates for 6.11 merge (Peter Robinson)
+- fedora: enable new mipi sensors and devices (Peter Robinson)
+- Linux v6.11.0-0.rc1.21b136cc63d2
+
+* Wed Jul 31 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc1.e4fc196f5ba3.17]
+- arm64: enable CRYPTO_DEV_TEGRA on RHEL (Peter Robinson)
+- redhat/kernel.spec: fix file listed twice warning for "kernel" subdir (Jan Stancek)
+- redhat/configs: Double MAX_LOCKDEP_ENTRIES for RT debug kernels (Waiman Long) [RHEL-43425]
+- Support the first day after a rebase (Don Zickus)
+- Support 2 digit versions properly (Don Zickus)
+- Automation cleanups for rebasing rt-devel and automotive-devel (Don Zickus)
+- Linux v6.11.0-0.rc1.e4fc196f5ba3
+
+* Tue Jul 30 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc1.94ede2a3e913.16]
+- Linux v6.11.0-0.rc1.94ede2a3e913
+
+* Mon Jul 29 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc1.dc1c8034e31b.15]
+- fedora: set CONFIG_REGULATOR_RZG2L_VBCTRL as a module for arm64 (Patrick Talbert)
+- Linux v6.11.0-0.rc1.dc1c8034e31b
+
+* Sat Jul 27 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.3a7e02c040b1.14]
+- Linux v6.11.0-0.rc0.3a7e02c040b1
+
+* Fri Jul 26 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.1722389b0d86.13]
+- gitlab-ci: restore bot pipeline behavior (Michael Hofmann)
+- redhat/kernel.spec: drop extra right curly bracket in kernel_kvm_package (Jan Stancek)
+- redhat/configs: enable gpio_keys driver for RHEL on aarch64 (Luiz Capitulino)
+- Move NET_VENDOR_MICROCHIP from common to rhel (Justin M. Forbes)
+- Linux v6.11.0-0.rc0.1722389b0d86
+
+* Thu Jul 25 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.c33ffdb70cc6.12]
+- Linux v6.11.0-0.rc0.c33ffdb70cc6
+
+* Wed Jul 24 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.786c8248dbd3.11]
+- Linux v6.11.0-0.rc0.786c8248dbd3
+
+* Tue Jul 23 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.66ebbdfdeb09.10]
+- redhat/configs: enable some RTCs for RHEL on aarch64 (Luiz Capitulino)
+- redhat/configs: enable some regulators for RHEL (Luiz Capitulino)
+- redhat/config: disable CXL and CXLFLASH drivers (Dan Horák)
+- Linux v6.11.0-0.rc0.66ebbdfdeb09
+
+* Mon Jul 22 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.933069701c1b.9]
+- Fix up config mismatches in pending (Justin M. Forbes)
+- redhat/configs: Enable watchdog devices modelled by qemu (Richard W.M. Jones) [RHEL-40937]
+- Linux v6.11.0-0.rc0.933069701c1b
+
+* Mon Jul 22 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.720261cfc732.8]
+- rhel: cleanup unused media tuner configs (Peter Robinson)
+- all: cleanup MEDIA_CONTROLLER options (Peter Robinson)
+- redhat: kernel.spec: add s390x to livepatching kselftest builds (Joe Lawrence)
+
+* Sat Jul 20 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.720261cfc732.7]
+- Flip CONFIG_DIMLIB back to inline (Justin M. Forbes)
+- Add vfio/nvgrace-gpu driver CONFIG to RHEL-9.5 ARM64 (Donald Dutile)
+- Enable CONFIG_RTC_DRV_TEGRA for RHEL (Luiz Capitulino)
+
+* Fri Jul 19 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.720261cfc732.6]
+- redhat: rh_flags: declare proper static methods when !CONFIG_RHEL_DIFFERENCES (Rafael Aquini)
+- redhat: configs: enable CONFIG_TMPFS_QUOTA for both Fedora and RHEL (Rafael Aquini)
+- Linux v6.11.0-0.rc0.720261cfc732
+
+* Thu Jul 18 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.b1bc554e009e.5]
+- Linux v6.11.0-0.rc0.b1bc554e009e
+
+* Wed Jul 17 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.51835949dda3.4]
+- Fix up mismatches in the 6.11 merge window. (Justin M. Forbes)
+- Linux v6.11.0-0.rc0.51835949dda3
+
+* Wed Jul 17 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.d67978318827.3]
+- Reset Changelog after rebase (Justin M. Forbes)
+
+* Tue Jul 16 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.11.0-0.rc0.d67978318827.2]
 - Reset RHEL_RELEASE for the 6.11 cycle (Justin M. Forbes)
 - redhat/configs: Enable CONFIG_VMWARE_VMCI/CONFIG_VMWARE_VMCI_VSOCKETS for RHEL (Vitaly Kuznetsov)
-- Linux v6.10.1
-
-* Mon Jul 15 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-64]
-- Linux v6.10.0
-
-* Sun Jul 14 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc7.4d145e3f830b.63]
 - Consolidate configs to common for 6.10 (Justin M. Forbes)
-- Linux v6.10.0-0.rc7.4d145e3f830b
-
-* Sat Jul 13 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc7.528dd46d0fc3.62]
 - redhat/configs: Enable CONFIG_PTP_1588_CLOCK_MOCK in kernel-modules-internal (Davide Caratti)
 - fedora: enabled XE GPU drivers on all arches (Peter Robinson)
 - Flip SND_SOC_CS35L56_SPI from off to module for RHEL (Justin M. Forbes)
 - Flip DIMLIB from built-in to module for RHEL (Justin M. Forbes)
-- Linux v6.10.0-0.rc7.528dd46d0fc3
-
-* Fri Jul 12 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc7.43db1e03c086.61]
-- Linux v6.10.0-0.rc7.43db1e03c086
-
-* Thu Jul 11 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc7.9d9a2f29aefd.60]
-- Linux v6.10.0-0.rc7.9d9a2f29aefd
-
-* Wed Jul 10 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc7.34afb82a3c67.59]
 - not upstream: drop openssl ENGINE API usage (Jan Stancek)
-- Linux v6.10.0-0.rc7.34afb82a3c67
-
-* Mon Jul 08 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc7.4376e966ecb7.58]
 - Also remove the zfcpdump BASE_SMALL config (Justin M. Forbes)
-- Linux v6.10.0-0.rc7.4376e966ecb7
-
-* Mon Jul 08 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc7.57]
-- Linux v6.10.0-0.rc7
-
-* Sun Jul 07 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc6.c6653f49e4fd.56]
-- Linux v6.10.0-0.rc6.c6653f49e4fd
-
-* Sat Jul 06 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc6.1dd28064d416.55]
-- Linux v6.10.0-0.rc6.1dd28064d416
-
-* Fri Jul 05 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc6.661e504db04c.54]
-- Linux v6.10.0-0.rc6.661e504db04c
-
-* Thu Jul 04 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc6.795c58e4c7fc.53]
-- Linux v6.10.0-0.rc6.795c58e4c7fc
-
-* Wed Jul 03 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc6.e9d22f7a6655.52]
-- Linux v6.10.0-0.rc6.e9d22f7a6655
-
-* Tue Jul 02 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc6.1dfe225e9af5.51]
 - redhat: Add cgroup kselftests to kernel-selftests-internal (Waiman Long) [RHEL-43556]
 - Revert "redhat/configs: Disable CONFIG_INFINIBAND_HFI1 and CONFIG_INFINIBAND_RDMAVT" (Kamal Heib)
 - Remove new for GITLAB_TOKEN (Don Zickus)
 - Set Fedora configs for 6.10 (Justin M. Forbes)
 - Fedora: minor driver updates (Peter Robinson)
-- Linux v6.10.0-0.rc6.1dfe225e9af5
-
-* Mon Jul 01 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc6.50]
 - redhat/configs: Remove obsolete x86 CPU mitigations config files (Waiman Long)
 - redhat/configs: increase CONFIG_DEFAULT_MMAP_MIN_ADDR from 32K to 64K for aarch64 (Brian Masney)
 - redhat/configs: Re-enable CONFIG_KEXEC for Fedora (Philipp Rudo)
 - media: ipu-bridge: Add HIDs from out of tree IPU6 driver ipu-bridge copy (Hans de Goede)
 - media: ipu-bridge: Sort ipu_supported_sensors[] array by ACPI HID (Hans de Goede)
 - disable LR_WPAN for RHEL10 (Chris von Recklinghausen) [RHEL-40251]
-- Linux v6.10.0-0.rc6
-
-* Sun Jun 30 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc5.8282d5af7be8.49]
-- Linux v6.10.0-0.rc5.8282d5af7be8
-
-* Sat Jun 29 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc5.de0a9f448633.48]
 - Turn on USB_SERIAL_F81232 for Fedora (Justin M. Forbes)
-- Linux v6.10.0-0.rc5.de0a9f448633
-
-* Fri Jun 28 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc5.5bbd9b249880.47]
-- Linux v6.10.0-0.rc5.5bbd9b249880
-
-* Thu Jun 27 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc5.afcd48134c58.46]
 - redhat/scripts/filtermods.py: show all parent/child kmods in report (Jan Stancek)
 - redhat/kernel.spec: capture filtermods.py return code (Jan Stancek)
 - redhat/kernel.spec: fix run of mod-denylist (Jan Stancek)
@@ -4340,142 +4582,41 @@ fi\
 - gitlab-ci: move script snippets into separate template (Michael Hofmann)
 - gitlab-ci: rename maintenance jobs (Michael Hofmann)
 - gitlab-ci: introduce job template for maintenance jobs (Michael Hofmann)
-- Linux v6.10.0-0.rc5.afcd48134c58
-
-* Wed Jun 26 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc5.24ca36a562d6.45]
 - Turn on KASAN_HW_TAGS for Fedora aarch64 debug kernels (Justin M. Forbes)
-- Linux v6.10.0-0.rc5.24ca36a562d6
-
-* Tue Jun 25 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc5.44]
 - redhat: kernel.spec: add missing sound/soc/sof/sof-audio.h to kernel-devel package (Jaroslav Kysela)
-
-* Mon Jun 24 2024 Justin M. Forbes <jforbes@fedoraproject.org> [6.10.0-0.rc5.43]
 - redhat/kernel.spec: fix attributes of symvers file (Jan Stancek)
 - redhat: add filtermods rule for iommu tests (Jan Stancek)
-- Linux v6.10.0-0.rc5
-
-* Fri Jun 21 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc4.50736169ecc8.42]
 - fedora: arm: Enable basic support for S32G-VNP-RDB3 board (Enric Balletbo i Serra)
-- Linux v6.10.0-0.rc4.50736169ecc8
-
-* Thu Jun 20 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc4.e5b3efbe1ab1.41]
-- Linux v6.10.0-0.rc4.e5b3efbe1ab1
-
-* Wed Jun 19 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc4.92e5605a199e.40]
 - redhat: make bnx2xx drivers unmaintained in rhel-10 (John Meneghini) [RHEL-36646 RHEL-41231]
-- Linux v6.10.0-0.rc4.92e5605a199e
-
-* Tue Jun 18 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc4.14d7c92f8df9.39]
 - redhat/configs: Disable CONFIG_NFP (Kamal Heib) [RHEL-36647]
 - Enable CONFIG_PWRSEQ_{SIMPLIE,EMMC} on aarch64 (Charles Mirabile)
-- Linux v6.10.0-0.rc4.14d7c92f8df9
-
-* Mon Jun 17 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc4.38]
 - Fix SERIAL_SC16IS7XX configs for Fedora (Justin M. Forbes)
 - Enable ALSA (CONFIG_SND) on aarch64 (Charles Mirabile) [RHEL-40411]
 - redhat: Remove DIST_BRANCH variable (Eder Zulian)
-- Linux v6.10.0-0.rc4
-
-* Sun Jun 16 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc3.a3e18a540541.37]
-- Linux v6.10.0-0.rc3.a3e18a540541
-
-* Sat Jun 15 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc3.44ef20baed8e.36]
-- Linux v6.10.0-0.rc3.44ef20baed8e
-
-* Fri Jun 14 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc3.d20f6b3d747c.35]
-- Linux v6.10.0-0.rc3.d20f6b3d747c
-
-* Thu Jun 13 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc3.2ccbdf43d5e7.34]
-- Linux v6.10.0-0.rc3.2ccbdf43d5e7
-
-* Wed Jun 12 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc3.2ef5971ff345.33]
 - gitlab-ci: merge ark-latest before tagging cki-gating (Michael Hofmann)
-- Linux v6.10.0-0.rc3.2ef5971ff345
-
-* Tue Jun 11 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc3.32]
 - gitlab-ci: do not merge ark-latest for gating pipelines for Rawhide (Michael Hofmann)
 - disable CONFIG_KVM_INTEL_PROVE_VE (Paolo Bonzini)
 - redhat: remove the merge subtrees script (Derek Barbosa)
 - redhat: rhdocs: delete .get_maintainer.conf (Derek Barbosa)
 - redhat: rhdocs: Remove the rhdocs directory (Derek Barbosa)
 - redhat/configs: Disable CONFIG_QLA3XXX (Kamal Heib) [RHEL-36646]
-
-* Mon Jun 10 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc3.31]
-- Linux v6.10.0-0.rc3
-
-* Sun Jun 09 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc2.771ed66105de.30]
 - redhat/configs: fedora: Enable some drivers for IPU6 support (Hans de Goede)
-- Linux v6.10.0-0.rc2.771ed66105de
-
-* Sat Jun 08 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc2.dc772f8237f9.29]
-- Linux v6.10.0-0.rc2.dc772f8237f9
-
-* Fri Jun 07 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc2.8a92980606e3.28]
-- Linux v6.10.0-0.rc2.8a92980606e3
-
-* Thu Jun 06 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc2.2df0193e62cf.27]
 - redhat: add missing UKI_secureboot_cert hunk (Patrick Talbert)
-- Linux v6.10.0-0.rc2.2df0193e62cf
-
-* Wed Jun 05 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc2.32f88d65f01b.26]
 - redhat/kernel.spec: keep extra modules in original directories (Jan Stancek)
-- Linux v6.10.0-0.rc2.32f88d65f01b
-
-* Tue Jun 04 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc2.2ab795141095.25]
 - redhat/configs: Move CONFIG_BLK_CGROUP_IOCOST=y to common/generic (Waiman Long)
 - Turn on CONFIG_MFD_QCOM_PM8008 for Fedora aarch64 (Justin M. Forbes)
-- Linux v6.10.0-0.rc2.2ab795141095
-
-* Mon Jun 03 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc2.24]
-- Linux v6.10.0-0.rc2
-
-* Sun Jun 02 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc1.83814698cf48.23]
-- Linux v6.10.0-0.rc1.83814698cf48
-
-* Sat Jun 01 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc1.cc8ed4d0a848.22]
-- Linux v6.10.0-0.rc1.cc8ed4d0a848
-
-* Fri May 31 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc1.4a4be1ad3a6e.21]
 - redhat: Build IMA CA certificate into the Fedora kernel (Coiby Xu)
 - Move CONFIG_RAS_FMPM to the proper location (Aristeu Rozanski)
 - redhat/configs: Remove CONFIG_NET_ACT_IPT (Ivan Vecera)
-
-* Thu May 30 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc1.4a4be1ad3a6e.20]
-- Linux v6.10.0-0.rc1.4a4be1ad3a6e
-
-* Wed May 29 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc1.e0cce98fe279.19]
 - gitlab-ci: add kernel-automotive pipelines (Michael Hofmann)
 - Enable CEC support for TC358743 (Peter Robinson)
 - fedora: arm: Enable ARCH_R9A09G057 (Peter Robinson)
 - fedora: updates for the 6.10 kernel (Peter Robinson)
 - fedora: arm: Enable the MAX96706 GMSL module (Peter Robinson)
-- Linux v6.10.0-0.rc1.e0cce98fe279
-
-* Tue May 28 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc1.2bfcfd584ff5.18]
-- Linux v6.10.0-0.rc1.2bfcfd584ff5
-
-* Mon May 27 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc1.17]
 - redhat: Switch UKI to using its own SecureBoot cert (from system-sb-certs) (Jan Stancek)
 - redhat: Add RHEL specifc .sbat section to UKI (Jan Stancek)
 - kernel.spec: add iommu selftests to kernel-selftests-internal (Eder Zulian) [RHEL-32895]
-- Linux v6.10.0-0.rc1
-
-* Sun May 26 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.c13320499ba0.16]
-- Linux v6.10.0-0.rc0.c13320499ba0
-
-* Sat May 25 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.56fb6f92854f.15]
-- Linux v6.10.0-0.rc0.56fb6f92854f
-
-* Fri May 24 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.6d69b6c12fce.14]
-- Linux v6.10.0-0.rc0.6d69b6c12fce
-
-* Fri May 24 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.c760b3725e52.13]
 - redhat/configs: fedora: aarch64: Re-enable CUSE (Neal Gompa)
-
-* Thu May 23 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.c760b3725e52.12]
-- Linux v6.10.0-0.rc0.c760b3725e52
-
-* Wed May 22 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.29c73fc794c8.11]
 - redhat: pass correct RPM_VMLINUX_H to bpftool install (Jan Stancek)
 - rh_flags: Rename rh_features to rh_flags (Ricardo Robaina) [RHEL-32987]
 - kernel: rh_features: fix reading empty feature list from /proc (Ricardo Robaina) [RHEL-32987]
@@ -4483,39 +4624,13 @@ fi\
 - rh_features: convert to atomic allocation (Ricardo Robaina) [RHEL-32987]
 - add rh_features to /proc (Ricardo Robaina) [RHEL-32987]
 - add support for rh_features (Ricardo Robaina) [RHEL-32987]
-- Linux v6.10.0-0.rc0.29c73fc794c8
-
-* Tue May 21 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.8f6a15f095a6.10]
 - Drop kexec_load syscall support (Baoquan He)
-- Linux v6.10.0-0.rc0.8f6a15f095a6
-
-* Mon May 20 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.eb6a9339efeb.9]
 - New configs in lib/kunit (Fedora Kernel Team)
-- Linux v6.10.0-0.rc0.eb6a9339efeb
-
-* Sun May 19 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.0450d2083be6.8]
-- Linux v6.10.0-0.rc0.0450d2083be6
-
-* Sat May 18 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.4b377b4868ef.7]
-- Linux v6.10.0-0.rc0.4b377b4868ef
-
-* Fri May 17 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.ea5f6ad9ad96.6]
 - Turn off KUNIT_FAULT_TEST as it causes problems for CI (Justin M. Forbes)
 - Add a config entry in pending for CONFIG_DRM_MSM_VALIDATE_XML (Justin M. Forbes)
-- Linux v6.10.0-0.rc0.ea5f6ad9ad96
-
-* Thu May 16 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.3c999d1ae3c7.5]
 - Flip CONFIG_SND_SOC_CS35L56_SPI in pending to avoid a mismatch (Justin M. Forbes)
-- Linux v6.10.0-0.rc0.3c999d1ae3c7
-
-* Wed May 15 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.1b294a1f3561.4]
 - Fix up a mismatch for RHEL (Justin M. Forbes)
-- Linux v6.10.0-0.rc0.1b294a1f3561
-
-* Wed May 15 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.a5131c3fdf26.3]
 - Reset changelog after rebase (Justin M. Forbes)
-
-* Tue May 14 2024 Fedora Kernel Team <kernel-team@fedoraproject.org> [6.10.0-0.rc0.a5131c3fdf26.2]
 - Reset RHEL_RELEASE to 0 for 6.10 (Justin M. Forbes)
 - configs: move CONFIG_BLK_DEV_UBLK into rhel/configs/generic (Ming Lei)
 - configs: move CONFIG_BLK_SED_OPAL into redhat/configs/common/generic (Ming Lei)
@@ -6867,7 +6982,7 @@ fi\
 - [initial commit] Add scripts (Laura Abbott)
 - [initial commit] Add configs (Laura Abbott)
 - [initial commit] Add Makefiles (Laura Abbott)
-- Linux v6.10.0-0.rc0.a5131c3fdf26
+- Linux v6.11.0-0.rc0.d67978318827
 
 ###
 # The following Emacs magic makes C-c C-e use UTC dates.

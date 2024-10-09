@@ -1,68 +1,3 @@
-From e5e77ad2223f662e1615266d8ef39a8db7e65a70 Mon Sep 17 00:00:00 2001
-From: =?UTF-8?q?Felix=20H=C3=A4dicke?= <felixhaedicke@web.de>
-Date: Thu, 19 Nov 2020 09:22:32 +0100
-Subject: HID: quirks: Add Apple Magic Trackpad 2 to hid_have_special_driver
- list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-
-The Apple Magic Trackpad 2 is handled by the magicmouse driver. And
-there were severe stability issues when both drivers (hid-generic and
-hid-magicmouse) were loaded for this device.
-
-Fixes: https://bugzilla.kernel.org/show_bug.cgi?id=210241
-
-Signed-off-by: Felix Hädicke <felixhaedicke@web.de>
----
- drivers/hid/hid-quirks.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/hid/hid-quirks.c b/drivers/hid/hid-quirks.c
-index bf7ecab5d9e5..142e9dae2837 100644
---- a/drivers/hid/hid-quirks.c
-+++ b/drivers/hid/hid-quirks.c
-@@ -478,6 +478,8 @@ static const struct hid_device_id hid_have_special_driver[] = {
- #if IS_ENABLED(CONFIG_HID_MAGICMOUSE)
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_MAGICMOUSE) },
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_MAGICTRACKPAD) },
-+	{ HID_BLUETOOTH_DEVICE(BT_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_MAGICTRACKPAD2) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_MAGICTRACKPAD2) },
- #endif
- #if IS_ENABLED(CONFIG_HID_MAYFLASH)
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_DRAGONRISE, USB_DEVICE_ID_DRAGONRISE_PS3) },
--- 
-cgit v1.2.3-1-gf6bb5
-
-From f7f49141a5dbe9c99d78196b58c44307fb2e6be3 Mon Sep 17 00:00:00 2001
-From: Tk-Glitch <ti3nou@gmail.com>
-Date: Wed, 3 Feb 2021 11:20:12 +0200
-Subject: Revert "cpufreq: Avoid configuring old governors as default with intel_pstate"
-
-This is an undesirable behavior for us since our aggressive ondemand performs
-better than schedutil for gaming when using intel_pstate in passive mode.
-Also it interferes with the option to select the desired default governor we have.
-
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 2c7171e0b0010..85de313ddec29 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -71,7 +71,6 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
- 
- config CPU_FREQ_DEFAULT_GOV_ONDEMAND
- 	bool "ondemand"
--	depends on !(X86_INTEL_PSTATE && SMP)
- 	select CPU_FREQ_GOV_ONDEMAND
- 	select CPU_FREQ_GOV_PERFORMANCE
- 	help
-@@ -83,7 +84,6 @@ config CPU_FREQ_DEFAULT_GOV_ONDEMAND
- 
- config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
- 	bool "conservative"
--	depends on !(X86_INTEL_PSTATE && SMP)
- 	select CPU_FREQ_GOV_CONSERVATIVE
- 	select CPU_FREQ_GOV_PERFORMANCE
- 	help
 
 From 3a88b77d3cb9f9cd8a8aee052ab479b73aeb2e80 Mon Sep 17 00:00:00 2001
 From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
@@ -98,125 +33,6 @@ index f4b210ab061291..837d0dbb28ea08 100644
  	help
  	  This value can be used to select the number of bits to use to
 
-From 299b81f3e619aea3ceda77d7c42842a496b34a53 Mon Sep 17 00:00:00 2001
-From: Peter Jung <admin@ptr1337.dev>
-Date: Thu, 21 Mar 2024 19:00:50 +0100
-Subject: [PATCH] cachy: move AMD_PRIVATE_COLOR to Kconfig
-
-Co-authored-by: PedroHLC <root@pedrohlc.com>
-Signed-off-by: Peter Jung <admin@ptr1337.dev>
----
- drivers/gpu/drm/amd/display/Kconfig                     | 6 ++++++
- drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c       | 2 +-
- drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_color.c | 2 +-
- drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crtc.c  | 6 +++---
- drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c | 6 +++---
- 5 files changed, 14 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/gpu/drm/amd/display/Kconfig b/drivers/gpu/drm/amd/display/Kconfig
-index 901d1961b73927..05c49141f5802f 100644
---- a/drivers/gpu/drm/amd/display/Kconfig
-+++ b/drivers/gpu/drm/amd/display/Kconfig
-@@ -51,4 +51,10 @@ config DRM_AMD_SECURE_DISPLAY
- 	  This option enables the calculation of crc of specific region via
- 	  debugfs. Cooperate with specific DMCU FW.
-
-+config AMD_PRIVATE_COLOR
-+	bool "Enable KMS color management by AMD for AMD"
-+	default n
-+	help
-+	  This option extends the KMS color management API with AMD driver-specific properties to enhance the color management support on AMD Steam Deck.
-+
- endmenu
-diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-index 59d2eee72a3297..0a4e75de95c257 100644
---- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-+++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm.c
-@@ -4078,7 +4078,7 @@ static int amdgpu_dm_mode_config_init(struct amdgpu_device *adev)
- 		return r;
- 	}
-
--#ifdef AMD_PRIVATE_COLOR
-+#ifdef CONFIG_AMD_PRIVATE_COLOR
- 	if (amdgpu_dm_create_color_properties(adev)) {
- 		dc_state_release(state->context);
- 		kfree(state);
-diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_color.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_color.c
-index c87b64e464ed5c..6fe07243adc3d5 100644
---- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_color.c
-+++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_color.c
-@@ -97,7 +97,7 @@ static inline struct fixed31_32 amdgpu_dm_fixpt_from_s3132(__u64 x)
- 	return val;
- }
-
--#ifdef AMD_PRIVATE_COLOR
-+#ifdef CONFIG_AMD_PRIVATE_COLOR
- /* Pre-defined Transfer Functions (TF)
-  *
-  * AMD driver supports pre-defined mathematical functions for transferring
-diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crtc.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crtc.c
-index 6e715ef3a5566e..11c7199ec3b348 100644
---- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crtc.c
-+++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_crtc.c
-@@ -290,7 +290,7 @@ static int amdgpu_dm_crtc_late_register(struct drm_crtc *crtc)
- }
- #endif
-
--#ifdef AMD_PRIVATE_COLOR
-+#ifdef CONFIG_AMD_PRIVATE_COLOR
- /**
-  * dm_crtc_additional_color_mgmt - enable additional color properties
-  * @crtc: DRM CRTC
-@@ -372,7 +372,7 @@ static const struct drm_crtc_funcs amdgpu_dm_crtc_funcs = {
- #if defined(CONFIG_DEBUG_FS)
- 	.late_register = amdgpu_dm_crtc_late_register,
- #endif
--#ifdef AMD_PRIVATE_COLOR
-+#ifdef CONFIG_AMD_PRIVATE_COLOR
- 	.atomic_set_property = amdgpu_dm_atomic_crtc_set_property,
- 	.atomic_get_property = amdgpu_dm_atomic_crtc_get_property,
- #endif
-@@ -551,7 +551,7 @@ int amdgpu_dm_crtc_init(struct amdgpu_display_manager *dm,
-
- 	drm_mode_crtc_set_gamma_size(&acrtc->base, MAX_COLOR_LEGACY_LUT_ENTRIES);
-
--#ifdef AMD_PRIVATE_COLOR
-+#ifdef CONFIG_AMD_PRIVATE_COLOR
- 	dm_crtc_additional_color_mgmt(&acrtc->base);
- #endif
- 	return 0;
-diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
-index 8a4c40b4c27e4f..779880c6457553 100644
---- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
-+++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_plane.c
-@@ -1468,7 +1468,7 @@ static void amdgpu_dm_plane_drm_plane_destroy_state(struct drm_plane *plane,
- 	drm_atomic_helper_plane_destroy_state(plane, state);
- }
-
--#ifdef AMD_PRIVATE_COLOR
-+#ifdef CONFIG_AMD_PRIVATE_COLOR
- static void
- dm_atomic_plane_attach_color_mgmt_properties(struct amdgpu_display_manager *dm,
- 					     struct drm_plane *plane)
-@@ -1659,7 +1659,7 @@ static const struct drm_plane_funcs dm_plane_funcs = {
- 	.atomic_duplicate_state = amdgpu_dm_plane_drm_plane_duplicate_state,
- 	.atomic_destroy_state = amdgpu_dm_plane_drm_plane_destroy_state,
- 	.format_mod_supported = amdgpu_dm_plane_format_mod_supported,
--#ifdef AMD_PRIVATE_COLOR
-+#ifdef CONFIG_AMD_PRIVATE_COLOR
- 	.atomic_set_property = dm_atomic_plane_set_property,
- 	.atomic_get_property = dm_atomic_plane_get_property,
- #endif
-@@ -1742,7 +1742,7 @@ int amdgpu_dm_plane_init(struct amdgpu_display_manager *dm,
-
- 	drm_plane_helper_add(plane, &dm_plane_helper_funcs);
-
--#ifdef AMD_PRIVATE_COLOR
-+#ifdef CONFIG_AMD_PRIVATE_COLOR
- 	dm_atomic_plane_attach_color_mgmt_properties(dm, plane);
- #endif
- 	/* Create (reset) the plane state */
-
 From f1807682de0edbff6c1e46b19642a517d2e15c57 Mon Sep 17 00:00:00 2001
 From: Tk-Glitch <ti3nou@gmail.com>
 Date: Sat, 13 Apr 2024 18:25:35 +0530
@@ -235,6 +51,222 @@ index a54663f2e2ab9f..7ffad3eb0a0150 100644
  			switch (amdgpu_ip_version(adev, MP1_HWIP, 0)) {
  			case IP_VERSION(13, 0, 2):
 -			case IP_VERSION(13, 0, 6):
+ 			case IP_VERSION(13, 0, 14):
  			case IP_VERSION(11, 0, 7):
  			case IP_VERSION(11, 0, 11):
- 			case IP_VERSION(11, 0, 12):
+From 5863404999cd2cada56e454b1b3a33c43b3c0806 Mon Sep 17 00:00:00 2001
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Sun, 28 Jul 2024 13:06:10 +0200
+Subject: [PATCH] x86/apic: Remove logical destination mode for 64-bit
+
+Logical destination mode of the local APIC is used for systems with up to
+8 CPUs. It has an advantage over physical destination mode as it allows to
+target multiple CPUs at once with IPIs.
+
+That advantage was definitely worth it when systems with up to 8 CPUs
+were state of the art for servers and workstations, but that's history.
+
+Aside of that there are systems which fail to work with logical destination
+mode as the ACPI/DMI quirks show and there are AMD Zen1 systems out there
+which fail when interrupt remapping is enabled. The latter can be cured by
+firmware updates, but not all OEMs distribute the required changes.
+
+Physical destination mode is guaranteed to work because it is the only way
+to get a CPU up and running via the INIT/INIT/STARTUP sequence.
+
+As the number of CPUs keeps increasing, logical destination mode becomes a
+less used code path so there is no real good reason to keep it around.
+
+Therefore remove logical destination mode support for 64-bit and default to
+physical destination mode.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cherry-picked-for: https://gitlab.archlinux.org/archlinux/packaging/packages/linux/-/issues/64
+---
+ arch/x86/include/asm/apic.h         |   8 --
+ arch/x86/kernel/apic/apic_flat_64.c | 119 ++--------------------------
+ 2 files changed, 7 insertions(+), 120 deletions(-)
+
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 9327eb00e96d09..be2045a18e69b9 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -345,20 +345,12 @@ extern struct apic *apic;
+  * APIC drivers are probed based on how they are listed in the .apicdrivers
+  * section. So the order is important and enforced by the ordering
+  * of different apic driver files in the Makefile.
+- *
+- * For the files having two apic drivers, we use apic_drivers()
+- * to enforce the order with in them.
+  */
+ #define apic_driver(sym)					\
+ 	static const struct apic *__apicdrivers_##sym __used		\
+ 	__aligned(sizeof(struct apic *))			\
+ 	__section(".apicdrivers") = { &sym }
+ 
+-#define apic_drivers(sym1, sym2)					\
+-	static struct apic *__apicdrivers_##sym1##sym2[2] __used	\
+-	__aligned(sizeof(struct apic *))				\
+-	__section(".apicdrivers") = { &sym1, &sym2 }
+-
+ extern struct apic *__apicdrivers[], *__apicdrivers_end[];
+ 
+ /*
+diff --git a/arch/x86/kernel/apic/apic_flat_64.c b/arch/x86/kernel/apic/apic_flat_64.c
+index f37ad3392fec91..e0308d8c4e6c27 100644
+--- a/arch/x86/kernel/apic/apic_flat_64.c
++++ b/arch/x86/kernel/apic/apic_flat_64.c
+@@ -8,129 +8,25 @@
+  * Martin Bligh, Andi Kleen, James Bottomley, John Stultz, and
+  * James Cleverdon.
+  */
+-#include <linux/cpumask.h>
+ #include <linux/export.h>
+-#include <linux/acpi.h>
+ 
+-#include <asm/jailhouse_para.h>
+ #include <asm/apic.h>
+ 
+ #include "local.h"
+ 
+-static struct apic apic_physflat;
+-static struct apic apic_flat;
+-
+-struct apic *apic __ro_after_init = &apic_flat;
+-EXPORT_SYMBOL_GPL(apic);
+-
+-static int flat_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+-{
+-	return 1;
+-}
+-
+-static void _flat_send_IPI_mask(unsigned long mask, int vector)
+-{
+-	unsigned long flags;
+-
+-	local_irq_save(flags);
+-	__default_send_IPI_dest_field(mask, vector, APIC_DEST_LOGICAL);
+-	local_irq_restore(flags);
+-}
+-
+-static void flat_send_IPI_mask(const struct cpumask *cpumask, int vector)
+-{
+-	unsigned long mask = cpumask_bits(cpumask)[0];
+-
+-	_flat_send_IPI_mask(mask, vector);
+-}
+-
+-static void
+-flat_send_IPI_mask_allbutself(const struct cpumask *cpumask, int vector)
+-{
+-	unsigned long mask = cpumask_bits(cpumask)[0];
+-	int cpu = smp_processor_id();
+-
+-	if (cpu < BITS_PER_LONG)
+-		__clear_bit(cpu, &mask);
+-
+-	_flat_send_IPI_mask(mask, vector);
+-}
+-
+-static u32 flat_get_apic_id(u32 x)
++static u32 physflat_get_apic_id(u32 x)
+ {
+ 	return (x >> 24) & 0xFF;
+ }
+ 
+-static int flat_probe(void)
++static int physflat_probe(void)
+ {
+ 	return 1;
+ }
+ 
+-static struct apic apic_flat __ro_after_init = {
+-	.name				= "flat",
+-	.probe				= flat_probe,
+-	.acpi_madt_oem_check		= flat_acpi_madt_oem_check,
+-
+-	.dest_mode_logical		= true,
+-
+-	.disable_esr			= 0,
+-
+-	.init_apic_ldr			= default_init_apic_ldr,
+-	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
+-
+-	.max_apic_id			= 0xFE,
+-	.get_apic_id			= flat_get_apic_id,
+-
+-	.calc_dest_apicid		= apic_flat_calc_apicid,
+-
+-	.send_IPI			= default_send_IPI_single,
+-	.send_IPI_mask			= flat_send_IPI_mask,
+-	.send_IPI_mask_allbutself	= flat_send_IPI_mask_allbutself,
+-	.send_IPI_allbutself		= default_send_IPI_allbutself,
+-	.send_IPI_all			= default_send_IPI_all,
+-	.send_IPI_self			= default_send_IPI_self,
+-	.nmi_to_offline_cpu		= true,
+-
+-	.read				= native_apic_mem_read,
+-	.write				= native_apic_mem_write,
+-	.eoi				= native_apic_mem_eoi,
+-	.icr_read			= native_apic_icr_read,
+-	.icr_write			= native_apic_icr_write,
+-	.wait_icr_idle			= apic_mem_wait_icr_idle,
+-	.safe_wait_icr_idle		= apic_mem_wait_icr_idle_timeout,
+-};
+-
+-/*
+- * Physflat mode is used when there are more than 8 CPUs on a system.
+- * We cannot use logical delivery in this case because the mask
+- * overflows, so use physical mode.
+- */
+ static int physflat_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+-#ifdef CONFIG_ACPI
+-	/*
+-	 * Quirk: some x86_64 machines can only use physical APIC mode
+-	 * regardless of how many processors are present (x86_64 ES7000
+-	 * is an example).
+-	 */
+-	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
+-		(acpi_gbl_FADT.flags & ACPI_FADT_APIC_PHYSICAL)) {
+-		printk(KERN_DEBUG "system APIC only can use physical flat");
+-		return 1;
+-	}
+-
+-	if (!strncmp(oem_id, "IBM", 3) && !strncmp(oem_table_id, "EXA", 3)) {
+-		printk(KERN_DEBUG "IBM Summit detected, will use apic physical");
+-		return 1;
+-	}
+-#endif
+-
+-	return 0;
+-}
+-
+-static int physflat_probe(void)
+-{
+-	return apic == &apic_physflat || num_possible_cpus() > 8 || jailhouse_paravirt();
++	return 1;
+ }
+ 
+ static struct apic apic_physflat __ro_after_init = {
+@@ -146,7 +42,7 @@ static struct apic apic_physflat __ro_after_init = {
+ 	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
+ 
+ 	.max_apic_id			= 0xFE,
+-	.get_apic_id			= flat_get_apic_id,
++	.get_apic_id			= physflat_get_apic_id,
+ 
+ 	.calc_dest_apicid		= apic_default_calc_apicid,
+ 
+@@ -166,8 +62,7 @@ static struct apic apic_physflat __ro_after_init = {
+ 	.wait_icr_idle			= apic_mem_wait_icr_idle,
+ 	.safe_wait_icr_idle		= apic_mem_wait_icr_idle_timeout,
+ };
++apic_driver(apic_physflat);
+ 
+-/*
+- * We need to check for physflat first, so this order is important.
+- */
+-apic_drivers(apic_physflat, apic_flat);
++struct apic *apic __ro_after_init = &apic_physflat;
++EXPORT_SYMBOL_GPL(apic);
