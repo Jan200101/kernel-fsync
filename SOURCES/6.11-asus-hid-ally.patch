@@ -1,0 +1,31 @@
+From dc24aeded098b2c746bd070f08cca77d27017593 Mon Sep 17 00:00:00 2001
+From: Antheas Kapenekakis <git@antheas.dev>
+Date: Fri, 11 Oct 2024 12:45:38 +0200
+Subject: [PATCH v1] remove ally quirk from asus hid
+
+Unfortunately it bails with ENOMEM preventing the controller from re-attaching
+after suspend.
+---
+ drivers/hid/hid-asus.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/drivers/hid/hid-asus.c b/drivers/hid/hid-asus.c
+index a282388b7aa5..fd58eed1adde 100644
+--- a/drivers/hid/hid-asus.c
++++ b/drivers/hid/hid-asus.c
+@@ -1245,12 +1245,6 @@ static const struct hid_device_id asus_devices[] = {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK,
+ 	    USB_DEVICE_ID_ASUSTEK_ROG_Z13_LIGHTBAR),
+ 	  QUIRK_USE_KBD_BACKLIGHT | QUIRK_ROG_NKEY_KEYBOARD },
+-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK,
+-	    USB_DEVICE_ID_ASUSTEK_ROG_NKEY_ALLY),
+-	  QUIRK_USE_KBD_BACKLIGHT | QUIRK_ROG_NKEY_KEYBOARD },
+-	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK,
+-	    USB_DEVICE_ID_ASUSTEK_ROG_NKEY_ALLY_X),
+-	  QUIRK_USE_KBD_BACKLIGHT | QUIRK_ROG_NKEY_KEYBOARD },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_ASUSTEK,
+ 	    USB_DEVICE_ID_ASUSTEK_ROG_CLAYMORE_II_KEYBOARD),
+ 	  QUIRK_ROG_CLAYMORE_II_KEYBOARD },
+-- 
+2.46.2
+

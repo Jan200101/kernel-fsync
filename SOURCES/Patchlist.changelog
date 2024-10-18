@@ -1,3 +1,12 @@
+https://gitlab.com/cki-project/kernel-ark/-/commit/b630c41705d79da0dfb19aa07a8985ba6fb61a02
+ b630c41705d79da0dfb19aa07a8985ba6fb61a02 HID: amd_sfh: Switch to device-managed dmam_alloc_coherent()
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/15cf18f2e233b61e3a7514c214baa47b49c7e2bc
+ 15cf18f2e233b61e3a7514c214baa47b49c7e2bc wifi: rtw89: pci: early chips only enable 36-bit DMA on specific PCI hosts
+
+https://gitlab.com/cki-project/kernel-ark/-/commit/a9eac0825b8509eb9a98121c6e1bfca711d4a3fe
+ a9eac0825b8509eb9a98121c6e1bfca711d4a3fe HID: lenovo: Add support for Thinkpad X1 Tablet Gen 3 keyboard
+
 https://gitlab.com/cki-project/kernel-ark/-/commit/37f88e3ca1bde6c898222d6dbd8f4d804c2e9834
  37f88e3ca1bde6c898222d6dbd8f4d804c2e9834 media: qcom: camss: Fix ordering of pm_runtime_enable
 
